@@ -1,0 +1,35 @@
+  :root {
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+
+  /* Named colors */
+  --white: lab(99.655% 0 0);
+  --black: lab(2.759% 0.106 -0.390);
+  --grey-1: lab(39.707% 0.318 -14.447);
+  --grey-2: lab(72.020% 1.144 -4.097);
+  --grey-3: lab(84.286% 0.547 -1.985);
+  --grey-4: lab(92.872% -2.207 -2.918);
+  --grey-bg: lab(98.26% 0 0);
+  --grey-muted: lab(48.496% 0 0);
+  --red: lab(47.090% 63.229 22.179);
+
+  /* Border radius */
+  --radius: .625rem;
+
+  /* UI color mapping */
+  --main-text: var(--black);
+  --main-bg: var(--grey-bg);
+  --main-border: var(--grey-2);
+  --main-border-light: var(--grey-3);
+  --header-text: var(--grey-1);
+  --error-text: var(--red);
+  --header-bg: var(--white);
+  --highlight-text: var(--red);
+  --disabled-text: var(--grey-2);
+  --muted-foreground: var(--grey-muted);
+  --aside-text: var(--grey-1);
+  --button-text: var(--grey-1);
+  --button-bg: var(--white);
+  --button-active-text: var(--black);
+  --button-active-bg: var(--grey-4);
+  --button-highlight-text: var(--red);
+}

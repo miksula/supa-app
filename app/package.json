@@ -1,0 +1,27 @@
+{
+  "name": "app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --open",
+    "dev:offline": "VITE_OFFLINE_MODE=true vite --open",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@journeyapps/wa-sqlite": "^1.5.0",
+    "@packages/router": "workspace:*",
+    "@powersync/kysely-driver": "^2.0.2",
+    "@powersync/web": "2.4.2",
+    "@supabase/supabase-js": "2.117.2",
+    "lit": "^3.3.3",
+    "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "vite": "^8.0.5",
+    "vite-plugin-devtools-json": "^1.0.0",
+    "vite-plugin-wasm": "^3.6.0"
+  }
+}

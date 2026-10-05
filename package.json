@@ -1,0 +1,11 @@
+{
+  "name": "supa-app",
+  "private": true,
+  "scripts": {
+    "app": "npm run dev -w ./app"
+  },
+  "workspaces": [
+    "packages/*",
+    "app"
+  ]
+}

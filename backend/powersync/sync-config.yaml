@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://unpkg.com/@powersync/service-sync-rules@latest/schema/sync_rules.json
+#
+# See Documentation for more information:
+# https://docs.powersync.com/sync/overview
+
+config:
+  edition: 3
+streams:
+  user_data:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM lists WHERE owner_id = auth.user_id()
+      - SELECT todos.* FROM todos INNER JOIN lists ON todos.list_id = lists.id WHERE lists.owner_id = auth.user_id()

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "modern-web-guidance": {
+      "source": "GoogleChrome/modern-web-guidance",
+      "sourceType": "github",
+      "skillPath": "skills/modern-web-guidance/SKILL.md",
+      "computedHash": "bbbbd23f3f3174e9960024c56f0fcae58f661faf31a64442c1d65b8f56c8d854"
+    },
+    "powersync": {
+      "source": "powersync-ja/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/powersync/SKILL.md",
+      "computedHash": "e58a33e8b4f41974e4060770c25bc3a351f35fc620328947542de982fb80a954"
+    }
+  }
+}

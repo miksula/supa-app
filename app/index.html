@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+
+  <title>Supa App</title>
+  <meta name="description" content="SupaApp - Your Todo Application" />
+
+  <link rel="stylesheet" href="/src/styles/tailwind.css" />
+  <link rel="stylesheet" href="/src/styles/vars.css" />
+  <link rel="stylesheet" href="/src/styles/base.css" />
+  <link rel="stylesheet" href="/src/styles/login.css" />
+  <link rel="stylesheet" href="/src/styles/app-shell.css" />
+  <link rel="stylesheet" href="/src/styles/app-link.css" />
+  <link rel="stylesheet" href="/src/styles/app-bar.css" />
+</head>
+
+<body>
+  <div class="app"></div>
+
+  <script type="module">
+    import { AppShell } from '/src/AppShell.ts';
+
+    AppShell(document.querySelector('body > .app'));
+  </script>
+</body>
+
+</html>
