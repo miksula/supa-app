@@ -11,11 +11,14 @@
 
 .app-content {
   flex: 1 0 auto;
-  margin: 0 1rem 1rem 1rem;
   padding: 1rem;
   overflow: auto;
   background-color: var(--white);
-  border-radius: calc(var(--radius) * 1.4);
   box-shadow: var(--box-shadow);
   outline: 1px solid var(--grey-4);
+
+  &.rounded {
+    border-radius: calc(var(--radius) * 1.4);
+    margin: 0 1rem 1rem 1rem;
+  }
 }

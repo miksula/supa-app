@@ -3,6 +3,7 @@ import "@/components/app-link.ts";
 import { router } from "@packages/router";
 import { supabase } from "@/lib/client.ts";
 import appLogo from "@/assets/logo.svg";
+import logoutIcon from "@/assets/logout-icon.svg";
 import type { Session } from "@supabase/supabase-js";
 
 type AppBarElement = HTMLElement & { disposeAppBar?: () => void };
@@ -30,7 +31,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   let isMenuOpen = false;
   let isLoggingOut = false;
 
-  const renderAppBar = () => {
+  const renderComponent = () => {
     const userLabel = currentSession?.user.email ?? "Käyttäjä";
 
     render(
@@ -40,7 +41,8 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
             <img src="${appLogo}" class="size-5" alt="Supa App">
             <span class="text-base font-medium">Supa App</span>
           </div>
-          <div class="app-bar__links hidden">
+
+          <div class="links">
             ${navItems.map((item) =>
               html`
                 <app-link
@@ -51,33 +53,40 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               `
             )}
           </div>
-          <div class="app-bar__account">
-            <button
-              class="app-bar__avatar"
-              type="button"
+
+          <div class="account">
+            <span
+              class="avatar size-8"
               aria-label="Avaa käyttäjävalikko"
               aria-haspopup="menu"
               aria-expanded="${isMenuOpen}"
               @click="${toggleMenu}"
-            >${getUserInitials(currentSession)}</button>
+            >
+              <span class="text-sm font-medium text-white">
+                ${getUserInitials(currentSession)}
+              </span>
+            </span>
+
             <div
-              class="app-bar__menu"
+              class="menu"
               role="menu"
               ?hidden="${!isMenuOpen}"
             >
-              <div class="app-bar__user" role="presentation">
-                <strong>${getUserInitials(currentSession)}</strong>
+              <div class="user" role="presentation">
+                <strong>Signed in as</strong>
                 <span>${userLabel}</span>
               </div>
+
               <button
-                class="app-bar__logout"
+                class="logout"
                 type="button"
                 role="menuitem"
                 ?disabled="${isLoggingOut}"
                 @click="${logout}"
-              >${isLoggingOut
-                ? "Kirjaudutaan ulos..."
-                : "Kirjaudu ulos"}</button>
+              >
+                  <img src="${logoutIcon}" alt="Logout Icon" class="size-4 inline-block mr-2">
+                  ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
+              </button>
             </div>
           </div>
         </nav>
@@ -91,12 +100,12 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
       return;
     }
     isMenuOpen = false;
-    renderAppBar();
+    renderComponent();
   };
 
   const toggleMenu = () => {
     isMenuOpen = !isMenuOpen;
-    renderAppBar();
+    renderComponent();
   };
 
   const logout = async () => {
@@ -105,14 +114,14 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     }
 
     isLoggingOut = true;
-    renderAppBar();
+    renderComponent();
 
     try {
       await supabase.logout();
     } catch (error) {
       console.error("Failed to log out", error);
       isLoggingOut = false;
-      renderAppBar();
+      renderComponent();
     }
   };
 
@@ -129,19 +138,19 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
 
     event.preventDefault();
     closeMenu();
-    el.querySelector<HTMLButtonElement>(".app-bar__avatar")?.focus();
+    el.querySelector<HTMLButtonElement>(".avatar")?.focus();
   };
 
   const updatePath = (path: string) => {
     currentPath = path;
-    renderAppBar();
+    renderComponent();
   };
 
   const disposeSessionListener = supabase.registerListener({
     sessionChanged: (session) => {
       currentSession = session;
       closeMenu();
-      renderAppBar();
+      renderComponent();
     },
   });
 
@@ -157,5 +166,5 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     delete el.disposeAppBar;
   };
 
-  renderAppBar();
+  renderComponent();
 }
