@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import "@/components/app-link.ts";
+import "@/lib/AppLink.ts";
 import { router } from "@packages/router";
 import { supabase } from "@/lib/client.ts";
 import appLogo from "@/assets/logo.svg";

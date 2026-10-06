@@ -1,14 +1,6 @@
-import { html, render } from "lit";
-// import { TodoApp } from "@/components/TodoApp.js";
+import { TodoApp } from "@/lib/TodoApp.ts";
 
 export function Home(el) {
-  render(
-    html`
-      <div class="home-page">
-        <h1>Welcome to Supa App</h1>
-      </div>
-    `,
-    el,
-  );
-  // TodoApp(el.querySelector(".home-page"));
+  // Delegate rendering to the TodoApp component.
+  TodoApp(el);
 }

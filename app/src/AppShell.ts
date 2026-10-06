@@ -1,8 +1,8 @@
 import { html, render } from "lit";
 
 import { router } from "@packages/router";
-import { AppBar } from "@/components/AppBar.ts";
-import { AuthController } from "@/lib/auth-controller.ts";
+import { AppBar } from "@/lib/AppBar.ts";
+import { AuthController } from "@/lib/AuthController.ts";
 import { Home } from "@/pages/Home.ts";
 import { Login } from "@/pages/Login.ts";
 
@@ -43,7 +43,7 @@ export function AppShell(el) {
 
     const { page, layout } = route;
 
-    const updateDOM = () => {
+    function updateDOM() {
       render(layout === "app" ? appLayout() : loginLayout(), el);
 
       if (layout === "app") {
@@ -51,7 +51,7 @@ export function AppShell(el) {
       }
 
       page(el.querySelector(":scope > div > .content"));
-    };
+    }
 
     // Skip the transition on first paint, when there is no old view to animate from.
     if (!document.startViewTransition || !el.hasChildNodes()) {
