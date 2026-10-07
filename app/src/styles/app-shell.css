@@ -1,6 +1,6 @@
 .app-shell {
   position: relative;
-  min-height: 100vh;
+  min-height: 100dvh;
 
   &.app-layout {
     background-color: var(--main-bg);
@@ -14,11 +14,11 @@
   padding: 1rem;
   overflow: auto;
   background-color: var(--white);
-  box-shadow: var(--box-shadow);
   outline: 1px solid var(--grey-4);
-
+  
   &.rounded {
     border-radius: calc(var(--radius) * 1.4);
-    margin: 0 1rem 1rem 1rem;
+    margin-block: 0 1rem;
+    margin-inline: 1rem;
   }
 }
