@@ -3,6 +3,8 @@ import { wrapPowerSyncWithKysely } from "@powersync/kysely-driver";
 import { AppSchema, Database } from "./schema.ts";
 import { SupabaseConnector } from "./SupabaseConnector.ts";
 
+export const isOfflineMode = import.meta.env.VITE_OFFLINE_MODE === "true";
+
 /**
  * Default configuration AccessHandlePoolVFS - uses IndexedDB
  * ✅ Use this for: Simple setup, most browsers
@@ -39,17 +41,13 @@ export const powersync = new PowerSyncDatabase({
     dbFilename: "supa-app.db",
     vfs: WASQLiteVFS.OPFSCoopSyncVFS, // Use AccessHandlePoolVFS for single-tab only
   },
-  flags: {
-    enableMultiTabs: typeof SharedWorker !== "undefined",
-    externallyUnload: true,
-  },
   schema: AppSchema,
 });
 
 export const supabase = new SupabaseConnector();
 
 export async function connectPowersync() {
-  if (import.meta.env.VITE_OFFLINE_MODE === "true") {
+  if (isOfflineMode) {
     return;
   }
 
@@ -57,7 +55,7 @@ export async function connectPowersync() {
 }
 
 export async function resetPowersyncForSessionChange() {
-  if (import.meta.env.VITE_OFFLINE_MODE === "true") {
+  if (isOfflineMode) {
     return;
   }
 

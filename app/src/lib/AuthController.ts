@@ -1,6 +1,7 @@
 import { router } from "@packages/router";
 import {
   connectPowersync,
+  isOfflineMode,
   resetPowersyncForSessionChange,
   supabase,
 } from "@/lib/client.ts";
@@ -9,6 +10,13 @@ export class AuthController {
   isBootstrapping = true;
 
   async bootstrap() {
+    if (isOfflineMode) {
+      supabase.ready = true;
+      this.isBootstrapping = false;
+      router.check();
+      return;
+    }
+
     try {
       await supabase.init();
 
@@ -60,6 +68,10 @@ export class AuthController {
   }
 
   enforceAuthRoute(path: string) {
+    if (isOfflineMode) {
+      return false;
+    }
+
     if (!supabase.ready) {
       return true;
     }

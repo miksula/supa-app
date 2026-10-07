@@ -12,6 +12,8 @@ import {
   SupabaseClient,
 } from "@supabase/supabase-js";
 
+const isOfflineMode = import.meta.env.VITE_OFFLINE_MODE === "true";
+
 export type SupabaseConfig = {
   supabaseUrl: string;
   supabaseKey: string;
@@ -58,9 +60,9 @@ export class SupabaseConnector extends BaseObserver<SupabaseConnectorListener>
       this.config.supabaseKey,
       {
         auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
+          persistSession: !isOfflineMode,
+          autoRefreshToken: !isOfflineMode,
+          detectSessionInUrl: !isOfflineMode,
         },
       },
     );
@@ -198,5 +200,3 @@ export class SupabaseConnector extends BaseObserver<SupabaseConnectorListener>
     }
   }
 }
-
-export const connector = new SupabaseConnector();
