@@ -55,7 +55,8 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
           </div>
 
           <div class="account">
-            <span
+            <button
+              type="button"
               class="avatar size-8"
               aria-label="Avaa käyttäjävalikko"
               aria-haspopup="menu"
@@ -65,7 +66,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               <span class="text-sm font-medium text-white">
                 ${getUserInitials(currentSession)}
               </span>
-            </span>
+            </button>
 
             <div
               class="menu"

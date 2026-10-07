@@ -20,11 +20,14 @@
   & .avatar {
     align-items: center;
     background-color: var(--grey-1);
+    border: 0;
     border-radius: calc(infinity * 1px);
     cursor: pointer;
     display: inline-flex;
+    font: inherit;
     justify-content: center;
     opacity: 0.8;
+    padding: 0;
     transition: opacity 150ms ease;
     user-select: none;
 
