@@ -1,11 +1,13 @@
-.app-bar {
-  align-items: center;
-  display: flex;
-  gap: calc(var(--spacing) * 5);
-  min-height: 4rem;
-  padding-inline: calc(var(--spacing) * 6);
+@scope (.app-bar) {
+  :scope {
+    align-items: center;
+    display: flex;
+    gap: calc(var(--spacing) * 5);
+    min-height: 4rem;
+    padding-inline: calc(var(--spacing) * 6);
+  }
 
-  & .links {
+  .links {
     align-items: center;
     display: flex;
     flex: 1;
@@ -13,11 +15,11 @@
     visibility: hidden;
   }
 
-  & .account {
+  .account {
     position: relative;
   }
 
-  & .avatar {
+  .avatar {
     align-items: center;
     background-color: var(--grey-1);
     border: 0;
@@ -37,12 +39,12 @@
     }
   }
 
-  & .avatar:focus-visible,
-  & .logout:focus-visible {
+  .avatar:focus-visible,
+  .logout:focus-visible {
     outline-color: var(--main-border);
   }
 
-  & .menu {
+  .menu {
     background: var(--main-bg);
     border: 1px solid var(--main-border-light);
     border-radius: var(--radius);
@@ -93,7 +95,7 @@
     }
   }
 
-  & .user {
+  .user {
     border-bottom: 1px solid var(--main-border-light);
     display: grid;
     gap: .125rem;
@@ -112,7 +114,7 @@
     }
   }
 
-  & .logout {
+  .logout {
     align-items: center;
     background: transparent;
     border: 0;
@@ -132,12 +134,12 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    & .menu {
+    .menu {
       transform: none;
       transition-duration: 0.01ms;
     }
 
-    & .menu:popover-open {
+    .menu:popover-open {
       transform: none;
 
       @starting-style {
@@ -147,6 +149,8 @@
   }
 
   @media (width < 40rem) {
-    padding-inline: calc(var(--spacing) * 4);
+    :scope {
+      padding-inline: calc(var(--spacing) * 4);
+    }
   }
 }
