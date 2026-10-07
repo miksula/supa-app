@@ -30,6 +30,7 @@
     padding: 0;
     transition: opacity 150ms ease;
     user-select: none;
+    anchor-name: --user-menu-anchor;
 
     &:hover {
       opacity: 1;
@@ -48,14 +49,47 @@
     box-shadow: 0 6px 12px color-mix(in srgb, var(--black) 12%, transparent);
     min-width: 12rem;
     overflow: hidden;
-    position: absolute;
-    right: 0;
-    top: calc(100% + .5rem);
-    z-index: 10;
+    padding: 0;
+    margin: 0;
+    inset: auto;
+    color: inherit;
 
-    &:not([hidden]) {
-      animation: dropdown-open 120ms ease-out forwards;
-      transform-origin: top right;
+    /* Anchor positioning */
+    position-anchor: --user-menu-anchor;
+    top: anchor(bottom);
+    right: anchor(right);
+    margin-block-start: 0.5rem;
+    position-try-fallbacks: flip-block, flip-inline;
+
+    /* Fallback positioning for browsers without anchor positioning */
+    @supports not (position-anchor: --test) {
+      position: fixed;
+      top: 4.5rem;
+      right: calc(var(--spacing) * 6);
+
+      @media (width < 40rem) {
+        right: calc(var(--spacing) * 4);
+      }
+    }
+
+    /* Transition into and out of top layer */
+    opacity: 0;
+    transform: scale(0.92) translateY(-6px);
+    transform-origin: top right;
+    transition:
+      opacity 120ms ease-out,
+      transform 120ms ease-out,
+      display 120ms allow-discrete,
+      overlay 120ms allow-discrete;
+
+    &:popover-open {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+
+      @starting-style {
+        opacity: 0;
+        transform: scale(0.92) translateY(-6px);
+      }
     }
   }
 
@@ -98,23 +132,21 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    & .menu:not([hidden]) {
-      animation: none;
+    & .menu {
+      transform: none;
+      transition-duration: 0.01ms;
+    }
+
+    & .menu:popover-open {
+      transform: none;
+
+      @starting-style {
+        transform: none;
+      }
     }
   }
 
   @media (width < 40rem) {
     padding-inline: calc(var(--spacing) * 4);
-  }
-}
-
-@keyframes dropdown-open {
-  0% {
-    opacity: 0.10;
-    transform: scale(0.88) translateY(-6px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
   }
 }

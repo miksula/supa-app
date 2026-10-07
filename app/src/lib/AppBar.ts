@@ -28,7 +28,6 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
 
   let currentPath = initialPath;
   let currentSession = supabase.currentSession;
-  let isMenuOpen = false;
   let isLoggingOut = false;
 
   const renderComponent = () => {
@@ -58,10 +57,8 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
             <button
               type="button"
               class="avatar size-8"
+              popovertarget="user-menu"
               aria-label="Avaa käyttäjävalikko"
-              aria-haspopup="menu"
-              aria-expanded="${isMenuOpen}"
-              @click="${toggleMenu}"
             >
               <span class="text-sm font-medium text-white">
                 ${getUserInitials(currentSession)}
@@ -69,9 +66,9 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
             </button>
 
             <div
+              id="user-menu"
+              popover="auto"
               class="menu"
-              role="menu"
-              ?hidden="${!isMenuOpen}"
             >
               <div class="user" role="presentation">
                 <strong>Signed in as</strong>
@@ -81,7 +78,6 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               <button
                 class="logout"
                 type="button"
-                role="menuitem"
                 ?disabled="${isLoggingOut}"
                 @click="${logout}"
               >
@@ -97,16 +93,14 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   };
 
   const closeMenu = () => {
-    if (!isMenuOpen) {
-      return;
+    try {
+      const menu = el.querySelector<HTMLElement>("#user-menu");
+      if (menu?.matches(":popover-open")) {
+        menu.hidePopover();
+      }
+    } catch {
+      // Menu not open or popover unsupported
     }
-    isMenuOpen = false;
-    renderComponent();
-  };
-
-  const toggleMenu = () => {
-    isMenuOpen = !isMenuOpen;
-    renderComponent();
   };
 
   const logout = async () => {
@@ -115,6 +109,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     }
 
     isLoggingOut = true;
+    closeMenu();
     renderComponent();
 
     try {
@@ -126,24 +121,9 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     }
   };
 
-  const onDocumentPointerDown = (event: PointerEvent) => {
-    if (!el.contains(event.target as Node)) {
-      closeMenu();
-    }
-  };
-
-  const onDocumentKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== "Escape" || !isMenuOpen) {
-      return;
-    }
-
-    event.preventDefault();
-    closeMenu();
-    el.querySelector<HTMLButtonElement>(".avatar")?.focus();
-  };
-
   const updatePath = (path: string) => {
     currentPath = path;
+    closeMenu();
     renderComponent();
   };
 
@@ -156,14 +136,10 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   });
 
   router.addRouteListener(updatePath);
-  document.addEventListener("pointerdown", onDocumentPointerDown);
-  document.addEventListener("keydown", onDocumentKeyDown);
 
   el.disposeAppBar = () => {
     disposeSessionListener();
     router.removeRouteListener(updatePath);
-    document.removeEventListener("pointerdown", onDocumentPointerDown);
-    document.removeEventListener("keydown", onDocumentKeyDown);
     delete el.disposeAppBar;
   };
 
