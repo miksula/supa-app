@@ -5,7 +5,7 @@
   justify-content: center;
   min-height: 100vh;
   padding: calc(var(--spacing) * 4);
-  background-color: var(--main-bg)
+  background-color: var(--main-bg);
 }
 
 .login {
@@ -17,8 +17,7 @@
   padding-block: calc(var(--spacing) * 6);
   padding-inline: calc(var(--spacing) * 6);
   border-radius: calc(var(--radius) * 1.4);
-  box-shadow: var(--box-shadow);
-  
+
   h1 {
     text-align: center;
     font-size: var(--text-2xl);
@@ -66,7 +65,7 @@
     input {
       color: var(--black);
       width: 100%;
-      font-size: var(--text-small);
+      font-size: 15px;
       line-height: calc(1.25 / .875);
       outline: inherit;
       border-bottom: 1px solid var(--main-border-light);
