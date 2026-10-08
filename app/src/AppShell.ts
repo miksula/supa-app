@@ -25,7 +25,7 @@ const loginLayout = () =>
   `;
 
 export function AppShell(el) {
-  let route: { page: MountFunction; layout: Layout };
+  let route: { page: MountFunction; layout?: Layout };
   const auth = new AuthController();
 
   router
@@ -34,6 +34,13 @@ export function AppShell(el) {
     })
     .get("/login", () => {
       route = { page: Login, layout: "login" };
+    })
+    .get("/*", () => {
+      route = {
+        page: (el) => {
+          render(html`<h1>Page not found</h1>`, el);
+        },
+      };
     });
 
   router.addRouteListener(function renderRoute(path) {
@@ -47,10 +54,10 @@ export function AppShell(el) {
       render(layout === "app" ? appLayout() : loginLayout(), el);
 
       if (layout === "app") {
-        AppBar(el.querySelector(":scope > div > header"));
+        AppBar(el.querySelector(".app-shell > header"));
       }
 
-      page(el.querySelector(":scope > div > .content"));
+      page(el.querySelector(".app-shell > .content"));
     }
 
     // Skip the transition on first paint, when there is no old view to animate from.
