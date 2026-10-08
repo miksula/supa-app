@@ -37,11 +37,10 @@
     &:hover {
       opacity: 1;
     }
-  }
 
-  .avatar:focus-visible,
-  .logout:focus-visible {
-    outline-color: var(--main-border);
+    &:focus-visible {
+      outline-color: var(--main-border);
+    }
   }
 
   .menu {
@@ -95,19 +94,19 @@
     }
   }
 
-  .user {
+  .user-info {
     border-bottom: 1px solid var(--main-border-light);
     display: grid;
     gap: .125rem;
     padding: calc(var(--spacing) * 3);
 
-    & strong {
+    strong {
       color: var(--main-text);
       font-size: var(--text-sm);
       font-weight: var(--font-weight-medium);
     }
 
-    & span {
+    span {
       color: var(--muted-foreground);
       font-size: var(--text-xs);
       overflow-wrap: anywhere;
@@ -125,11 +124,16 @@
     justify-content: flex-start;
     outline-offset: -3px;
     padding: calc(var(--spacing) * 3);
+    border-radius: var(--radius);
     text-align: left;
     width: 100%;
 
     &:disabled {
       color: var(--disabled-text);
+    }
+
+    &:focus-visible {
+      outline-color: var(--main-border-light);
     }
   }
 

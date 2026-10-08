@@ -19,8 +19,8 @@ const appLayout = () =>
 
 const loginLayout = () =>
   html`
-    <div class="app-shell">
-      <div class="content login-content"></div>
+    <div class="app-shell login-layout">
+      <div class="content"></div>
     </div>
   `;
 

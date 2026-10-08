@@ -70,7 +70,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               popover="auto"
               class="menu"
             >
-              <div class="user" role="presentation">
+              <div class="user-info" role="presentation">
                 <strong>Signed in as</strong>
                 <span>${userLabel}</span>
               </div>

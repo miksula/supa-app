@@ -1,93 +1,81 @@
-@scope (.login-content) {
+@scope (.login) {
   :scope {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: calc(var(--spacing) * 4);
-    background-color: var(--main-bg);
-  }
-
-  .login {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     height: auto;
     padding-block: calc(var(--spacing) * 6);
     padding-inline: calc(var(--spacing) * 6);
     border-radius: calc(var(--radius) * 1.4);
+  }
 
-    h1 {
-      text-align: center;
-      font-size: var(--text-2xl);
-      font-weight: var(--font-weight-bold);
+  h1 {
+    text-align: center;
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-bold);
+  }
+
+  h1 + p {
+    color: var(--muted-foreground);
+    margin-top: calc(var(--spacing) * 2);
+    text-align: center;
+    line-height: var(--text-sm--line-height);
+    font-size: var(--text-sm);
+    max-width: var(--container-sm);
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: var(--container-sm);
+    margin-top: calc(var(--spacing) * 6);
+  }
+
+  label {
+    user-select: none;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--text-sm);
+    line-height: 1.375;
+
+    &:has(+ input:user-invalid) {
+      color: var(--error-text);
+    }
+  }
+
+  input {
+    color: var(--black);
+    width: 100%;
+    font-size: 15px;
+    line-height: calc(1.25 / .875);
+    outline: inherit;
+    border-bottom: 1px solid var(--main-border-light);
+    transition: border-bottom-color 150ms ease;
+    padding-block: calc(var(--spacing) * 1);
+    padding-inline: 0;
+
+    &:focus-visible {
+      border-bottom-color: var(--main-border);
     }
 
-    p.login-intro {
-      color: var(--muted-foreground);
-      margin-top: calc(var(--spacing) * 2);
-      text-align: center;
-      line-height: var(--text-sm--line-height);
-      font-size: var(--text-sm);
-      max-width: var(--container-sm);
+    &:user-invalid,
+    &:user-invalid:focus-visible {
+      border-bottom-color: var(--error-text);
+      color: var(--error-text);
     }
+  }
 
-    form {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: var(--container-sm);
-      margin-top: calc(var(--spacing) * 6);
+  button[type="submit"] {
+    width: 100%;
+    background-color: var(--black);
+    color: var(--white);
+    border-radius: calc(var(--radius) * .8);
+    padding-block: calc(var(--spacing) * 1.25);
+    outline: 3px solid transparent;
+    outline-offset: 1px;
+    transition: outline-color 150ms ease;
 
-      label {
-        user-select: none;
-        font-weight: var(--font-weight-medium);
-        font-size: var(--text-sm);
-        line-height: 1.375;
-
-        &:has(+ input:user-invalid) {
-          color: var(--error-text);
-        }
-      }
-
-      button[type="submit"] {
-        width: 100%;
-        background-color: var(--black);
-        color: var(--white);
-        border-radius: calc(var(--radius) * .8);
-        padding-block: calc(var(--spacing) * 1.25);
-        outline: 3px solid transparent;
-        outline-offset: 1px;
-        transition: outline-color 150ms ease;
-
-        &:focus-visible {
-          outline: 3px solid var(--main-border-light);
-        }
-      }
-
-      input {
-        color: var(--black);
-        width: 100%;
-        font-size: 15px;
-        line-height: calc(1.25 / .875);
-        outline: inherit;
-        border-bottom: 1px solid var(--main-border-light);
-        transition: border-bottom-color 150ms ease;
-        padding-block: calc(var(--spacing) * 1);
-        padding-inline: 0;
-
-        &:focus-visible {
-          border-bottom-color: var(--main-border);
-        }
-
-        &:user-invalid,
-        &:user-invalid:focus-visible {
-          border-bottom-color: var(--error-text);
-          color: var(--error-text);
-        }
-      }
+    &:focus-visible {
+      outline: 3px solid var(--main-border-light);
     }
   }
 

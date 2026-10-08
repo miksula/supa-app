@@ -8,8 +8,7 @@ export function Login(el) {
     html`
       <div class="login">
         <h1 id="login-heading">Login to your account</h1>
-        <p
-          class="login-intro">Enter your email and password below to login to your account</p>
+        <p>Enter your email and password below to login to your account</p>
 
         <form aria-labelledby="login-heading">
           <label for="email">Email</label>
