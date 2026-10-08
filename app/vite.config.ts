@@ -11,6 +11,9 @@ export default defineConfig({
     outDir: "./dist",
     emptyOutDir: true,
   },
+  css: {
+    devSourcemap: true,
+  },
   plugins: [
     devtoolsJson(),
     tailwindcss(),
