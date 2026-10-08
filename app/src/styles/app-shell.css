@@ -10,7 +10,7 @@
     grid-template-rows: auto 1fr;
     grid-template-columns: 100%;
 
-    > .app-content {
+    > .content {
       padding: 1rem;
       overflow: auto;
       background-color: var(--white);

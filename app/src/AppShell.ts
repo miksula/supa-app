@@ -13,7 +13,7 @@ const appLayout = () =>
   html`
     <div class="app-shell app-layout">
       <header></header>
-      <div class="content app-content"></div>
+      <div class="content rounded"></div>
     </div>
   `;
 
