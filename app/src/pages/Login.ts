@@ -3,75 +3,85 @@ import { supabase } from "@/lib/client.ts";
 
 export function Login(el) {
   let isSubmitting = false;
+  let email = "mika@example.com";
+  let password = "My1234NewStrongPassword!";
+  let statusMessage: string | null = null;
 
-  const loginTemplate = () =>
-    html`
-      <div class="login">
-        <h1 id="login-heading">Login to your account</h1>
-        <p>Enter your email and password below to login to your account</p>
+  const renderComponent = () => {
+    render(
+      html`
+        <div class="login">
+          <h1 id="login-heading">Login to your account</h1>
+          <p>Enter your email and password below to login to your account</p>
 
-        <form aria-labelledby="login-heading">
-          <label for="email">Email</label>
-          <input
-            class="mb-8"
-            type="email"
-            id="email"
-            name="email"
-            autocomplete="username"
-            value="mika@example.com"
-            required
-          >
+          <form aria-labelledby="login-heading" @submit="${handleSubmit}">
+            <label for="email">Email</label>
+            <input
+              class="mb-8"
+              type="email"
+              id="email"
+              name="email"
+              autocomplete="username"
+              value="${email}"
+              required
+            >
 
-          <label for="current-password">Password</label>
-          <input
-            type="password"
-            id="current-password"
-            name="password"
-            autocomplete="current-password"
-            value="My1234NewStrongPassword!"
-            required
-          >
+            <label for="current-password">Password</label>
+            <input
+              type="password"
+              id="current-password"
+              name="password"
+              autocomplete="current-password"
+              value="${password}"
+              required
+            >
 
-          <p id="login-status" class="my-4" role="alert" aria-live="assertive"
-            aria-hidden="true">Lorem ipsum dolor sit amet</p>
+            <p
+              id="login-status"
+              class="my-4"
+              role="alert"
+              aria-live="assertive"
+              aria-hidden="${statusMessage === null ? "true" : "false"}"
+            >${statusMessage ?? ""}</p>
 
-          <button class="mt-4" type="submit">Login</button>
-        </form>
-      </div>
-    `;
+            <button
+              class="mt-4"
+              type="submit"
+              ?disabled="${isSubmitting}"
+              aria-busy="${isSubmitting}"
+            >Login</button>
+          </form>
+        </div>
+      `,
+      el,
+    );
+  };
 
-  render(loginTemplate(), el);
-
-  const form = el.querySelector("form");
-  const status = el.querySelector("#login-status");
-  const submitButton = form?.querySelector('button[type="submit"]');
-
-  form.addEventListener("submit", async function handleSubmit(event) {
+  async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-    if (isSubmitting) {
+    if (isSubmitting || !(event.currentTarget instanceof HTMLFormElement)) {
       return;
     }
 
-    isSubmitting = true;
-    status.setAttribute("aria-hidden", "true");
-    submitButton.disabled = true;
-    submitButton.setAttribute("aria-busy", "true");
+    const formData = new FormData(event.currentTarget);
+    email = String(formData.get("email") ?? "").trim();
+    password = String(formData.get("password") ?? "");
 
-    const formData = new FormData(form);
-    const email = String(formData.get("email") ?? "").trim();
-    const password = String(formData.get("password") ?? "");
+    isSubmitting = true;
+    statusMessage = null;
+    renderComponent();
 
     try {
       await supabase.login(email, password);
     } catch (error) {
-      status.textContent = error instanceof Error
+      statusMessage = error instanceof Error
         ? error.message
         : "Unable to sign in. Please try again.";
-      status.removeAttribute("aria-hidden");
     } finally {
       isSubmitting = false;
-      submitButton.disabled = false;
-      submitButton.removeAttribute("aria-busy");
+      renderComponent();
     }
-  });
+  }
+
+  renderComponent();
 }
