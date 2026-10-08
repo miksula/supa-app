@@ -4,11 +4,13 @@ import devtoolsJson from "vite-plugin-devtools-json";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
+  root: "./src",
+  publicDir: "../public",
   resolve: {
     tsconfigPaths: true,
   },
   build: {
-    outDir: "./dist",
+    outDir: "../dist",
     emptyOutDir: true,
   },
   css: {
