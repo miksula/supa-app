@@ -1,32 +1,30 @@
 import { html, render } from "lit";
-
 import { router } from "@packages/router";
-import { AppBar } from "@/lib/AppBar.ts";
 import { AuthController } from "@/lib/AuthController.ts";
+import { AppLayout } from "@/lib/AppLayout.ts";
+import { LoginLayout } from "@/lib/LoginLayout.ts";
 import { Home } from "@/pages/Home.ts";
 import { Login } from "@/pages/Login.ts";
+import type { LayoutFactory, LayoutInstance, MountFunction } from "@/lib/types.ts";
 
-type MountFunction = (el: HTMLElement) => void;
-type Layout = "app" | "login";
+// Extensible registry: add new layouts here or pass custom factories directly
+const layouts: Record<string, LayoutFactory> = {
+  app: AppLayout,
+  login: LoginLayout,
+};
 
-const appLayout = () =>
-  html`
-    <div class="app-shell app-layout">
-      <header></header>
-      <div class="content rounded"></div>
-    </div>
-  `;
-
-const loginLayout = () =>
-  html`
-    <div class="app-shell login-layout">
-      <div class="content"></div>
-    </div>
-  `;
+type RouteConfig = {
+  page: MountFunction;
+  layout: keyof typeof layouts | LayoutFactory;
+};
 
 export function AppShell(el) {
-  let route: { page: MountFunction; layout?: Layout };
+  let route: RouteConfig;
   const auth = new AuthController();
+
+  // Track active layout instance to prevent unnecessary re-rendering
+  let currentLayoutKey: unknown = null;
+  let activeLayoutInstance: LayoutInstance | null = null;
 
   router
     .get("/", () => {
@@ -37,9 +35,8 @@ export function AppShell(el) {
     })
     .get("/*", () => {
       route = {
-        page: (el) => {
-          render(html`<h1>Page not found</h1>`, el);
-        },
+        page: (target) => render(html`<h1>Page not found</h1>`, target),
+        layout: "app",
       };
     });
 
@@ -49,18 +46,22 @@ export function AppShell(el) {
     }
 
     const { page, layout } = route;
+    const layoutFactory = typeof layout === "function" ? layout : layouts[layout];
 
     function updateDOM() {
-      render(layout === "app" ? appLayout() : loginLayout(), el);
-
-      if (layout === "app") {
-        AppBar(el.querySelector(".app-shell > header"));
+      // Layout persistence: only rebuild layout if it actually changed
+      if (currentLayoutKey !== layout || !activeLayoutInstance) {
+        activeLayoutInstance?.dispose?.();
+        activeLayoutInstance = layoutFactory(el);
+        currentLayoutKey = layout;
       }
 
-      page(el.querySelector(".app-shell > .content"));
+      // Render page into the layout's declared outlet slot
+      activeLayoutInstance.contentSlot.replaceChildren();
+      page(activeLayoutInstance.contentSlot);
     }
 
-    // Skip the transition on first paint, when there is no old view to animate from.
+    // View Transitions API support
     if (!document.startViewTransition || !el.hasChildNodes()) {
       updateDOM();
       return;
