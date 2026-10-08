@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   root: "./src",
+  envDir: "..",
   publicDir: "../public",
   resolve: {
     tsconfigPaths: true,
