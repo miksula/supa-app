@@ -8,14 +8,16 @@ import { Login } from "@/pages/Login.ts";
 import type { LayoutFactory, LayoutInstance, MountFunction } from "@/lib/types.ts";
 
 // Extensible registry: add new layouts here or pass custom factories directly
-const layouts: Record<string, LayoutFactory> = {
+const layouts = {
   app: AppLayout,
   login: LoginLayout,
-};
+} satisfies Record<string, LayoutFactory>;
+
+type LayoutName = keyof typeof layouts;
 
 type RouteConfig = {
   page: MountFunction;
-  layout: keyof typeof layouts | LayoutFactory;
+  layout: LayoutName | LayoutFactory;
 };
 
 export function AppShell(el) {
@@ -57,7 +59,6 @@ export function AppShell(el) {
       }
 
       // Render page into the layout's declared outlet slot
-      activeLayoutInstance.contentSlot.replaceChildren();
       page(activeLayoutInstance.contentSlot);
     }
 
