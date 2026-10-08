@@ -1,10 +1,12 @@
 import { html, render } from "lit";
 import type { LayoutFactory, LayoutInstance } from "./types.ts";
 
-export const LoginLayout: LayoutFactory = (container: HTMLElement): LayoutInstance => {
+export const LoginLayout: LayoutFactory = (
+  container: HTMLElement,
+): LayoutInstance => {
   render(
     html`
-      <div class="app-shell login-layout">
+      <div class="login-layout">
         <div class="content" data-slot="page"></div>
       </div>
     `,
