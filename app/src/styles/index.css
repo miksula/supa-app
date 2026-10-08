@@ -1,7 +1,8 @@
 @import "./tailwind.css";
 @import "./vars.css";
 @import "./base.css";
-@import "./app-shell.css";
+@import "./app-layout.css";
+@import "./login-layout.css";
+@import "./login.css";
 @import "./app-link.css";
 @import "./app-bar.css";
-@import "./login.css";
