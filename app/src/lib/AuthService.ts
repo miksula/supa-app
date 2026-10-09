@@ -58,6 +58,10 @@ export class AuthService {
     return this.currentSession;
   }
 
+  get isAuthenticated() {
+    return this.currentSession !== null;
+  }
+
   async init() {
     if (this.ready) {
       return;

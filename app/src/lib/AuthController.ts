@@ -5,6 +5,8 @@ import {
   resetPowersyncForSessionChange,
 } from "@/lib/client.ts";
 import { authService } from "@/lib/auth.ts";
+import { enforceAuthRoute } from "@/lib/routeGuard.ts";
+import { createSyncLifecycle } from "@/lib/syncLifecycle.ts";
 
 export class AuthController {
   isBootstrapping = true;
@@ -24,37 +26,20 @@ export class AuthController {
         await authService.logout();
       }
 
-      authService.onAuthStateChange(async (event) => {
-        if (event === "SIGNED_OUT") {
-          try {
-            await resetPowersyncForSessionChange();
-          } catch (error) {
-            console.error("Failed to reset PowerSync after sign-out", error);
-          }
-
-          router.navigate("/login");
-          return;
-        }
-
-        if (event === "SIGNED_IN") {
-          try {
-            await connectPowersync();
-          } catch (error) {
-            console.error("Failed to connect PowerSync after sign-in", error);
-          }
-
-          if (router.path === "/login") {
-            router.navigate("/");
-          }
-        }
+      const syncLifecycle = createSyncLifecycle({
+        connect: connectPowersync,
+        reset: resetPowersyncForSessionChange,
       });
 
-      if (authService.session) {
-        await connectPowersync();
-      }
+      // Single auth subscription, fanned out to sync and the route guard.
+      authService.onAuthStateChange(async (event, session) => {
+        await syncLifecycle.handle(event, session);
+        enforceAuthRoute(router.path);
+      });
 
-      const redirected = this.enforceAuthRoute(router.path);
-      if (!redirected) {
+      await syncLifecycle.start(authService.session);
+
+      if (!enforceAuthRoute(router.path)) {
         router.check();
       }
     } catch (error) {
@@ -63,27 +48,5 @@ export class AuthController {
     } finally {
       this.isBootstrapping = false;
     }
-  }
-
-  enforceAuthRoute(path: string) {
-    if (isOfflineMode) {
-      return false;
-    }
-
-    if (!authService.ready) {
-      return true;
-    }
-
-    if (!authService.session && path !== "/login") {
-      router.navigate("/login");
-      return true;
-    }
-
-    if (authService.session && path === "/login") {
-      router.navigate("/");
-      return true;
-    }
-
-    return false;
   }
 }

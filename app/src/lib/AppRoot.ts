@@ -1,6 +1,7 @@
 import { html, render } from "lit";
 import { router } from "@packages/router";
 import { AuthController } from "@/lib/AuthController.ts";
+import { enforceAuthRoute } from "@/lib/routeGuard.ts";
 import { AppLayout } from "@/lib/AppLayout.ts";
 import { LoginLayout } from "@/lib/LoginLayout.ts";
 import { Home } from "@/pages/Home.ts";
@@ -47,7 +48,7 @@ export function AppRoot(el) {
     });
 
   router.addRouteListener(function renderRoute(path) {
-    if (auth.enforceAuthRoute(path)) {
+    if (enforceAuthRoute(path)) {
       return;
     }
 
