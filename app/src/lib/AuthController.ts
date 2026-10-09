@@ -3,30 +3,28 @@ import {
   connectPowersync,
   isOfflineMode,
   resetPowersyncForSessionChange,
-  supabase,
 } from "@/lib/client.ts";
+import { authService } from "@/lib/auth.ts";
 
 export class AuthController {
   isBootstrapping = true;
 
   async bootstrap() {
     if (isOfflineMode) {
-      supabase.ready = true;
+      authService.ready = true;
       this.isBootstrapping = false;
       router.check();
       return;
     }
 
     try {
-      await supabase.init();
+      await authService.init();
 
-      if (supabase.currentSession?.user.is_anonymous) {
-        await supabase.logout();
+      if (authService.session?.user.is_anonymous) {
+        await authService.logout();
       }
 
-      supabase.client.auth.onAuthStateChange(async (event, session) => {
-        supabase.updateSession(session);
-
+      authService.onAuthStateChange(async (event) => {
         if (event === "SIGNED_OUT") {
           try {
             await resetPowersyncForSessionChange();
@@ -51,7 +49,7 @@ export class AuthController {
         }
       });
 
-      if (supabase.currentSession) {
+      if (authService.session) {
         await connectPowersync();
       }
 
@@ -72,16 +70,16 @@ export class AuthController {
       return false;
     }
 
-    if (!supabase.ready) {
+    if (!authService.ready) {
       return true;
     }
 
-    if (!supabase.currentSession && path !== "/login") {
+    if (!authService.session && path !== "/login") {
       router.navigate("/login");
       return true;
     }
 
-    if (supabase.currentSession && path === "/login") {
+    if (authService.session && path === "/login") {
       router.navigate("/");
       return true;
     }
