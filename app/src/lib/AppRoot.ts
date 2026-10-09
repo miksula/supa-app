@@ -29,6 +29,8 @@ type RouteConfig = {
 export function AppRoot(el) {
   let route: RouteConfig;
   const auth = new AuthController();
+
+  // Observe synchronization state
   SyncController(el);
 
   // Track active layout instance to prevent unnecessary re-rendering
