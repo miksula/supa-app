@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "powersync-docs": {
+      "type": "http",
+      "url": "https://docs.powersync.com/mcp"
+    },
+    "supabase": {
+      "type": "http",
+      "url": "http://127.0.0.1:54321/mcp"
+    }
+  }
+}

@@ -1,10 +1,9 @@
 import { html, render } from "lit";
 import { powersync } from "@/lib/client.ts";
-import { TodoStore, type Todo } from "@/lib/TodoStore.ts";
+import { type Todo, TodoStore } from "@/lib/TodoStore.ts";
 
 export function TodoApp(
   el: HTMLElement,
-  listId: string,
   store = new TodoStore(powersync),
 ) {
   const abortController = new AbortController();
@@ -28,7 +27,7 @@ export function TodoApp(
   void (async () => {
     try {
       for await (
-        const result of store.watchUserTodos(listId, {
+        const result of store.watchUserTodos({
           signal: abortController.signal,
         })
       ) {

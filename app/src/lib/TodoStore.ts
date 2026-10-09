@@ -1,15 +1,7 @@
 import type { PowerSyncDatabase } from "@powersync/web";
+import type { Database } from "@/lib/schema.ts";
 
-export type Todo = {
-  id: string;
-  description: string;
-  list_id: string;
-  created_at: string;
-  completed: number;
-  completed_at: string | null;
-  created_by: string | null;
-  completed_by: string | null;
-};
+export type Todo = Database["todos"];
 
 export type NewTodo = {
   description: string;
@@ -19,16 +11,16 @@ export type NewTodo = {
 export class TodoStore {
   constructor(private readonly ps: PowerSyncDatabase) {}
 
-  watchUserTodos(listId: string, options?: { signal?: AbortSignal }) {
+  watchUserTodos(options?: { signal?: AbortSignal }) {
     return this.ps.watch(
-      "SELECT * FROM todos WHERE list_id = ? ORDER BY created_at DESC",
-      [listId],
+      "SELECT * FROM todos ORDER BY created_at DESC",
+      [],
       options,
     );
   }
 
   async createTodo(todo: NewTodo) {
-    return this.ps.execute(
+    return await this.ps.execute(
       "INSERT INTO todos (id, description, list_id, created_at) VALUES (?, ?, ?, ?)",
       [
         crypto.randomUUID(),
