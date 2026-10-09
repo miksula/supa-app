@@ -2,7 +2,7 @@ import { html, render } from "lit";
 import "@/lib/AppLink.ts";
 import { router } from "@packages/router";
 import { authService } from "@/lib/auth.ts";
-import { onData, type SyncStatusData, up } from "@/lib/events.ts";
+import { dispatchAction, onData, type SyncStatusData } from "@/lib/events.ts";
 import appLogo from "@/assets/logo.svg";
 import logoutIcon from "@/assets/logout-icon.svg";
 import type { Session } from "@supabase/supabase-js";
@@ -143,16 +143,22 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     renderComponent();
   };
 
-  const disposeSessionListener = authService.session$.subscribe((session) => {
-    currentSession = session;
-    closeMenu();
-    renderComponent();
-  });
+  const disposeSessionListener = authService.session$.subscribe(
+    function updateSession(session) {
+      currentSession = session;
+      closeMenu();
+      renderComponent();
+    },
+  );
 
-  const disposeSyncListener = onData(el, "syncStatus", (status) => {
-    syncStatus = status;
-    renderComponent();
-  });
+  const disposeSyncListener = onData(
+    el,
+    "syncStatus",
+    function updateSyncStatus(status) {
+      syncStatus = status;
+      renderComponent();
+    },
+  );
 
   router.addRouteListener(updatePath);
 
@@ -164,5 +170,5 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   };
 
   renderComponent();
-  up(el, "loadSyncStatus");
+  dispatchAction(el, "loadSyncStatus");
 }

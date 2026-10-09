@@ -55,7 +55,7 @@ function listen<E extends { type: string }, T extends E["type"]>(
 }
 
 /** Dispatch an action that bubbles up to a controller. */
-export function up<T extends ActionEvent["type"]>(
+export function dispatchAction<T extends ActionEvent["type"]>(
   el: EventTarget,
   type: T,
   ...[detail]: DetailArgs<ActionEvent, T>
@@ -64,7 +64,7 @@ export function up<T extends ActionEvent["type"]>(
 }
 
 /** Dispatch data directly on a (child) element; does not bubble. */
-export function down<T extends DataEvent["type"]>(
+export function dispatchData<T extends DataEvent["type"]>(
   el: EventTarget,
   type: T,
   ...[detail]: DetailArgs<DataEvent, T>

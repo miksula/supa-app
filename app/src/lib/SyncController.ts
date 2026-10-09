@@ -1,6 +1,6 @@
 import type { SyncStatus } from "@powersync/web";
 import { isOfflineMode, powersync } from "@/lib/client.ts";
-import { down, onAction, type SyncStatusData } from "@/lib/events.ts";
+import { dispatchData, onAction, type SyncStatusData } from "@/lib/events.ts";
 
 function toSyncStatusData(status: SyncStatus): SyncStatusData {
   return {
@@ -36,7 +36,7 @@ export function SyncController(el: HTMLElement) {
   const unsubscribeLoad = onAction(el, "loadSyncStatus", (_, e) => {
     if (e.target) {
       requesters.add(e.target);
-      down(e.target, "syncStatus", current);
+      dispatchData(e.target, "syncStatus", current);
     }
   });
 
@@ -48,7 +48,7 @@ export function SyncController(el: HTMLElement) {
 
         for (const requester of requesters) {
           if ((requester as Node).isConnected) {
-            down(requester, "syncStatus", current);
+            dispatchData(requester, "syncStatus", current);
           } else {
             requesters.delete(requester);
           }
