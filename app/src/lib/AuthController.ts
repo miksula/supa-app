@@ -6,7 +6,7 @@ import {
 } from "@/lib/client.ts";
 import { authService } from "@/lib/auth.ts";
 import { enforceAuthRoute } from "@/lib/routeGuard.ts";
-import { startSyncLifecycle } from "@/lib/syncLifecycle.ts";
+import { createSyncLifecycle } from "@/lib/syncLifecycle.ts";
 
 export class AuthController {
   isBootstrapping = true;
@@ -26,19 +26,18 @@ export class AuthController {
         await authService.logout();
       }
 
-      startSyncLifecycle(authService, {
+      const syncLifecycle = createSyncLifecycle({
         connect: connectPowersync,
         reset: resetPowersyncForSessionChange,
       });
 
-      // Redirects are the guard's job, independent of sync.
-      authService.onAuthStateChange(() => {
+      // Single auth subscription, fanned out to sync and the route guard.
+      authService.onAuthStateChange(async (event, session) => {
+        await syncLifecycle.handle(event, session);
         enforceAuthRoute(router.path);
       });
 
-      if (authService.isAuthenticated) {
-        await connectPowersync();
-      }
+      await syncLifecycle.start(authService.session);
 
       if (!enforceAuthRoute(router.path)) {
         router.check();
