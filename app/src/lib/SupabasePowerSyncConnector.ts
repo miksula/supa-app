@@ -5,7 +5,7 @@ import type {
   PowerSyncBackendConnector,
 } from "@powersync/web";
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { AuthService, type SupabaseConfig } from "./AuthService.ts";
+import { AuthService } from "./AuthService.ts";
 
 /// Postgres Response codes that we cannot recover from by retrying.
 const FATAL_RESPONSE_CODES = [
@@ -15,11 +15,10 @@ const FATAL_RESPONSE_CODES = [
 ];
 
 export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
-  readonly config: SupabaseConfig;
-
-  constructor(private readonly authService: AuthService) {
-    this.config = authService.config;
-  }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly powersyncUrl: string,
+  ) {}
 
   async fetchCredentials() {
     const session = await this.authService.getSession();
@@ -31,7 +30,7 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
     }
 
     return {
-      endpoint: this.config.powersyncUrl,
+      endpoint: this.powersyncUrl,
       token: session.access_token,
       expiresAt: session.expires_at
         ? new Date(session.expires_at * 1000)

@@ -10,7 +10,6 @@ const isOfflineMode = import.meta.env.VITE_OFFLINE_MODE === "true";
 export type SupabaseConfig = {
   supabaseUrl: string;
   supabaseKey: string;
-  powersyncUrl: string;
 };
 
 export type SessionObservable = {
@@ -31,7 +30,6 @@ export class AuthService {
   constructor() {
     this.config = {
       supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
-      powersyncUrl: import.meta.env.VITE_POWERSYNC_URL,
       supabaseKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
         import.meta.env.VITE_SUPABASE_ANON_KEY,
     };
@@ -110,7 +108,6 @@ export class AuthService {
       throw error;
     }
 
-    this.updateSession(session);
     return session;
   }
 

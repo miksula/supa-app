@@ -45,7 +45,10 @@ export const powersync = new PowerSyncDatabase({
   schema: AppSchema,
 });
 
-export const powersyncConnector = new SupabasePowerSyncConnector(authService);
+export const powersyncConnector = new SupabasePowerSyncConnector(
+  authService,
+  import.meta.env.VITE_POWERSYNC_URL,
+);
 
 export async function connectPowersync() {
   if (isOfflineMode) {
