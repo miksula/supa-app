@@ -1,6 +1,6 @@
 # Supa App
 
-A Deno-managed monorepo for an offline-capable todo app. It combines a Lit/Vite
+A npm-managed monorepo for an offline-capable todo app. It combines a Lit/Vite
 browser client with a local Supabase backend and a self-hosted PowerSync service.
 See [app/README.md](app/README.md) and [backend/README.md](backend/README.md) for
 detailed setup instructions.
@@ -33,17 +33,15 @@ data so it is not left available to another user.
 
 ## Local development
 
-Install dependencies with Deno, then follow the backend guide to start Supabase
+Install dependencies with npm, then follow the backend guide to start Supabase
 and PowerSync. Configure `app/.env.local` from the provided template and run the
-app from its directory:
+app from the repository root:
 
 ```sh
-deno install
-cd app
-deno task dev
+npm install
+npm run dev --workspace=app
 ```
 
-To work on the UI without a running backend, use `deno task dev:offline` from
-`app/`. Deno is the recommended package manager; npm/Node tools can be mixed in,
-but npm does not support the `workspace:*` dependency specifier used by this
-repo. See [app/README.md](app/README.md) for the npm workaround.
+To work on the UI without a running backend, use
+`npm run dev:offline --workspace=app`. See [app/README.md](app/README.md) for
+more details.

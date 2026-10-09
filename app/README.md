@@ -6,32 +6,24 @@ elements; it does not use a component framework or a central state store.
 
 ## Getting started
 
-This repository is designed to use **Deno** as its package manager. Deno is
-npm-compatible, so Deno and npm/Node tools can be mixed when needed.
+This repository uses **npm** and npm workspaces. Install dependencies from the
+repository root:
 
 ```sh
-deno install
+npm install
 cp app/.env.local.template app/.env.local
 ```
 
-Set the Supabase and PowerSync values in `app/.env.local`, then start the app
-from the `app/` directory:
+Set the Supabase and PowerSync values in `app/.env.local`, then start the app:
 
 ```sh
-cd app
-deno task dev
+npm run dev --workspace=app
 ```
 
 Vite serves the app locally and opens it in a browser. To work on the UI without
-a running backend, use `deno task dev:offline`; this disables authentication and
-remote sync while keeping the local database available. Build with
-`deno task build`.
-
-**Using npm:** Some packages use the `workspace:*` version specifier (for
-example, `@packages/router`), which Deno supports but npm does not. Before
-installing with npm, replace each `workspace:*` entry in `package.json` with an
-explicit version (for example, `"@packages/router": "^0.0.0"`), then run
-`npm install`.
+a running backend, use `npm run dev:offline --workspace=app`; this disables
+authentication and remote sync while keeping the local database available.
+Build with `npm run build --workspace=app`.
 
 ## Basic architecture
 
