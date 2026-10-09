@@ -1,5 +1,6 @@
 import { html, render } from "lit";
 import { AppBar } from "@/lib/AppBar.ts";
+import { forward } from "@/lib/events.ts";
 import type { LayoutFactory, LayoutInstance } from "./types.ts";
 
 export const AppLayout: LayoutFactory = (
@@ -22,10 +23,16 @@ export const AppLayout: LayoutFactory = (
 
   AppBar(headerEl);
 
+  const element = container.firstElementChild as HTMLElement;
+  const stopForwardingToHeader = forward(element, () => headerEl, "syncStatus");
+  const stopForwardingToSlot = forward(element, () => slot, "syncStatus");
+
   return {
-    element: container.firstElementChild as HTMLElement,
+    element,
     contentSlot: slot,
     dispose: () => {
+      stopForwardingToHeader();
+      stopForwardingToSlot();
       (headerEl as HTMLElement & { disposeAppBar?: () => void })
         .disposeAppBar?.();
     },
