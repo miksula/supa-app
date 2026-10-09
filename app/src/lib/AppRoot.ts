@@ -2,7 +2,6 @@ import { html, render } from "lit";
 import { router } from "@packages/router";
 import { AuthController } from "@/lib/AuthController.ts";
 import { SyncController } from "@/lib/SyncController.ts";
-import { forward } from "@/lib/events.ts";
 import { enforceAuthRoute } from "@/lib/routeGuard.ts";
 import { AppLayout } from "@/lib/AppLayout.ts";
 import { LoginLayout } from "@/lib/LoginLayout.ts";
@@ -35,9 +34,6 @@ export function AppRoot(el) {
   // Track active layout instance to prevent unnecessary re-rendering
   let currentLayoutKey: unknown = null;
   let activeLayoutInstance: LayoutInstance | null = null;
-
-  // Data flows down: root -> active layout -> (layout forwards to its parts)
-  forward(el, () => activeLayoutInstance?.element, "syncStatus");
 
   router
     .get("/", () => {

@@ -22,17 +22,20 @@ const offlineStatus: SyncStatusData = {
 };
 
 /**
- * Mounts on the root element. Turns PowerSync status changes into `syncStatus`
- * data events dispatched on `el`, and answers `loadSyncStatus` actions by
- * replying directly to the requesting element.
+ * Mounts on the root element. Components pull by dispatching `loadSyncStatus`
+ * (bubbling up); the controller replies with a `syncStatus` data event directly
+ * on the requester and keeps it updated on every PowerSync status change.
+ * Requesters that left the DOM are dropped on the next change.
  */
 export function SyncController(el: HTMLElement) {
   let current = isOfflineMode
     ? offlineStatus
     : toSyncStatusData(powersync.currentStatus);
+  const requesters = new Set<EventTarget>();
 
   const unsubscribeLoad = onAction(el, "loadSyncStatus", (_, e) => {
     if (e.target) {
+      requesters.add(e.target);
       down(e.target, "syncStatus", current);
     }
   });
@@ -42,12 +45,20 @@ export function SyncController(el: HTMLElement) {
     : powersync.registerListener({
       statusChanged: (status) => {
         current = toSyncStatusData(status);
-        down(el, "syncStatus", current);
+
+        for (const requester of requesters) {
+          if ((requester as Node).isConnected) {
+            down(requester, "syncStatus", current);
+          } else {
+            requesters.delete(requester);
+          }
+        }
       },
     });
 
   return () => {
     unsubscribeLoad();
     unregisterStatus?.();
+    requesters.clear();
   };
 }

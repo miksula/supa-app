@@ -1,7 +1,8 @@
 /**
  * Component events, vanilla-todo style:
  * - Actions (verbs) bubble UP from a component towards a controller.
- * - Data (nouns) flows DOWN: dispatched on a child element, never bubbling.
+ * - Data (nouns) flows DOWN: dispatched directly on the element that asked for
+ *   it (pull-only), never bubbling.
  *
  * Each direction is a discriminated union on `type`; `detail` is the payload.
  */
@@ -85,28 +86,4 @@ export function onData<T extends DataEvent["type"]>(
   handler: Handler<DataEvent, T>,
 ) {
   return listen<DataEvent, T>(el, type, handler);
-}
-
-/**
- * Re-dispatch data received on `from` onto `to` (resolved lazily, so the
- * target may change over time). Returns an unsubscribe function.
- */
-export function forward<T extends DataEvent["type"]>(
-  from: EventTarget,
-  to: () => EventTarget | null | undefined,
-  ...types: T[]
-) {
-  const unsubscribers = types.map((type) =>
-    onData(from, type, (detail) => {
-      const target = to();
-      if (target) {
-        (down as (el: EventTarget, type: string, detail: unknown) => void)(
-          target,
-          type,
-          detail,
-        );
-      }
-    })
-  );
-  return () => unsubscribers.forEach((unsubscribe) => unsubscribe());
 }
