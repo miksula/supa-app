@@ -2,7 +2,8 @@
   "name": "supa-app",
   "private": true,
   "scripts": {
-    "app": "npm run dev -w ./app"
+    "app": "npm run dev -w ./app",
+    "schema:generate": "powersync generate schema --output=ts --output-path=app/src/lib/schema.ts --directory=backend/powersync"
   },
   "workspaces": [
     "packages/*",
