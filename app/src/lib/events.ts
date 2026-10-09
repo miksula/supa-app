@@ -1,6 +1,7 @@
 /**
  * Component events, vanilla-todo style:
- * - Actions (verbs) bubble UP from a component towards a controller.
+ * - Actions (verbs) bubble UP from a component towards a controller, crossing
+ *   shadow DOM boundaries (composed).
  * - Data (nouns) flows DOWN: dispatched directly on the element that asked for
  *   it (pull-only), never bubbling.
  *
@@ -38,7 +39,9 @@ function dispatch<E extends { type: string }, T extends E["type"]>(
   bubbles: boolean,
   detail: unknown,
 ) {
-  el.dispatchEvent(new CustomEvent(type, { detail, bubbles }));
+  el.dispatchEvent(
+    new CustomEvent(type, { detail, bubbles, composed: bubbles }),
+  );
 }
 
 function listen<E extends { type: string }, T extends E["type"]>(

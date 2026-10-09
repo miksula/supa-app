@@ -21,36 +21,73 @@ const offlineStatus: SyncStatusData = {
   uploading: false,
 };
 
+function isSameSnapshot(a: SyncStatusData, b: SyncStatusData) {
+  return a.connected === b.connected &&
+    a.connecting === b.connecting &&
+    a.downloading === b.downloading &&
+    a.uploading === b.uploading &&
+    a.lastSyncedAt?.getTime() === b.lastSyncedAt?.getTime() &&
+    a.hasSynced === b.hasSynced &&
+    a.error === b.error;
+}
+
 /**
  * Mounts on the root element. Components pull by dispatching `loadSyncStatus`
  * (bubbling up); the controller replies with a `syncStatus` data event directly
  * on the requester and keeps it updated on every PowerSync status change.
- * Requesters that left the DOM are dropped on the next change.
+ *
+ * Requesters are held weakly and dropped once garbage collected or detached
+ * from the DOM (checked on the next change); a re-attached component must
+ * request again. Updates that don't change the snapshot are not dispatched.
  */
 export function SyncController(el: HTMLElement) {
-  let current = isOfflineMode
-    ? offlineStatus
-    : toSyncStatusData(powersync.currentStatus);
-  const requesters = new Set<EventTarget>();
+  let lastStatus = isOfflineMode ? undefined : powersync.currentStatus;
+  let current = lastStatus ? toSyncStatusData(lastStatus) : offlineStatus;
+
+  const requesters = new Set<WeakRef<EventTarget>>();
+  const refs = new WeakMap<EventTarget, WeakRef<EventTarget>>();
 
   const unsubscribeLoad = onAction(el, "loadSyncStatus", (_, e) => {
-    if (e.target) {
-      requesters.add(e.target);
-      down(e.target, "syncStatus", current);
+    const requester = e.target;
+    if (!requester) {
+      return;
     }
+
+    if (!refs.has(requester)) {
+      const ref = new WeakRef(requester);
+      refs.set(requester, ref);
+      requesters.add(ref);
+    }
+
+    down(requester, "syncStatus", current);
   });
 
   const unregisterStatus = isOfflineMode
     ? undefined
     : powersync.registerListener({
       statusChanged: (status) => {
-        current = toSyncStatusData(status);
+        // PowerSync's own comparison is a cheap first filter; the snapshot
+        // comparison also drops changes we don't expose (e.g. download progress).
+        if (lastStatus && status !== lastStatus && lastStatus.isEqual(status)) {
+          return;
+        }
+        lastStatus = status;
 
-        for (const requester of requesters) {
-          if ((requester as Node).isConnected) {
+        const next = toSyncStatusData(status);
+        if (isSameSnapshot(current, next)) {
+          return;
+        }
+        current = next;
+
+        for (const ref of requesters) {
+          const requester = ref.deref();
+          if (requester && (requester as Node).isConnected) {
             down(requester, "syncStatus", current);
           } else {
-            requesters.delete(requester);
+            requesters.delete(ref);
+            if (requester) {
+              refs.delete(requester);
+            }
           }
         }
       },
