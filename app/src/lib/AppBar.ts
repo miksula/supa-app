@@ -1,7 +1,7 @@
 import { html, render } from "lit";
 import "@/lib/AppLink.ts";
 import { router } from "@packages/router";
-import { supabase } from "@/lib/client.ts";
+import { authService } from "@/lib/auth.ts";
 import appLogo from "@/assets/logo.svg";
 import logoutIcon from "@/assets/logout-icon.svg";
 import type { Session } from "@supabase/supabase-js";
@@ -27,7 +27,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   el.disposeAppBar?.();
 
   let currentPath = initialPath;
-  let currentSession = supabase.currentSession;
+  let currentSession = authService.session;
   let isLoggingOut = false;
 
   const renderComponent = () => {
@@ -113,7 +113,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     renderComponent();
 
     try {
-      await supabase.logout();
+      await authService.logout();
     } catch (error) {
       console.error("Failed to log out", error);
       isLoggingOut = false;
@@ -127,12 +127,10 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     renderComponent();
   };
 
-  const disposeSessionListener = supabase.registerListener({
-    sessionChanged: (session) => {
-      currentSession = session;
-      closeMenu();
-      renderComponent();
-    },
+  const disposeSessionListener = authService.session$.subscribe((session) => {
+    currentSession = session;
+    closeMenu();
+    renderComponent();
   });
 
   router.addRouteListener(updatePath);

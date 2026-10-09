@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import { supabase } from "@/lib/client.ts";
+import { authService } from "@/lib/auth.ts";
 
 export function Login(el) {
   let isSubmitting = false;
@@ -72,7 +72,7 @@ export function Login(el) {
     renderComponent();
 
     try {
-      await supabase.login(email, password);
+      await authService.login(email, password);
     } catch (error) {
       statusMessage = error instanceof Error
         ? error.message

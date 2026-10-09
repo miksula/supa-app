@@ -1,7 +1,8 @@
 import { PowerSyncDatabase, WASQLiteVFS } from "@powersync/web";
 import { wrapPowerSyncWithKysely } from "@powersync/kysely-driver";
 import { AppSchema, Database } from "./schema.ts";
-import { SupabaseConnector } from "./SupabaseConnector.ts";
+import { authService } from "./auth.ts";
+import { SupabasePowerSyncConnector } from "./SupabasePowerSyncConnector.ts";
 
 export const isOfflineMode = import.meta.env.VITE_OFFLINE_MODE === "true";
 
@@ -44,14 +45,14 @@ export const powersync = new PowerSyncDatabase({
   schema: AppSchema,
 });
 
-export const supabase = new SupabaseConnector();
+export const powersyncConnector = new SupabasePowerSyncConnector(authService);
 
 export async function connectPowersync() {
   if (isOfflineMode) {
     return;
   }
 
-  await powersync.connect(supabase);
+  await powersync.connect(powersyncConnector);
 }
 
 export async function resetPowersyncForSessionChange() {
