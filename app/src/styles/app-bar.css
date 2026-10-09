@@ -15,6 +15,11 @@
     visibility: hidden;
   }
 
+  .sync-status {
+    color: var(--muted-foreground);
+    font-size: var(--text-xs);
+  }
+
   .account {
     position: relative;
   }

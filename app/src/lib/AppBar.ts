@@ -2,6 +2,7 @@ import { html, render } from "lit";
 import "@/lib/AppLink.ts";
 import { router } from "@packages/router";
 import { authService } from "@/lib/auth.ts";
+import { onData, type SyncStatusData, up } from "@/lib/events.ts";
 import appLogo from "@/assets/logo.svg";
 import logoutIcon from "@/assets/logout-icon.svg";
 import type { Session } from "@supabase/supabase-js";
@@ -23,12 +24,23 @@ function getUserInitials(session: Session | null) {
     : (parts[0] ?? "K").slice(0, 2).toUpperCase();
 }
 
+function getSyncLabel(status: SyncStatusData | null) {
+  if (!status) return "";
+  if (status.error) return "Synkronointivirhe";
+  if (status.connecting) return "Yhdistetään...";
+  if (!status.connected) return "Ei yhteyttä";
+  return status.downloading || status.uploading
+    ? "Synkronoidaan..."
+    : "Synkronoitu";
+}
+
 export function AppBar(el: AppBarElement, initialPath = router.path) {
   el.disposeAppBar?.();
 
   let currentPath = initialPath;
   let currentSession = authService.session;
   let isLoggingOut = false;
+  let syncStatus: SyncStatusData | null = null;
 
   const renderComponent = () => {
     const userLabel = currentSession?.user.email ?? "Käyttäjä";
@@ -52,6 +64,10 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               `
             )}
           </div>
+
+          <span class="sync-status" role="status">
+            ${getSyncLabel(syncStatus)}
+          </span>
 
           <div class="account">
             <button
@@ -133,13 +149,20 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     renderComponent();
   });
 
+  const disposeSyncListener = onData(el, "syncStatus", (status) => {
+    syncStatus = status;
+    renderComponent();
+  });
+
   router.addRouteListener(updatePath);
 
   el.disposeAppBar = () => {
     disposeSessionListener();
+    disposeSyncListener();
     router.removeRouteListener(updatePath);
     delete el.disposeAppBar;
   };
 
   renderComponent();
+  up(el, "loadSyncStatus");
 }
