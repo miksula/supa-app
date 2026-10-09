@@ -38,7 +38,9 @@ function dispatch<E extends { type: string }, T extends E["type"]>(
   bubbles: boolean,
   detail: unknown,
 ) {
-  el.dispatchEvent(new CustomEvent(type, { detail, bubbles }));
+  el.dispatchEvent(
+    new CustomEvent(type, { detail, bubbles, composed: bubbles }),
+  );
 }
 
 function listen<E extends { type: string }, T extends E["type"]>(
