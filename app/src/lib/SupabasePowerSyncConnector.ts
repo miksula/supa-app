@@ -47,26 +47,40 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
 
     let lastOp: CrudEntry | null = null;
     try {
-      for (const op of transaction.crud) {
-        lastOp = op;
-        const table = this.authService.client.from(op.table);
-        let result: PostgrestSingleResponse<null>;
-        switch (op.op) {
-          case UpdateType.PUT:
-            result = await table.upsert({ ...op.opData, id: op.id });
-            break;
-          case UpdateType.PATCH:
-            result = await table.update(op.opData).eq("id", op.id);
-            break;
-          case UpdateType.DELETE:
-            result = await table.delete().eq("id", op.id);
-            break;
-        }
+      if (transaction.crud.length > 1) {
+        lastOp = transaction.crud.at(-1) ?? null;
+        const { error } = await this.authService.client.rpc(
+          "process_powersync_crud",
+          { ops: transaction.crud },
+        );
 
-        if (result.error) {
-          result.error.message =
-            `Could not update Supabase. Received error: ${result.error.message}`;
-          throw result.error;
+        if (error) {
+          error.message =
+            `Could not update Supabase. Received error: ${error.message}`;
+          throw error;
+        }
+      } else {
+        for (const op of transaction.crud) {
+          lastOp = op;
+          const table = this.authService.client.from(op.table);
+          let result: PostgrestSingleResponse<null>;
+          switch (op.op) {
+            case UpdateType.PUT:
+              result = await table.upsert({ ...op.opData, id: op.id });
+              break;
+            case UpdateType.PATCH:
+              result = await table.update(op.opData).eq("id", op.id);
+              break;
+            case UpdateType.DELETE:
+              result = await table.delete().eq("id", op.id);
+              break;
+          }
+
+          if (result.error) {
+            result.error.message =
+              `Could not update Supabase. Received error: ${result.error.message}`;
+            throw result.error;
+          }
         }
       }
 

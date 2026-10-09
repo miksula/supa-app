@@ -55,7 +55,6 @@ Reinstalling or `npx skills update` restores the full copy and clears the record
 | New project setup | `references/powersync-cli.md` + `references/powersync-service.md` | `references/sync-config.md`, SDK files |
 | Migrating from Electric Cloud | `references/migration-from-electric.md` | `references/sync-config.md`, SDK files |
 | Self-hosting / service config | `references/powersync-service.md` + `references/powersync-cli.md` | `references/sync-config.md` |
-| Terraform / IaC provisioning | `references/terraform.md` | `references/sync-config.md`, `references/supabase-auth.md` (if Supabase source) |
 | Writing sync config | `references/sync-config.md` | — |
 | Debugging sync issues | `references/powersync-debug.md` | — |
 | Raw Tables (advanced) | `references/raw-tables.md` | — |
@@ -78,16 +77,6 @@ Always load `references/sdks/powersync-js.md` for any JS/TS project, then load t
 | TanStack | `references/sdks/powersync-js-tanstack.md` | |
 | Drizzle / Kysely ORM | `references/sdks/powersync-js-orm.md` | Project uses Drizzle or Kysely |
 
-### Other SDKs
-
-| Platform | File |
-|----------|
-| Dart / Flutter | `references/sdks/powersync-dart.md` |
-| .NET | `references/sdks/powersync-dotnet.md` |
-| Kotlin | `references/sdks/powersync-kotlin.md` |
-| Swift | `references/sdks/powersync-swift.md` |
-| Rust | `references/sdks/powersync-rust.md` |
-
 ## Key Rules to Apply Without Being Asked
 
 - Never define the `id` column in a PowerSync table schema; it is created automatically.
@@ -97,3 +86,13 @@ Always load `references/sdks/powersync-js.md` for any JS/TS project, then load t
 - `transaction.complete()` is mandatory or the upload queue stalls permanently.
 - On user sign-out, choose based on what data may remain on the device: if the same user will return and keeping data is acceptable, use `disconnect()` so the next session resumes without re-downloading. If visible rows must be hidden but PowerSync's internal copy may stay, use `disconnectAndClear(soft: true)`, which deletes synced rows but keeps the internal copy, so reconnecting as the same user skips a full re-download in most cases. If no synced data may remain, use the default `disconnectAndClear()`. Never retain one user's data for a different user.
 - A 4xx response from `uploadData` blocks the upload queue permanently; return 2xx for validation errors.
+
+## Trimmed copy
+
+This installed copy was trimmed on 2026-10-09 with the operator's approval to
+match the platforms detected in this repo: js. Unused
+reference documents were removed from this local copy only: powersync-dart.md, powersync-kotlin.md, powersync-swift.md, powersync-dotnet.md, powersync-rust.md, terraform.md.
+Reinstalling the skill or running `npx skills update` restores the full copy.
+Full skill: https://github.com/powersync-ja/agent-skills
+
+Retained warning from the removed Terraform reference: do not run `powersync deploy` against an instance managed by Terraform.
