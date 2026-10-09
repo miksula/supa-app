@@ -24,7 +24,7 @@ export function Login(el) {
               autocomplete="username"
               value="${email}"
               required
-            >
+            />
 
             <label for="current-password">Password</label>
             <input
@@ -34,7 +34,7 @@ export function Login(el) {
               autocomplete="current-password"
               value="${password}"
               required
-            >
+            />
 
             <p
               id="login-status"
@@ -42,14 +42,18 @@ export function Login(el) {
               role="alert"
               aria-live="assertive"
               aria-hidden="${statusMessage === null ? "true" : "false"}"
-            >${statusMessage ?? ""}</p>
+            >
+              ${statusMessage ?? ""}
+            </p>
 
             <button
               class="mt-4"
               type="submit"
               ?disabled="${isSubmitting}"
               aria-busy="${isSubmitting}"
-            >Login</button>
+            >
+              Login
+            </button>
           </form>
         </div>
       `,
@@ -74,9 +78,8 @@ export function Login(el) {
     try {
       await authService.login(email, password);
     } catch (error) {
-      statusMessage = error instanceof Error
-        ? error.message
-        : "Unable to sign in. Please try again.";
+      statusMessage =
+        error instanceof Error ? error.message : "Unable to sign in. Please try again.";
     } finally {
       isSubmitting = false;
       renderComponent();

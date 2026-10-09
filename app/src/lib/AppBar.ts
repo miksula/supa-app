@@ -10,7 +10,7 @@ import type { Session } from "@supabase/supabase-js";
 type AppBarElement = HTMLElement & { disposeAppBar?: () => void };
 
 const navItems = [
-  { text: "Työpöytä", to: "/" },
+  { text: "Työpöytä", to: "/" }
 ];
 
 function getAvatarName(session: Session | null) {
@@ -18,7 +18,9 @@ function getAvatarName(session: Session | null) {
 }
 
 function getUserInitials(session: Session | null) {
-  const parts = getAvatarName(session).split(/[\s@._-]+/).filter(Boolean);
+  const parts = getAvatarName(session)
+    .split(/[\s@._-]+/)
+    .filter(Boolean);
   return parts.length > 1
     ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
     : (parts[0] ?? "K").slice(0, 2).toUpperCase();
@@ -29,9 +31,7 @@ function getSyncLabel(status: SyncStatusData | null) {
   if (status.error) return "Synkronointivirhe";
   if (status.connecting) return "Yhdistetään...";
   if (!status.connected) return "Ei yhteyttä";
-  return status.downloading || status.uploading
-    ? "Synkronoidaan..."
-    : "Synkronoitu";
+  return status.downloading || status.uploading ? "Synkronoidaan..." : "Synkronoitu";
 }
 
 export function AppBar(el: AppBarElement, initialPath = router.path) {
@@ -49,25 +49,23 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
       html`
         <nav class="app-bar" aria-label="Päänavigaatio">
           <div class="flex gap-2 items-center">
-            <img src="${appLogo}" class="size-5" alt="Supa App">
+            <img src="${appLogo}" class="size-5" alt="Supa App" />
             <span class="text-base font-medium">Supa App</span>
           </div>
 
           <div class="links">
-            ${navItems.map((item) =>
-              html`
+            ${navItems.map(
+        (item) => html`
                 <app-link
                   text="${item.text}"
                   to="${item.to}"
                   ?active="${item.to === currentPath}"
                 ></app-link>
-              `
-            )}
+              `,
+      )}
           </div>
 
-          <span class="sync-status" role="status">
-            ${getSyncLabel(syncStatus)}
-          </span>
+          <span class="sync-status" role="status"> ${getSyncLabel(syncStatus)} </span>
 
           <div class="account">
             <button
@@ -81,24 +79,15 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               </span>
             </button>
 
-            <div
-              id="user-menu"
-              popover="auto"
-              class="menu"
-            >
+            <div id="user-menu" popover="auto" class="menu">
               <div class="user-info" role="presentation">
                 <strong>Signed in as</strong>
                 <span>${userLabel}</span>
               </div>
 
-              <button
-                class="logout"
-                type="button"
-                ?disabled="${isLoggingOut}"
-                @click="${logout}"
-              >
-                  <img src="${logoutIcon}" alt="Logout Icon" class="size-4 inline-block mr-2">
-                  ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
+              <button class="logout" type="button" ?disabled="${isLoggingOut}" @click="${logout}">
+                <img src="${logoutIcon}" alt="Logout Icon" class="size-4 inline-block mr-2" />
+                ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
               </button>
             </div>
           </div>
@@ -143,22 +132,16 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     renderComponent();
   };
 
-  const disposeSessionListener = authService.session$.subscribe(
-    function updateSession(session) {
-      currentSession = session;
-      closeMenu();
-      renderComponent();
-    },
-  );
+  const disposeSessionListener = authService.session$.subscribe(function updateSession(session) {
+    currentSession = session;
+    closeMenu();
+    renderComponent();
+  });
 
-  const disposeSyncListener = onData(
-    el,
-    "syncStatus",
-    function updateSyncStatus(status) {
-      syncStatus = status;
-      renderComponent();
-    },
-  );
+  const disposeSyncListener = onData(el, "syncStatus", function updateSyncStatus(status) {
+    syncStatus = status;
+    renderComponent();
+  });
 
   router.addRouteListener(updatePath);
 

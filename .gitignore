@@ -1,8 +1,5 @@
 node_modules
 dist
 
-deno.lock
-package-lock.json
-
 *.code-workspace
 .DS_Store

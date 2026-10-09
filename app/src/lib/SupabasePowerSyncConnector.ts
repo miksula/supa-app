@@ -1,18 +1,10 @@
 import { UpdateType } from "@powersync/web";
-import type {
-  CommonPowerSyncDatabase,
-  CrudEntry,
-  PowerSyncBackendConnector,
-} from "@powersync/web";
+import type { CommonPowerSyncDatabase, CrudEntry, PowerSyncBackendConnector } from "@powersync/web";
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { AuthService } from "./AuthService.ts";
 
 /// Postgres Response codes that we cannot recover from by retrying.
-const FATAL_RESPONSE_CODES = [
-  new RegExp("^22...$"),
-  new RegExp("^23...$"),
-  new RegExp("^42501$"),
-];
+const FATAL_RESPONSE_CODES = [new RegExp("^22...$"), new RegExp("^23...$"), new RegExp("^42501$")];
 
 export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
   constructor(
@@ -24,17 +16,13 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
     const session = await this.authService.getSession();
 
     if (!session) {
-      throw new Error(
-        "Could not fetch Supabase credentials: no active session",
-      );
+      throw new Error("Could not fetch Supabase credentials: no active session");
     }
 
     return {
       endpoint: this.powersyncUrl,
       token: session.access_token,
-      expiresAt: session.expires_at
-        ? new Date(session.expires_at * 1000)
-        : undefined,
+      expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : undefined,
     };
   }
 
@@ -49,14 +37,12 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
     try {
       if (transaction.crud.length > 1) {
         lastOp = transaction.crud.at(-1) ?? null;
-        const { error } = await this.authService.client.rpc(
-          "process_powersync_crud",
-          { ops: transaction.crud },
-        );
+        const { error } = await this.authService.client.rpc("process_powersync_crud", {
+          ops: transaction.crud,
+        });
 
         if (error) {
-          error.message =
-            `Could not update Supabase. Received error: ${error.message}`;
+          error.message = `Could not update Supabase. Received error: ${error.message}`;
           throw error;
         }
       } else {
@@ -77,8 +63,7 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
           }
 
           if (result.error) {
-            result.error.message =
-              `Could not update Supabase. Received error: ${result.error.message}`;
+            result.error.message = `Could not update Supabase. Received error: ${result.error.message}`;
             throw result.error;
           }
         }

@@ -1,7 +1,7 @@
 {
   "name": "app",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --open",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@journeyapps/wa-sqlite": "^1.5.0",
-    "@packages/router": "workspace:*",
+    "@packages/router": "^0.0.0",
     "@powersync/kysely-driver": "^2.0.2",
     "@powersync/web": "2.4.2",
     "@supabase/supabase-js": "2.117.2",

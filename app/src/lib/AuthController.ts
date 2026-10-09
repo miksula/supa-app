@@ -1,9 +1,5 @@
 import { router } from "@packages/router";
-import {
-  connectPowersync,
-  isOfflineMode,
-  resetPowersyncForSessionChange,
-} from "@/lib/client.ts";
+import { connectPowersync, isOfflineMode, resetPowersyncForSessionChange } from "@/lib/client.ts";
 import { authService } from "@/lib/auth.ts";
 import { enforceAuthRoute } from "@/lib/routeGuard.ts";
 import { createSyncLifecycle } from "@/lib/syncLifecycle.ts";

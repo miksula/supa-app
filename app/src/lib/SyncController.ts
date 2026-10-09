@@ -28,9 +28,7 @@ const offlineStatus: SyncStatusData = {
  * Requesters that left the DOM are dropped on the next change.
  */
 export function SyncController(el: HTMLElement) {
-  let current = isOfflineMode
-    ? offlineStatus
-    : toSyncStatusData(powersync.currentStatus);
+  let current = isOfflineMode ? offlineStatus : toSyncStatusData(powersync.currentStatus);
   const requesters = new Set<EventTarget>();
 
   const unsubscribeLoad = onAction(el, "loadSyncStatus", (_, e) => {
@@ -43,18 +41,18 @@ export function SyncController(el: HTMLElement) {
   const unregisterStatus = isOfflineMode
     ? undefined
     : powersync.registerListener({
-      statusChanged: (status) => {
-        current = toSyncStatusData(status);
+        statusChanged: (status) => {
+          current = toSyncStatusData(status);
 
-        for (const requester of requesters) {
-          if ((requester as Node).isConnected) {
-            dispatchData(requester, "syncStatus", current);
-          } else {
-            requesters.delete(requester);
+          for (const requester of requesters) {
+            if ((requester as Node).isConnected) {
+              dispatchData(requester, "syncStatus", current);
+            } else {
+              requesters.delete(requester);
+            }
           }
-        }
-      },
-    });
+        },
+      });
 
   return () => {
     unsubscribeLoad();

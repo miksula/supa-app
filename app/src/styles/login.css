@@ -46,7 +46,7 @@
     color: var(--black);
     width: 100%;
     font-size: 15px;
-    line-height: calc(1.25 / .875);
+    line-height: calc(1.25 / 0.875);
     outline: inherit;
     border-bottom: 1px solid var(--main-border-light);
     transition: border-bottom-color 150ms ease;
@@ -68,7 +68,7 @@
     width: 100%;
     background-color: var(--black);
     color: var(--white);
-    border-radius: calc(var(--radius) * .8);
+    border-radius: calc(var(--radius) * 0.8);
     padding-block: calc(var(--spacing) * 1.25);
     outline: 3px solid transparent;
     outline-offset: 1px;

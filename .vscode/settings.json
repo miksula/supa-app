@@ -1,8 +1,4 @@
 {
-    "files.associations": {
-      "*.css": "tailwindcss"
-    },
-    "[tailwindcss]": {
-      "editor.defaultFormatter": "denoland.vscode-deno"
-    }
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
 }

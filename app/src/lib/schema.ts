@@ -1,4 +1,4 @@
-import { column, Schema, Table } from '@powersync/web';
+import { column, Schema, Table } from "@powersync/web";
 // OR: import { column, Schema, Table } from '@powersync/react-native';
 
 const lists = new Table(
@@ -6,9 +6,9 @@ const lists = new Table(
     // id column (text) is automatically included
     created_at: column.text,
     name: column.text,
-    owner_id: column.text
+    owner_id: column.text,
   },
-  { indexes: {} }
+  { indexes: {} },
 );
 
 const todos = new Table(
@@ -20,15 +20,14 @@ const todos = new Table(
     completed: column.integer,
     created_by: column.text,
     completed_by: column.text,
-    list_id: column.text
+    list_id: column.text,
   },
-  { indexes: {} }
+  { indexes: {} },
 );
 
 export const AppSchema = new Schema({
   lists,
-  todos
+  todos,
 });
 
-export type Database = (typeof AppSchema)['types'];
-
+export type Database = (typeof AppSchema)["types"];

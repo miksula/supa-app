@@ -21,16 +21,11 @@ export type ActionEvent = { type: "loadSyncStatus" };
 
 export type DataEvent = { type: "syncStatus"; detail: SyncStatusData };
 
-type Detail<E, T> = Extract<E, { type: T }> extends { detail: infer D } ? D
-  : undefined;
+type Detail<E, T> = Extract<E, { type: T }> extends { detail: infer D } ? D : undefined;
 
-type DetailArgs<E, T> = Detail<E, T> extends undefined ? []
-  : [detail: Detail<E, T>];
+type DetailArgs<E, T> = Detail<E, T> extends undefined ? [] : [detail: Detail<E, T>];
 
-type Handler<E, T> = (
-  detail: Detail<E, T>,
-  e: CustomEvent<Detail<E, T>>,
-) => void;
+type Handler<E, T> = (detail: Detail<E, T>, e: CustomEvent<Detail<E, T>>) => void;
 
 function dispatch<E extends { type: string }, T extends E["type"]>(
   el: EventTarget,
@@ -38,9 +33,7 @@ function dispatch<E extends { type: string }, T extends E["type"]>(
   bubbles: boolean,
   detail: unknown,
 ) {
-  el.dispatchEvent(
-    new CustomEvent(type, { detail, bubbles, composed: bubbles }),
-  );
+  el.dispatchEvent(new CustomEvent(type, { detail, bubbles, composed: bubbles }));
 }
 
 function listen<E extends { type: string }, T extends E["type"]>(
@@ -48,8 +41,7 @@ function listen<E extends { type: string }, T extends E["type"]>(
   type: T,
   handler: Handler<E, T>,
 ) {
-  const listener = (e: Event) =>
-    handler((e as CustomEvent).detail, e as CustomEvent);
+  const listener = (e: Event) => handler((e as CustomEvent).detail, e as CustomEvent);
   el.addEventListener(type, listener);
   return () => el.removeEventListener(type, listener);
 }

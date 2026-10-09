@@ -1,7 +1,6 @@
 {
-    "recommendations": [
-        "bradlc.vscode-tailwindcss",
-        "bierner.lit-html",
-        "denoland.vscode-deno"
-    ]
+  "recommendations": [
+    "bradlc.vscode-tailwindcss",
+    "bierner.lit-html"
+  ]
 }

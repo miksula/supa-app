@@ -23,28 +23,22 @@ export class AuthService {
 
   ready = false;
   private currentSession: Session | null = null;
-  private readonly sessionListeners = new Set<
-    (session: Session | null) => void
-  >();
+  private readonly sessionListeners = new Set<(session: Session | null) => void>();
 
   constructor() {
     this.config = {
       supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
-      supabaseKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-        import.meta.env.VITE_SUPABASE_ANON_KEY,
+      supabaseKey:
+        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY,
     };
 
-    this.client = createClient(
-      this.config.supabaseUrl,
-      this.config.supabaseKey,
-      {
-        auth: {
-          persistSession: !isOfflineMode,
-          autoRefreshToken: !isOfflineMode,
-          detectSessionInUrl: !isOfflineMode,
-        },
+    this.client = createClient(this.config.supabaseUrl, this.config.supabaseKey, {
+      auth: {
+        persistSession: !isOfflineMode,
+        autoRefreshToken: !isOfflineMode,
+        detectSessionInUrl: !isOfflineMode,
       },
-    );
+    });
 
     this.session$ = {
       subscribe: (listener) => {
@@ -115,9 +109,7 @@ export class AuthService {
     return session;
   }
 
-  onAuthStateChange(
-    callback: (event: AuthChangeEvent, session: Session | null) => void,
-  ) {
+  onAuthStateChange(callback: (event: AuthChangeEvent, session: Session | null) => void) {
     return this.client.auth.onAuthStateChange((event, session) => {
       this.updateSession(session);
       callback(event, session);

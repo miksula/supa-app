@@ -2,10 +2,7 @@ import { html, render } from "lit";
 import { powersync } from "@/lib/client.ts";
 import { type Todo, TodoStore } from "@/lib/TodoStore.ts";
 
-export function TodoApp(
-  el: HTMLElement,
-  store = new TodoStore(powersync),
-) {
+export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
   const abortController = new AbortController();
 
   function renderComponent(todos: Todo[] = []) {
@@ -26,11 +23,9 @@ export function TodoApp(
 
   void (async () => {
     try {
-      for await (
-        const result of store.watchUserTodos({
-          signal: abortController.signal,
-        })
-      ) {
+      for await (const result of store.watchUserTodos({
+        signal: abortController.signal,
+      })) {
         if (!abortController.signal.aborted) {
           renderComponent(result.array as Todo[]);
         }
