@@ -12,6 +12,12 @@
       "sourceType": "github",
       "skillPath": "skills/powersync/SKILL.md",
       "computedHash": "e58a33e8b4f41974e4060770c25bc3a351f35fc620328947542de982fb80a954"
+    },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase/SKILL.md",
+      "computedHash": "211141fd078b4b3645803868528d54221bc7755d24d5c8af45a366785c151dba"
     }
   }
 }
