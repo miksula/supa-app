@@ -6,7 +6,6 @@
     "app"
   ],
   "scripts": {
-    "app": "npm run dev -w ./app",
     "schema:generate": "powersync generate schema --output=ts --output-path=app/src/lib/schema.ts --directory=backend/powersync",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
