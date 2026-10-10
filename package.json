@@ -1,5 +1,6 @@
 {
   "name": "supa-app",
+  "type": "module",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -10,7 +11,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "type-check": "bun check -p app/tsconfig.json"
   },
   "devDependencies": {
     "oxfmt": "^0.72.0",

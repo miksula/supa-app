@@ -5,6 +5,36 @@ browser client with a local Supabase backend and a self-hosted PowerSync service
 See [app/README.md](app/README.md) and [backend/README.md](backend/README.md) for
 detailed setup instructions.
 
+## Local development
+
+The following executables are required for local development:
+
+- `node` and `npm` (or `bun`) to install dependencies and run the app.
+- `supabase` to manage the local Supabase backend.
+- `powersync` to generate the sync schema and run the PowerSync service.
+- `docker` to run the local backend services.
+
+Install dependencies with npm, then follow the backend guide to start Supabase
+and PowerSync. Configure `app/.env.local` from the provided template and run the
+app from the repository root:
+
+```sh
+npm install # or: bun install
+npm run dev --workspace=app
+```
+
+To work on the UI without a running backend, use
+`npm run dev:offline --workspace=app`. See [app/README.md](app/README.md) for
+more details.
+
+## Repository map
+
+- `app/` — browser app, routing, Supabase Auth, local database and sync client.
+- `backend/supabase/` — local Supabase configuration, migrations, and seed data.
+- `backend/powersync/` — PowerSync service, Docker setup, and user-scoped sync
+  configuration.
+- `packages/router/` — shared client-side router workspace package.
+
 ## How the pieces work together
 
 Supabase is the system of record: it provides authentication and the Postgres
@@ -22,26 +52,3 @@ authenticated user. On sign-out, the app disconnects and clears synced local
 data so it is not left available to another user.
 
 ![Supa App architecture diagram](architecture-diagram.png)
-
-## Repository map
-
-- `app/` — browser app, routing, Supabase Auth, local database and sync client.
-- `backend/supabase/` — local Supabase configuration, migrations, and seed data.
-- `backend/powersync/` — PowerSync service, Docker setup, and user-scoped sync
-  configuration.
-- `packages/router/` — shared client-side router workspace package.
-
-## Local development
-
-Install dependencies with npm, then follow the backend guide to start Supabase
-and PowerSync. Configure `app/.env.local` from the provided template and run the
-app from the repository root:
-
-```sh
-npm install
-npm run dev --workspace=app
-```
-
-To work on the UI without a running backend, use
-`npm run dev:offline --workspace=app`. See [app/README.md](app/README.md) for
-more details.
