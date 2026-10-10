@@ -83,6 +83,32 @@ Prefer hand-written migrations for app-owned tables, columns, indexes,
 functions, and publications. Manage Supabase platform objects such as `auth`
 and `storage` only when the change specifically requires it.
 
+Tables in exposed schemas such as `public` must use row-level security when
+they are accessed through the Supabase Data API. For every new exposed table,
+enable RLS in the same migration that creates the table and add policies for
+the intended roles and ownership rules:
+
+```sql
+create table public.example (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references auth.users(id)
+);
+
+alter table public.example enable row level security;
+
+create policy "Users can manage their own rows"
+on public.example
+for all
+to authenticated
+using ((select auth.uid()) = owner_id)
+with check ((select auth.uid()) = owner_id);
+```
+
+Enabling RLS without policies denies access to `anon` and `authenticated`.
+The migration
+`20261010212054_enable_todo_tables_rls.sql` enables RLS and adds ownership
+policies for the existing `lists` and `todos` tables.
+
 ## Common commands
 
 Check the PowerSync service and generate the app's TypeScript schema from the
