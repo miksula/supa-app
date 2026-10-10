@@ -44,6 +44,81 @@ authentication and remote sync while keeping the local database available.
 - `@packages/router` is a workspace package in `../packages/`; the root
   `package.json` defines the npm workspaces and convenience scripts.
 
+## Component patterns
+
+The UI uses three component patterns. Choose one pattern per component
+responsibility rather than mixing multiple state and lifecycle models in the
+same component.
+
+### Mounted Lit template function
+
+A function renders a Lit template into an element supplied by its caller:
+
+```ts
+TodoList(element, list, options);
+```
+
+The caller owns the element, decides when it is rendered again, and controls
+the surrounding lifecycle. Use this for data-driven fragments whose state is
+owned by a parent component.
+
+Advantages:
+
+- Very little framework structure.
+- Easy to mount into an existing DOM element.
+- Good for rendering database-backed data.
+
+### Imperative functional component
+
+A function creates and manages DOM behavior directly:
+
+```ts
+const card = TodoListCard(element, list, options);
+card.update(nextList, index);
+card.destroy();
+```
+
+The component owns local interaction state, event listeners, focus behavior,
+and cleanup. Use this for interaction-heavy UI such as list editing,
+keyboard navigation, and confirmation flows.
+
+Advantages:
+
+- Precise focus and blur handling.
+- Natural for editing, keyboard navigation, and confirmation flows.
+- Explicit lifecycle through update() and destroy().
+
+### Reactive `LitElement`
+
+A class-based custom element owns reactive properties and renders when those
+properties change:
+
+```ts
+class ExampleComponent extends LitElement {
+  render() {
+    return html`...`;
+  }
+}
+```
+
+Use this for reusable, self-contained widgets with substantial internal
+reactive state. It introduces a custom-element lifecycle, so it should not be
+used merely to wrap a small template fragment.
+
+Advantages:
+
+- State changes automatically trigger rendering.
+- Template and state remain declaratively connected.
+- Lifecycle hooks provide structured setup and cleanup.
+- Good for reusable components with substantial internal state.
+
+The current todo UI uses mounted Lit templates for data-driven content and
+imperative functional components for focus-sensitive card interactions. Keep
+DOM state owned by one model: do not manually mutate DOM state that a parent
+Lit render may recreate.
+
+## Adding pages
+
 When adding a screen, register its route and layout in `AppRoot`, put the page
 in `src/pages/`, and keep reusable behavior in `src/lib/`. When changing synced
 tables, update the PowerSync schema and keep it aligned with the backend schema
