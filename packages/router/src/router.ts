@@ -140,7 +140,7 @@ export class Router {
     // Use Navigation API's current entry as source of truth
     const nav = (globalThis as unknown as Window).navigation;
     if (nav && nav.currentEntry) {
-      const url = new URL(nav.currentEntry.url);
+      const url = new URL(nav.currentEntry.url ?? globalThis.location.href);
       let pathname = url.pathname + url.search;
 
       // Remove query string for return value
@@ -236,8 +236,7 @@ export class Router {
       this.routes.push({ pattern, handler });
     } catch (error) {
       throw new Error(
-        `Invalid URLPattern syntax for path "${path}": ${
-          error instanceof Error ? error.message : String(error)
+        `Invalid URLPattern syntax for path "${path}": ${error instanceof Error ? error.message : String(error)
         }`,
       );
     }
@@ -340,8 +339,7 @@ export class Router {
       this.asyncRoutes.push({ pattern, handler });
     } catch (error) {
       throw new Error(
-        `Invalid URLPattern syntax for path "${path}": ${
-          error instanceof Error ? error.message : String(error)
+        `Invalid URLPattern syntax for path "${path}": ${error instanceof Error ? error.message : String(error)
         }`,
       );
     }
