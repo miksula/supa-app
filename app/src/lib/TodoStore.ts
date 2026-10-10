@@ -19,6 +19,11 @@ export type NewTodo = {
   listId: string;
 };
 
+export type NewList = {
+  name: string;
+  ownerId: string;
+};
+
 export class TodoStore {
   constructor(private readonly ps: PowerSyncDatabase) {}
 
@@ -37,7 +42,7 @@ export class TodoStore {
       FROM lists
       LEFT JOIN todos ON todos.list_id = lists.id
       ORDER BY
-        lists.created_at DESC,
+        lists.created_at ASC,
         lists.id ASC,
         todos.created_at ASC,
         todos.id ASC`,
@@ -50,6 +55,13 @@ export class TodoStore {
     return await this.ps.execute(
       "INSERT INTO todos (id, description, list_id, created_at) VALUES (?, ?, ?, ?)",
       [crypto.randomUUID(), todo.description, todo.listId, new Date().toISOString()],
+    );
+  }
+
+  async createList(list: NewList) {
+    return await this.ps.execute(
+      "INSERT INTO lists (id, name, owner_id, created_at) VALUES (?, ?, ?, ?)",
+      [crypto.randomUUID(), list.name, list.ownerId, new Date().toISOString()],
     );
   }
 

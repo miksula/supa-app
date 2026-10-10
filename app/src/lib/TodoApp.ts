@@ -5,6 +5,7 @@ import nextIcon from "@/assets/next-icon.svg";
 import plusIcon from "@/assets/plus-icon.svg";
 import previousIcon from "@/assets/previous-icon.svg";
 import trashIcon from "@/assets/trash-icon.svg";
+import { authService } from "@/lib/auth.ts";
 import { powersync } from "@/lib/client.ts";
 import { type ListWithTodoRow, type Todo, TodoStore } from "@/lib/TodoStore.ts";
 
@@ -110,6 +111,8 @@ function ListCard(
   onSubmit: (event: SubmitEvent, listId: string) => void,
   onCompleted: (event: Event, todoId: string) => void,
 ) {
+  const title = list.name || "...";
+
   return html`
     <div
       class="card todo-custom-list"
@@ -117,7 +120,7 @@ function ListCard(
       style="transform: translateX(${index * 100}%); height: 310px;"
     >
       <div class="header">
-        <h2 class="title"><button type="button" title="Edit">${list.name}</button></h2>
+        <h2 class="title"><button type="button" title="Edit">${title}</button></h2>
         <p class="form">
           <input
             type="text"
@@ -131,24 +134,6 @@ function ListCard(
       <div class="todo-list">
         <div class="items">${list.items.map((todo) => TodoItem(todo, onCompleted))}</div>
         ${TodoInput(list.id, onSubmit)}
-      </div>
-    </div>
-  `;
-}
-
-function NewListCard(index: number) {
-  return html`
-    <div
-      class="card todo-custom-list"
-      data-key="todo-list-demo"
-      style="transform: translateX(${index * 100}%); height: 310px;"
-    >
-      <div class="header">
-        <h2 class="title"><button type="button" title="Edit">New list</button></h2>
-      </div>
-      <div class="todo-list">
-        <div class="items"></div>
-        ${TodoInput("demo")}
       </div>
     </div>
   `;
@@ -201,6 +186,20 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
     });
   }
 
+  async function onAddList() {
+    const ownerId = authService.session?.user.id;
+    if (!ownerId) {
+      console.error("Unable to create list: no authenticated user");
+      return;
+    }
+
+    try {
+      await store.createList({ name: "", ownerId });
+    } catch (error) {
+      console.error("Failed to create list", error);
+    }
+  }
+
   function renderComponent(rows: ListWithTodoRow[] = []) {
     const lists = mapTodoLists(rows);
 
@@ -216,7 +215,6 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
           </div>
           <div class="container">
             ${lists.map((list, index) => ListCard(list, index, onSubmit, onCompleted))}
-            ${NewListCard(lists.length)}
           </div>
           <div class="rightcontrols">
             <p>
@@ -225,7 +223,12 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
               </button>
             </p>
             <p>
-              <button type="button" class="app-button -circle -xl add" title="Add custom list">
+              <button
+                type="button"
+                class="app-button -circle -xl add"
+                title="Add custom list"
+                @click=${onAddList}
+              >
                 ${Icon(addListIcon)}
               </button>
             </p>
