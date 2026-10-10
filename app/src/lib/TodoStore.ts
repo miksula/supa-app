@@ -3,8 +3,15 @@ import type { Database } from "@/lib/schema.ts";
 
 export type Todo = Database["todos"];
 export type List = Database["lists"];
-export type ListWithTodos = List & {
-  items: string;
+export type ListWithTodoRow = List & {
+  item_id: string | null;
+  item_created_at: string | null;
+  item_completed_at: string | null;
+  item_description: string | null;
+  item_completed: number | null;
+  item_created_by: string | null;
+  item_completed_by: string | null;
+  item_list_id: string | null;
 };
 
 export type NewTodo = {
@@ -19,27 +26,17 @@ export class TodoStore {
     return this.ps.watch(
       `SELECT
         lists.*,
-        COALESCE(
-          (
-            SELECT json_group_array(
-              json_object(
-                'id', todos.id,
-                'created_at', todos.created_at,
-                'completed_at', todos.completed_at,
-                'description', todos.description,
-                'completed', todos.completed,
-                'created_by', todos.created_by,
-                'completed_by', todos.completed_by,
-                'list_id', todos.list_id
-              )
-            )
-            FROM todos
-            WHERE todos.list_id = lists.id
-          ),
-          json('[]')
-        ) AS items
+        todos.id AS item_id,
+        todos.created_at AS item_created_at,
+        todos.completed_at AS item_completed_at,
+        todos.description AS item_description,
+        todos.completed AS item_completed,
+        todos.created_by AS item_created_by,
+        todos.completed_by AS item_completed_by,
+        todos.list_id AS item_list_id
       FROM lists
-      ORDER BY lists.created_at DESC`,
+      LEFT JOIN todos ON todos.list_id = lists.id
+      ORDER BY lists.created_at DESC, todos.created_at DESC`,
       [],
       options,
     );

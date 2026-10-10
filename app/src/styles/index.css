@@ -7,5 +7,10 @@
 @import "./app-link.css";
 @import "./app-bar.css";
 
-/* Temporary styles can be added here. */
+@import "./app-button.css";
+@import "./app-icon.css";
+@import "./todo-custom-list.css";
+@import "./todo-frame.css";
+@import "./todo-item-input.css";
+@import "./todo-item.css";
 

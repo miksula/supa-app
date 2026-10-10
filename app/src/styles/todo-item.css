@@ -1,0 +1,102 @@
+.todo-item {
+  position: relative;
+  font-size: 0.8em;
+  line-height: 1.5em;
+  margin: 0;
+  padding: 0.25em 0;
+  background: var(--main-bg);
+  transition:
+    transform 0.2s ease-out,
+    opacity 0.2s ease-out;
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+.todo-item > .checkbox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 2em;
+  line-height: 2em;
+}
+
+.todo-item > .checkbox > input {
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.todo-item > .label {
+  margin: 0 0 0 30px;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--main-border-light);
+  overflow: hidden;
+}
+
+.todo-item > .label > button {
+  display: block;
+  font-size: inherit;
+  line-height: inherit;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+}
+
+.todo-item > .form {
+  display: none;
+  margin: 0 0 0 30px;
+}
+
+.todo-item > .form > .input {
+  border: 0;
+  border-bottom: 1px solid var(--main-border);
+  border-radius: 0;
+  outline: 0;
+  padding: 0 30px 0.25em 0;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.5em;
+  background: transparent;
+  color: inherit;
+}
+
+.todo-item > .form > .input:focus-visible {
+  border-bottom: 1px solid var(--highlight-text);
+}
+
+.todo-item > .form > .save {
+  position: absolute;
+  top: 0.15em;
+  right: 0;
+}
+
+.todo-item.-done > .label {
+  color: var(--disabled-text);
+  text-decoration: line-through;
+}
+
+.todo-item.-editing > .label {
+  display: none;
+}
+
+.todo-item.-editing > .form {
+  display: block;
+}
+
+.todo-item.-dragging {
+  opacity: 0.7;
+}
+
+.todo-item.-placeholder {
+  transition: none !important;
+  visibility: hidden;
+}

@@ -12,6 +12,7 @@
 
     &.rounded {
       border-radius: calc(var(--radius) * 1.4);
+      border-radius: 5px;
       margin-block: 0 1rem;
       margin-inline: 1rem;
     }

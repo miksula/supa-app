@@ -1,34 +1,163 @@
 import { html, render } from "lit";
+import addListIcon from "@/assets/add-list-icon.svg";
+import checkIcon from "@/assets/check-icon.svg";
+import nextIcon from "@/assets/next-icon.svg";
+import plusIcon from "@/assets/plus-icon.svg";
+import previousIcon from "@/assets/previous-icon.svg";
+import trashIcon from "@/assets/trash-icon.svg";
 import { powersync } from "@/lib/client.ts";
-import { type List, type Todo, type ListWithTodos, TodoStore } from "@/lib/TodoStore.ts";
+import { type ListWithTodoRow, type Todo, TodoStore } from "@/lib/TodoStore.ts";
 
-type TodoList = List & {
+type TodoList = Pick<ListWithTodoRow, "id" | "created_at" | "name" | "owner_id"> & {
   items: Todo[];
 };
 
-const mapTodoLists = (lists: ListWithTodos[]): TodoList[] => {
-  return lists.map((list) => ({
-    ...list,
-    items: list.items ? JSON.parse(list.items) : [],
-  }));
+const mapTodoLists = (rows: ListWithTodoRow[]): TodoList[] => {
+  const lists = new Map<string, TodoList>();
+
+  for (const row of rows) {
+    let list = lists.get(row.id);
+
+    if (!list) {
+      list = {
+        id: row.id,
+        created_at: row.created_at,
+        name: row.name,
+        owner_id: row.owner_id,
+        items: [],
+      };
+      lists.set(row.id, list);
+    }
+
+    if (row.item_id) {
+      list.items.push({
+        id: row.item_id,
+        created_at: row.item_created_at,
+        completed_at: row.item_completed_at,
+        description: row.item_description,
+        completed: row.item_completed,
+        created_by: row.item_created_by,
+        completed_by: row.item_completed_by,
+        list_id: row.item_list_id,
+      });
+    }
+  }
+
+  return [...lists.values()];
 };
+
+const Icon = (src: string) => html`<img class="app-icon" src="${src}" alt="" aria-hidden="true" />`;
+
+function TodoItem(todo: Todo) {
+  return html`
+    <div class="todo-item ${todo.completed ? "-done" : ""}" data-key="${todo.id}">
+      <div class="checkbox">
+        <input
+          type="checkbox"
+          aria-label="${todo.description}"
+          .checked=${Boolean(todo.completed)}
+        />
+      </div>
+      <p class="label"><button type="button" title="Edit">${todo.description}</button></p>
+      <p class="form">
+        <input
+          type="text"
+          class="input use-focus-other"
+          aria-label="Label"
+          value="${todo.description}"
+        />
+        <button type="button" class="app-button save" title="Save" tabindex="-1">
+          ${Icon(checkIcon)}
+        </button>
+      </p>
+    </div>
+  `;
+}
+
+function TodoInput(listId: string) {
+  return html`
+    <div class="todo-item-input" data-key="todo-item-input${listId}">
+      <input type="text" class="input use-focus-other" aria-label="Label" />
+      <button type="button" class="app-button save" title="Save" tabindex="-1">
+        ${Icon(plusIcon)}
+      </button>
+    </div>
+  `;
+}
+
+function ListCard(list: TodoList, index: number) {
+  return html`
+    <div
+      class="card todo-custom-list"
+      data-key="${list.id}"
+      style="transform: translateX(${index * 100}%); height: 310px;"
+    >
+      <div class="header">
+        <h2 class="title"><button type="button" title="Edit">${list.name}</button></h2>
+        <p class="form">
+          <input
+            type="text"
+            class="input use-focus-other"
+            aria-label="Title"
+            value="${list.name}"
+          />
+          <button type="button" class="app-button delete" title="Delete">${Icon(trashIcon)}</button>
+        </p>
+      </div>
+      <div class="todo-list">
+        <div class="items">${list.items.map(TodoItem)}</div>
+        ${TodoInput(list.id)}
+      </div>
+    </div>
+  `;
+}
+
+function NewListCard(index: number) {
+  return html`
+    <div
+      class="card todo-custom-list"
+      data-key="todo-list-demo"
+      style="transform: translateX(${index * 100}%); height: 310px;"
+    >
+      <div class="header">
+        <h2 class="title"><button type="button" title="Edit">New list</button></h2>
+      </div>
+      <div class="todo-list">
+        <div class="items"></div>
+        ${TodoInput("demo")}
+      </div>
+    </div>
+  `;
+}
 
 export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
   const abortController = new AbortController();
 
-  function renderComponent(lists: ListWithTodos[] = []) {
-    console.log("Rendering component with lists:", mapTodoLists(lists));
+  function renderComponent(rows: ListWithTodoRow[] = []) {
+    const lists = mapTodoLists(rows);
+
     render(
       html`
-        <div class="todo-app">
-          <h1>Todo App</h1>
-          <div class="todo-lists">
-            ${mapTodoLists(lists).map(
-              (list) =>
-                html`<ul>
-                  ${list.name} ${list.items.map((todo: any) => html`<li>${todo.description}</li>`)}
-                </ul>`,
-            )}
+        <div class="todo-frame -custom -animated" style="height: 360px;">
+          <div class="leftcontrols">
+            <p>
+              <button type="button" class="app-button -circle -xl back" title="Previous">
+                ${Icon(previousIcon)}
+              </button>
+            </p>
+          </div>
+          <div class="container">${lists.map(ListCard)} ${NewListCard(lists.length)}</div>
+          <div class="rightcontrols">
+            <p>
+              <button type="button" class="app-button -circle -xl forward" title="Next">
+                ${Icon(nextIcon)}
+              </button>
+            </p>
+            <p>
+              <button type="button" class="app-button -circle -xl add" title="Add custom list">
+                ${Icon(addListIcon)}
+              </button>
+            </p>
           </div>
         </div>
       `,
@@ -44,7 +173,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
         signal: abortController.signal,
       })) {
         if (!abortController.signal.aborted) {
-          renderComponent(result.array as ListWithTodos[]);
+          renderComponent(result.array as ListWithTodoRow[]);
         }
       }
     } catch (error) {
