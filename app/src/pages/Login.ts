@@ -1,10 +1,10 @@
 import { html, render } from "lit";
 import { authService } from "@/lib/auth.ts";
 
-export function Login(el) {
+export function Login(el: HTMLElement) {
   let isSubmitting = false;
   let email = "mika@example.com";
-  let password = "My1234NewStrongPassword!";
+  let password = "My1234NewStrongPassword";
   let statusMessage: string | null = null;
 
   const renderComponent = () => {
