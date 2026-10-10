@@ -1,12 +1,20 @@
 {
   "name": "supa-app",
   "private": true,
-  "scripts": {
-    "app": "npm run dev -w ./app",
-    "schema:generate": "powersync generate schema --output=ts --output-path=app/src/lib/schema.ts --directory=backend/powersync"
-  },
   "workspaces": [
     "packages/*",
     "app"
-  ]
+  ],
+  "scripts": {
+    "app": "npm run dev -w ./app",
+    "schema:generate": "powersync generate schema --output=ts --output-path=app/src/lib/schema.ts --directory=backend/powersync",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.87.0"
+  }
 }
