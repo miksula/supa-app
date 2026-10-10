@@ -76,6 +76,7 @@ Keep migration history focused and readable:
 
    The project must be linked first with `npx --no-install supabase link`, and the database
    password may be requested by the CLI.
+
 5. Treat `supabase db diff` as a draft: keep only relevant statements rather
    than committing generated schema, grant, role, or platform changes blindly.
 

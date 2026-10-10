@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "rendering-patterns.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
@@ -189,7 +189,5 @@
     }
   },
   "active": "257f744ecfadc193",
-  "lastOpenFiles": [
-    "rendering-patterns.md"
-  ]
+  "lastOpenFiles": ["rendering-patterns.md"]
 }

@@ -16,7 +16,7 @@
   font-size: 1.5em;
   line-height: normal;
   font-weight: var(--font-weight-bold);
-  color: var(--main-color)
+  color: var(--main-color);
 }
 
 .todo-custom-list > .header > .title > button {

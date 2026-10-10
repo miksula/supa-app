@@ -61,19 +61,11 @@ export function MyCounter(el: HTMLElement) {
       html`
         <span class="value">${value}</span>
 
-        <button
-          type="button"
-          class="increment"
-          @click=${() => emitCounter(value + 1)}
-        >
+        <button type="button" class="increment" @click=${() => emitCounter(value + 1)}>
           Increment
         </button>
 
-        <button
-          type="button"
-          class="decrement"
-          @click=${() => emitCounter(value - 1)}
-        >
+        <button type="button" class="decrement" @click=${() => emitCounter(value - 1)}>
           Decrement
         </button>
       `,
@@ -94,9 +86,7 @@ export function MyCounter(el: HTMLElement) {
 Mounting:
 
 ```ts
-document
-  .querySelectorAll<HTMLElement>(".my-counter")
-  .forEach((el) => MyCounter(el));
+document.querySelectorAll<HTMLElement>(".my-counter").forEach((el) => MyCounter(el));
 ```
 
 Markup:
@@ -166,10 +156,7 @@ export type CounterController = {
   destroy: () => void;
 };
 
-export function MyCounter(
-  el: HTMLElement,
-  initialValue = 0,
-): CounterController {
+export function MyCounter(el: HTMLElement, initialValue = 0): CounterController {
   let value = initialValue;
 
   el.innerHTML = `
@@ -339,19 +326,11 @@ export class MyCounter extends LitElement {
     return html`
       <span class="value">${this.value}</span>
 
-      <button
-        type="button"
-        class="increment"
-        @click=${() => this.emitCounter(this.value + 1)}
-      >
+      <button type="button" class="increment" @click=${() => this.emitCounter(this.value + 1)}>
         Increment
       </button>
 
-      <button
-        type="button"
-        class="decrement"
-        @click=${() => this.emitCounter(this.value - 1)}
-      >
+      <button type="button" class="decrement" @click=${() => this.emitCounter(this.value - 1)}>
         Decrement
       </button>
     `;
@@ -417,15 +396,15 @@ It is not necessary merely to render a small template fragment.
 
 ## Comparison
 
-| Concern | Mounted Lit function | Imperative function | Reactive `LitElement` |
-| --- | --- | --- | --- |
-| Host | Existing element supplied by caller | Existing element supplied by caller | Custom element instance |
-| State | Closure or parent-owned | Component-local variables | Reactive properties/state |
-| Rendering | Explicit `render()` call | Manual DOM mutation | Automatic after property changes |
-| Lifecycle | Caller-managed | `update()`/`destroy()` contract | Custom-element callbacks |
-| Focus control | Possible, but manual | Excellent | Possible, with lifecycle/state coordination |
-| Custom element required | No | No | Yes |
-| Best for | Data-driven fragments | Interaction-heavy widgets | Reusable stateful widgets |
+| Concern                 | Mounted Lit function                | Imperative function                 | Reactive `LitElement`                       |
+| ----------------------- | ----------------------------------- | ----------------------------------- | ------------------------------------------- |
+| Host                    | Existing element supplied by caller | Existing element supplied by caller | Custom element instance                     |
+| State                   | Closure or parent-owned             | Component-local variables           | Reactive properties/state                   |
+| Rendering               | Explicit `render()` call            | Manual DOM mutation                 | Automatic after property changes            |
+| Lifecycle               | Caller-managed                      | `update()`/`destroy()` contract     | Custom-element callbacks                    |
+| Focus control           | Possible, but manual                | Excellent                           | Possible, with lifecycle/state coordination |
+| Custom element required | No                                  | No                                  | Yes                                         |
+| Best for                | Data-driven fragments               | Interaction-heavy widgets           | Reusable stateful widgets                   |
 
 ## Choosing a pattern
 

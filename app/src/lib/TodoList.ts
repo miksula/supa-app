@@ -3,10 +3,7 @@ import checkIcon from "@/assets/check-icon.svg";
 import plusIcon from "@/assets/plus-icon.svg";
 import type { ListWithTodoRow, Todo } from "@/lib/TodoStore.ts";
 
-export type TodoListData = Pick<
-  ListWithTodoRow,
-  "id" | "created_at" | "name" | "owner_id"
-> & {
+export type TodoListData = Pick<ListWithTodoRow, "id" | "created_at" | "name" | "owner_id"> & {
   items: Todo[];
 };
 
@@ -51,12 +48,7 @@ function TodoInput(listId: string, onSubmit: TodoListOptions["onSubmit"]) {
       data-key="todo-item-input${listId}"
       @submit=${(event: SubmitEvent) => onSubmit(event, listId)}
     >
-      <input
-        type="text"
-        name="description"
-        class="input use-focus-other"
-        aria-label="Add todo"
-      />
+      <input type="text" name="description" class="input use-focus-other" aria-label="Add todo" />
       <button type="submit" class="app-button save" title="Add todo" tabindex="-1">
         ${Icon(plusIcon)}
       </button>
@@ -64,16 +56,10 @@ function TodoInput(listId: string, onSubmit: TodoListOptions["onSubmit"]) {
   `;
 }
 
-export function TodoList(
-  el: HTMLElement,
-  list: TodoListData,
-  options: TodoListOptions,
-) {
+export function TodoList(el: HTMLElement, list: TodoListData, options: TodoListOptions) {
   render(
     html`
-      <div class="items">
-        ${list.items.map((todo) => TodoItem(todo, options.onCompleted))}
-      </div>
+      <div class="items">${list.items.map((todo) => TodoItem(todo, options.onCompleted))}</div>
       ${TodoInput(list.id, options.onSubmit)}
     `,
     el,

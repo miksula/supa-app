@@ -1,5 +1,5 @@
 import { defineConfig } from "oxfmt";
 
 export default defineConfig({
-  ignorePatterns: [".agents/**", ".vscode/**"],
+  ignorePatterns: [".agents/**", ".vscode/**", ".obsidian/**"],
 });

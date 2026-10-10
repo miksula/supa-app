@@ -20,13 +20,11 @@ type NavigateEvent = Event & {
   downloadRequest: { filename: string } | null;
   destination: { url: string };
   navigationType?: "push" | "reload" | "replace" | "traverse";
-  intercept(
-    options: {
-      handler?: () => Promise<void>;
-      focus?: string;
-      scroll?: { x: number; y: number };
-    },
-  ): void;
+  intercept(options: {
+    handler?: () => Promise<void>;
+    focus?: string;
+    scroll?: { x: number; y: number };
+  }): void;
 };
 
 const getNavigation = () =>
@@ -103,7 +101,8 @@ export class Router {
 
       // Skip non-interception cases
       if (
-        !navEvent.canIntercept || navEvent.hashChange ||
+        !navEvent.canIntercept ||
+        navEvent.hashChange ||
         navEvent.downloadRequest !== null ||
         url.origin !== globalThis.location.origin ||
         (navEvent.navigationType !== undefined &&
@@ -115,10 +114,7 @@ export class Router {
       const pathname = url.pathname + url.search;
 
       // Check async routes first, then sync routes
-      if (
-        this.matchAsyncRoute(pathname, navEvent) ||
-        this.matchSyncRoute(pathname, navEvent)
-      ) {
+      if (this.matchAsyncRoute(pathname, navEvent) || this.matchSyncRoute(pathname, navEvent)) {
         // Route matched and handled
       }
     };
@@ -230,7 +226,8 @@ export class Router {
       this.routes.push({ pattern, handler });
     } catch (error) {
       throw new Error(
-        `Invalid URLPattern syntax for path "${path}": ${error instanceof Error ? error.message : String(error)
+        `Invalid URLPattern syntax for path "${path}": ${
+          error instanceof Error ? error.message : String(error)
         }`,
       );
     }
@@ -299,9 +296,7 @@ export class Router {
    * @returns The router instance for chaining
    */
   removeRouteListener(callback: (path: string) => void) {
-    this.routeCheckHandlers = this.routeCheckHandlers.filter((handler) =>
-      handler !== callback
-    );
+    this.routeCheckHandlers = this.routeCheckHandlers.filter((handler) => handler !== callback);
     return this;
   }
 
@@ -318,11 +313,14 @@ export class Router {
       return this;
     }
 
-    nav.navigate(page, options).finished.then(() => {
-      // Navigation completed
-    }).catch((err: unknown) => {
-      console.error("Navigation failed:", err);
-    });
+    nav
+      .navigate(page, options)
+      .finished.then(() => {
+        // Navigation completed
+      })
+      .catch((err: unknown) => {
+        console.error("Navigation failed:", err);
+      });
     return this;
   }
 
@@ -338,7 +336,8 @@ export class Router {
       this.asyncRoutes.push({ pattern, handler });
     } catch (error) {
       throw new Error(
-        `Invalid URLPattern syntax for path "${path}": ${error instanceof Error ? error.message : String(error)
+        `Invalid URLPattern syntax for path "${path}": ${
+          error instanceof Error ? error.message : String(error)
         }`,
       );
     }

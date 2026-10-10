@@ -9,9 +9,7 @@ import type { Session } from "@supabase/supabase-js";
 
 type AppBarElement = HTMLElement & { disposeAppBar?: () => void };
 
-const navItems = [
-  { text: "Työpöytä", to: "/" }
-];
+const navItems = [{ text: "Työpöytä", to: "/" }];
 
 function getAvatarName(session: Session | null) {
   return session?.user.email ?? session?.user.id ?? "Käyttäjä";
@@ -55,14 +53,14 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
 
           <div class="links">
             ${navItems.map(
-        (item) => html`
+              (item) => html`
                 <app-link
                   text="${item.text}"
                   to="${item.to}"
                   ?active="${item.to === currentPath}"
                 ></app-link>
               `,
-      )}
+            )}
           </div>
 
           <span class="sync-status" role="status"> ${getSyncLabel(syncStatus)} </span>

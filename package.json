@@ -1,11 +1,11 @@
 {
   "name": "supa-app",
-  "type": "module",
   "private": true,
   "workspaces": [
     "packages/*",
     "app"
   ],
+  "type": "module",
   "scripts": {
     "app:start": "npm run dev -w app",
     "lint": "oxlint",

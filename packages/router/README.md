@@ -322,9 +322,7 @@ import Router, { RouteContext } from "./router";
 
 export class MyApp extends LitElement {
   private router = new Router();
-  private currentView = html`
-    <div>Loading...</div>
-  `;
+  private currentView = html` <div>Loading...</div> `;
 
   constructor() {
     super();
@@ -332,21 +330,15 @@ export class MyApp extends LitElement {
     // Setup routes
     this.router
       .add("/", () => {
-        this.currentView = html`
-          <h1>Home</h1>
-        `;
+        this.currentView = html` <h1>Home</h1> `;
       })
       .add("/about", () => {
-        this.currentView = html`
-          <h1>About</h1>
-        `;
+        this.currentView = html` <h1>About</h1> `;
       })
       // Sync route handler
       .add("/users/:id", (context: RouteContext) => {
         const id = context.param("id");
-        this.currentView = html`
-          <h1>User ${id}</h1>
-        `;
+        this.currentView = html` <h1>User ${id}</h1> `;
       })
       // Async route handler for complex loading
       .addAsync("/posts/:id", async (context: RouteContext) => {
