@@ -21,7 +21,7 @@
 }
 
 .todo-item-input > .input:focus-visible {
-  border-bottom: 1px solid var(--highlight-text);
+  border-bottom: 1px solid var(--main-border);
 }
 
 .todo-item-input > .save {

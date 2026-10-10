@@ -15,6 +15,8 @@
   margin: 0 0 10px;
   font-size: 1.5em;
   line-height: normal;
+  font-weight: var(--font-weight-bold);
+  color: var(--main-color)
 }
 
 .todo-custom-list > .header > .title > button {

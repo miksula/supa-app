@@ -110,8 +110,86 @@ function ListCard(
   index: number,
   onSubmit: (event: SubmitEvent, listId: string) => void,
   onCompleted: (event: Event, todoId: string) => void,
+  onRename: (listId: string, name: string) => Promise<void>,
 ) {
   const title = list.name || "...";
+  let editing = false;
+
+  const startEditing = (event: Event) => {
+    const titleButton = event.currentTarget;
+    if (!(titleButton instanceof HTMLButtonElement)) {
+      console.error("Unable to edit list: title target is not a button");
+      return;
+    }
+
+    const card = titleButton.closest(".todo-custom-list");
+    const input = card?.querySelector<HTMLInputElement>(".header > .form > .input");
+    if (!card || !input) {
+      console.error("Unable to edit list: title input is missing");
+      return;
+    }
+
+    editing = true;
+    card.classList.add("-editing");
+    input.value = list.name;
+    input.focus();
+    input.select();
+  };
+
+  const cancelEditing = (event: Event) => {
+    if (!(event.currentTarget instanceof HTMLInputElement)) {
+      console.error("Unable to cancel list edit: title input is missing");
+      return;
+    }
+
+    const card = event.currentTarget.closest(".todo-custom-list");
+    if (!card) {
+      console.error("Unable to cancel list edit: list card is missing");
+      return;
+    }
+
+    editing = false;
+    event.currentTarget.value = list.name;
+    card.classList.remove("-editing");
+  };
+
+  const saveTitle = async (event: Event) => {
+    if (!(event.currentTarget instanceof HTMLInputElement)) {
+      console.error("Unable to save list name: title input is missing");
+      return;
+    }
+
+    const input = event.currentTarget;
+    const card = input.closest(".todo-custom-list");
+    if (!card || !editing) {
+      return;
+    }
+
+    editing = false;
+    card.classList.remove("-editing");
+
+    const name = input.value.trim();
+    if (name === list.name) {
+      return;
+    }
+
+    try {
+      await onRename(list.id, name);
+    } catch (error) {
+      input.value = list.name;
+      console.error("Failed to update list name", error);
+    }
+  };
+
+  const onTitleKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelEditing(event);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      void saveTitle(event);
+    }
+  };
 
   return html`
     <div
@@ -120,13 +198,22 @@ function ListCard(
       style="transform: translateX(${index * 100}%); height: 310px;"
     >
       <div class="header">
-        <h2 class="title"><button type="button" title="Edit">${title}</button></h2>
+        <h2 class="title">
+          <button
+            type="button"
+            title="Edit"
+            @click=${startEditing}
+            @focus=${startEditing}
+          >${title}</button>
+        </h2>
         <p class="form">
           <input
             type="text"
             class="input use-focus-other"
             aria-label="Title"
-            value="${list.name}"
+            .value=${list.name}
+            @blur=${saveTitle}
+            @keydown=${onTitleKeydown}
           />
           <button type="button" class="app-button delete" title="Delete">${Icon(trashIcon)}</button>
         </p>
@@ -200,6 +287,10 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
     }
   }
 
+  async function onRename(listId: string, name: string) {
+    await store.updateListName(listId, name);
+  }
+
   function renderComponent(rows: ListWithTodoRow[] = []) {
     const lists = mapTodoLists(rows);
 
@@ -214,7 +305,9 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
             </p>
           </div>
           <div class="container">
-            ${lists.map((list, index) => ListCard(list, index, onSubmit, onCompleted))}
+            ${lists.map((list, index) =>
+              ListCard(list, index, onSubmit, onCompleted, onRename),
+            )}
           </div>
           <div class="rightcontrols">
             <p>
