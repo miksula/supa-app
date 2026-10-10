@@ -50,16 +50,25 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
           lastOp = op;
           const table = this.authService.client.from(op.table);
           let result: PostgrestSingleResponse<null>;
+          const opData = op.opData;
           switch (op.op) {
             case UpdateType.PUT:
-              result = await table.upsert({ ...op.opData, id: op.id });
+              if (!opData) {
+                throw new Error(`PUT operation for ${op.table} is missing operation data`);
+              }
+              result = await table.upsert({ ...opData, id: op.id });
               break;
             case UpdateType.PATCH:
-              result = await table.update(op.opData).eq("id", op.id);
+              if (!opData) {
+                throw new Error(`PATCH operation for ${op.table} is missing operation data`);
+              }
+              result = await table.update(opData).eq("id", op.id);
               break;
             case UpdateType.DELETE:
               result = await table.delete().eq("id", op.id);
               break;
+            default:
+              throw new Error(`Unsupported PowerSync operation: ${op.op}`);
           }
 
           if (result.error) {
@@ -72,9 +81,10 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
       await transaction.complete();
     } catch (ex: unknown) {
       const error = ex as { code?: string };
+      const errorCode = error.code;
       if (
-        typeof error.code === "string" &&
-        FATAL_RESPONSE_CODES.some((regex) => regex.test(error.code))
+        typeof errorCode === "string" &&
+        FATAL_RESPONSE_CODES.some((regex) => regex.test(errorCode))
       ) {
         console.error("Data upload error - discarding:", lastOp, ex);
         await transaction.complete();

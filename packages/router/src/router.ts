@@ -1,6 +1,19 @@
 /// <reference lib="dom" />
 
-// Navigation API types for TypeScript support
+type AppNavigation = {
+  addEventListener(event: string, handler: (event: Event) => void): void;
+  navigate(
+    url: string,
+    options?: { state?: unknown },
+  ): { finished: Promise<void>; committed: Promise<void> };
+  currentEntry: {
+    url: string;
+    getState(): unknown;
+    key: string;
+    index: number;
+  } | null;
+};
+
 type NavigateEvent = Event & {
   canIntercept: boolean;
   hashChange: boolean;
@@ -16,24 +29,8 @@ type NavigateEvent = Event & {
   ): void;
 };
 
-declare global {
-  interface Window {
-    navigation: {
-      addEventListener(event: string, handler: (event: Event) => void): void;
-      navigate(
-        url: string,
-        options?: { state?: unknown },
-      ): { finished: Promise<void>; committed: Promise<void> };
-      currentEntry: {
-        url: string;
-        getState(): unknown;
-        key: string;
-        index: number;
-      } | null;
-    };
-  }
-  var navigation: Window["navigation"];
-}
+const getNavigation = () =>
+  (globalThis as typeof globalThis & { navigation?: AppNavigation }).navigation;
 
 class RouteContext {
   public params: Record<string, string>;
@@ -126,10 +123,7 @@ export class Router {
       }
     };
 
-    (globalThis as unknown as Window).navigation.addEventListener(
-      "navigate",
-      navListener,
-    );
+    getNavigation()?.addEventListener("navigate", navListener);
   }
 
   clearSlashes(path: string) {
@@ -138,7 +132,7 @@ export class Router {
 
   getPath() {
     // Use Navigation API's current entry as source of truth
-    const nav = (globalThis as unknown as Window).navigation;
+    const nav = getNavigation();
     if (nav && nav.currentEntry) {
       const url = new URL(nav.currentEntry.url ?? globalThis.location.href);
       let pathname = url.pathname + url.search;
@@ -318,7 +312,12 @@ export class Router {
 
   navigate(path: string = "", options?: { state?: unknown }) {
     const page = this.root + this.clearSlashes(path);
-    const nav = (globalThis as unknown as Window).navigation;
+    const nav = getNavigation();
+    if (!nav) {
+      console.error("Navigation API is unavailable");
+      return this;
+    }
+
     nav.navigate(page, options).finished.then(() => {
       // Navigation completed
     }).catch((err: unknown) => {

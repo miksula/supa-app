@@ -113,6 +113,7 @@ function ListCard(
   onRename: (listId: string, name: string) => Promise<void>,
 ) {
   const title = list.name || "...";
+  const currentName = list.name ?? "";
   let editing = false;
 
   const startEditing = (event: Event) => {
@@ -131,7 +132,7 @@ function ListCard(
 
     editing = true;
     card.classList.add("-editing");
-    input.value = list.name;
+    input.value = currentName;
     input.focus();
     input.select();
   };
@@ -149,7 +150,7 @@ function ListCard(
     }
 
     editing = false;
-    event.currentTarget.value = list.name;
+    event.currentTarget.value = currentName;
     card.classList.remove("-editing");
   };
 
@@ -169,14 +170,14 @@ function ListCard(
     card.classList.remove("-editing");
 
     const name = input.value.trim();
-    if (name === list.name) {
+    if (name === currentName) {
       return;
     }
 
     try {
       await onRename(list.id, name);
     } catch (error) {
-      input.value = list.name;
+      input.value = currentName;
       console.error("Failed to update list name", error);
     }
   };
@@ -211,7 +212,7 @@ function ListCard(
             type="text"
             class="input use-focus-other"
             aria-label="Title"
-            .value=${list.name}
+            .value=${currentName}
             @blur=${saveTitle}
             @keydown=${onTitleKeydown}
           />
