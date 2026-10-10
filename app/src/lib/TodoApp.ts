@@ -111,10 +111,12 @@ function ListCard(
   onSubmit: (event: SubmitEvent, listId: string) => void,
   onCompleted: (event: Event, todoId: string) => void,
   onRename: (listId: string, name: string) => Promise<void>,
+  onDelete: (listId: string) => Promise<void>,
 ) {
   const title = list.name || "...";
   const currentName = list.name ?? "";
   let editing = false;
+  let skipBlurSave = false;
 
   const startEditing = (event: Event) => {
     const titleButton = event.currentTarget;
@@ -166,6 +168,11 @@ function ListCard(
       return;
     }
 
+    if (skipBlurSave) {
+      skipBlurSave = false;
+      return;
+    }
+
     editing = false;
     card.classList.remove("-editing");
 
@@ -192,6 +199,21 @@ function ListCard(
     }
   };
 
+  const deleteList = () => {
+    skipBlurSave = false;
+
+    if (
+      list.items.length > 0 &&
+      !window.confirm("Deleting this list will delete its items as well. Are you sure?")
+    ) {
+      return;
+    }
+
+    void onDelete(list.id).catch((error: unknown) => {
+      console.error("Failed to delete list", error);
+    });
+  };
+
   return html`
     <div
       class="card todo-custom-list"
@@ -200,12 +222,9 @@ function ListCard(
     >
       <div class="header">
         <h2 class="title">
-          <button
-            type="button"
-            title="Edit"
-            @click=${startEditing}
-            @focus=${startEditing}
-          >${title}</button>
+          <button type="button" title="Edit" @click=${startEditing} @focus=${startEditing}>
+            ${title}
+          </button>
         </h2>
         <p class="form">
           <input
@@ -216,7 +235,20 @@ function ListCard(
             @blur=${saveTitle}
             @keydown=${onTitleKeydown}
           />
-          <button type="button" class="app-button delete" title="Delete">${Icon(trashIcon)}</button>
+          <button
+            type="button"
+            class="app-button delete"
+            title="Delete"
+            @mousedown=${() => {
+              skipBlurSave = true;
+            }}
+            @touchstart=${() => {
+              skipBlurSave = true;
+            }}
+            @click=${deleteList}
+          >
+            ${Icon(trashIcon)}
+          </button>
         </p>
       </div>
       <div class="todo-list">
@@ -292,6 +324,10 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
     await store.updateListName(listId, name);
   }
 
+  async function onDelete(listId: string) {
+    await store.deleteList(listId);
+  }
+
   function renderComponent(rows: ListWithTodoRow[] = []) {
     const lists = mapTodoLists(rows);
 
@@ -307,7 +343,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
           </div>
           <div class="container">
             ${lists.map((list, index) =>
-              ListCard(list, index, onSubmit, onCompleted, onRename),
+              ListCard(list, index, onSubmit, onCompleted, onRename, onDelete),
             )}
           </div>
           <div class="rightcontrols">

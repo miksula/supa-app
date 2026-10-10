@@ -36,9 +36,24 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
     let lastOp: CrudEntry | null = null;
     try {
       if (transaction.crud.length > 1) {
+        /*
+         * PowerSync can return several related local writes in one transaction,
+         * such as deleting a list and its todos. Send those operations through
+         * the PostgreSQL RPC so they are processed as one server-side batch.
+         * Single operations use PostgREST below because no batch RPC is needed.
+         *
+         * The SDK serializes the table name as `type`, while the RPC expects
+         * `table`, so add the field explicitly before sending the payload.
+         *
+         * The `process_powersync_crud` RPC is created separately by the
+         * `*_process_powersync_crud.sql` migration in the infra `stack/`.
+         */
         lastOp = transaction.crud.at(-1) ?? null;
         const { error } = await this.authService.client.rpc("process_powersync_crud", {
-          ops: transaction.crud,
+          ops: transaction.crud.map((op) => ({
+            ...op,
+            table: op.table,
+          })),
         });
 
         if (error) {

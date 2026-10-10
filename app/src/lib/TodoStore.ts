@@ -69,6 +69,11 @@ export class TodoStore {
     return await this.ps.execute("UPDATE lists SET name = ? WHERE id = ?", [name, listId]);
   }
 
+  async deleteList(listId: string) {
+    await this.ps.execute("DELETE FROM todos WHERE list_id = ?", [listId]);
+    return await this.ps.execute("DELETE FROM lists WHERE id = ?", [listId]);
+  }
+
   async setTodoCompleted(todoId: string, completed: boolean) {
     return await this.ps.execute("UPDATE todos SET completed = ?, completed_at = ? WHERE id = ?", [
       completed ? 1 : 0,
