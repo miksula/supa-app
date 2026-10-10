@@ -36,7 +36,7 @@ export class TodoStore {
         todos.list_id AS item_list_id
       FROM lists
       LEFT JOIN todos ON todos.list_id = lists.id
-      ORDER BY lists.created_at DESC, todos.created_at DESC`,
+      ORDER BY lists.created_at DESC, todos.created_at ASC`,
       [],
       options,
     );

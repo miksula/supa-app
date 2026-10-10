@@ -74,18 +74,40 @@ function TodoItem(todo: Todo) {
   `;
 }
 
-function TodoInput(listId: string) {
+function TodoInput(listId: string, onSubmit?: (event: SubmitEvent, listId: string) => void) {
+  const interactive = Boolean(onSubmit);
+
   return html`
-    <div class="todo-item-input" data-key="todo-item-input${listId}">
-      <input type="text" class="input use-focus-other" aria-label="Label" />
-      <button type="button" class="app-button save" title="Save" tabindex="-1">
+    <form
+      class="todo-item-input"
+      data-key="todo-item-input${listId}"
+      @submit=${onSubmit ? (event: SubmitEvent) => onSubmit(event, listId) : undefined}
+    >
+      <input
+        type="text"
+        name="description"
+        class="input use-focus-other"
+        aria-label="Add todo"
+        ?disabled=${!interactive}
+      />
+      <button
+        type="${interactive ? "submit" : "button"}"
+        class="app-button save"
+        title="Add todo"
+        tabindex="-1"
+        ?disabled=${!interactive}
+      >
         ${Icon(plusIcon)}
       </button>
-    </div>
+    </form>
   `;
 }
 
-function ListCard(list: TodoList, index: number) {
+function ListCard(
+  list: TodoList,
+  index: number,
+  onSubmit: (event: SubmitEvent, listId: string) => void,
+) {
   return html`
     <div
       class="card todo-custom-list"
@@ -106,7 +128,7 @@ function ListCard(list: TodoList, index: number) {
       </div>
       <div class="todo-list">
         <div class="items">${list.items.map(TodoItem)}</div>
-        ${TodoInput(list.id)}
+        ${TodoInput(list.id, onSubmit)}
       </div>
     </div>
   `;
@@ -133,6 +155,35 @@ function NewListCard(index: number) {
 export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
   const abortController = new AbortController();
 
+  async function onSubmit(event: SubmitEvent, listId: string) {
+    event.preventDefault();
+
+    if (!(event.currentTarget instanceof HTMLFormElement)) {
+      console.error("Unable to create todo: submit target is not a form");
+      return;
+    }
+
+    const form = event.currentTarget;
+    const input = form.elements.namedItem("description");
+    if (!(input instanceof HTMLInputElement)) {
+      console.error("Unable to create todo: description input is missing");
+      return;
+    }
+
+    const description = input.value.trim();
+    if (!description) {
+      input.focus();
+      return;
+    }
+
+    try {
+      await store.createTodo({ description, listId });
+      form.reset();
+    } catch (error) {
+      console.error("Failed to create todo", error);
+    }
+  }
+
   function renderComponent(rows: ListWithTodoRow[] = []) {
     const lists = mapTodoLists(rows);
 
@@ -146,7 +197,10 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
               </button>
             </p>
           </div>
-          <div class="container">${lists.map(ListCard)} ${NewListCard(lists.length)}</div>
+          <div class="container">
+            ${lists.map((list, index) => ListCard(list, index, onSubmit))}
+            ${NewListCard(lists.length)}
+          </div>
           <div class="rightcontrols">
             <p>
               <button type="button" class="app-button -circle -xl forward" title="Next">
