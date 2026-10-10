@@ -36,14 +36,14 @@ export class TodoStore {
         todos.list_id AS item_list_id
       FROM lists
       LEFT JOIN todos ON todos.list_id = lists.id
-      ORDER BY lists.created_at DESC, todos.created_at ASC`,
+      ORDER BY
+        lists.created_at DESC,
+        lists.id ASC,
+        todos.created_at ASC,
+        todos.id ASC`,
       [],
       options,
     );
-  }
-
-  watchUserTodos(options?: { signal?: AbortSignal }) {
-    return this.ps.watch("SELECT * FROM todos ORDER BY created_at DESC", [], options);
   }
 
   async createTodo(todo: NewTodo) {
@@ -51,5 +51,13 @@ export class TodoStore {
       "INSERT INTO todos (id, description, list_id, created_at) VALUES (?, ?, ?, ?)",
       [crypto.randomUUID(), todo.description, todo.listId, new Date().toISOString()],
     );
+  }
+
+  async setTodoCompleted(todoId: string, completed: boolean) {
+    return await this.ps.execute("UPDATE todos SET completed = ?, completed_at = ? WHERE id = ?", [
+      completed ? 1 : 0,
+      completed ? new Date().toISOString() : null,
+      todoId,
+    ]);
   }
 }

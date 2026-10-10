@@ -48,7 +48,7 @@ const mapTodoLists = (rows: ListWithTodoRow[]): TodoList[] => {
 
 const Icon = (src: string) => html`<img class="app-icon" src="${src}" alt="" aria-hidden="true" />`;
 
-function TodoItem(todo: Todo) {
+function TodoItem(todo: Todo, onCompleted: (event: Event, todoId: string) => void) {
   return html`
     <div class="todo-item ${todo.completed ? "-done" : ""}" data-key="${todo.id}">
       <div class="checkbox">
@@ -56,6 +56,7 @@ function TodoItem(todo: Todo) {
           type="checkbox"
           aria-label="${todo.description}"
           .checked=${Boolean(todo.completed)}
+          @change=${(event: Event) => onCompleted(event, todo.id)}
         />
       </div>
       <p class="label"><button type="button" title="Edit">${todo.description}</button></p>
@@ -107,6 +108,7 @@ function ListCard(
   list: TodoList,
   index: number,
   onSubmit: (event: SubmitEvent, listId: string) => void,
+  onCompleted: (event: Event, todoId: string) => void,
 ) {
   return html`
     <div
@@ -127,7 +129,7 @@ function ListCard(
         </p>
       </div>
       <div class="todo-list">
-        <div class="items">${list.items.map(TodoItem)}</div>
+        <div class="items">${list.items.map((todo) => TodoItem(todo, onCompleted))}</div>
         ${TodoInput(list.id, onSubmit)}
       </div>
     </div>
@@ -184,6 +186,21 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
     }
   }
 
+  function onCompleted(event: Event, todoId: string) {
+    if (!(event.currentTarget instanceof HTMLInputElement)) {
+      console.error("Unable to update todo: change target is not a checkbox");
+      return;
+    }
+
+    const checkbox = event.currentTarget;
+    const completed = checkbox.checked;
+
+    void store.setTodoCompleted(todoId, completed).catch((error: unknown) => {
+      checkbox.checked = !completed;
+      console.error("Failed to update todo completion", error);
+    });
+  }
+
   function renderComponent(rows: ListWithTodoRow[] = []) {
     const lists = mapTodoLists(rows);
 
@@ -198,7 +215,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
             </p>
           </div>
           <div class="container">
-            ${lists.map((list, index) => ListCard(list, index, onSubmit))}
+            ${lists.map((list, index) => ListCard(list, index, onSubmit, onCompleted))}
             ${NewListCard(lists.length)}
           </div>
           <div class="rightcontrols">
