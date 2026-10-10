@@ -7,12 +7,12 @@ detailed setup instructions.
 
 ## Local development
 
-The following executables are required for local development:
+The following binaries are required for running the application:
 
-- `node` and `npm` (or `bun`) to install dependencies and run the app.
+- `node` and `npm` (or `bun`) to install dependencies, build and run the dev server.
 - `supabase` to manage the local Supabase backend.
 - `powersync` to generate the sync schema and run the PowerSync service.
-- `docker` to run the local backend services.
+- `docker` (or `orbstack`) to run the local backend services.
 
 Install dependencies with npm, configure `app/.env.local` from the provided
 template, then start the local stack and app from the repository root:
