@@ -7,23 +7,21 @@ elements; it does not use a component framework or a central state store.
 ## Getting started
 
 This repository uses **npm** and npm workspaces. Install dependencies from the
-repository root:
+repository root and then:
 
 ```sh
-npm install
-cp app/.env.local.template app/.env.local
+cp .env.local.template .env.local
 ```
 
 Set the Supabase and PowerSync values in `app/.env.local`, then start the app:
 
 ```sh
-npm run dev --workspace=app
+npm run dev
 ```
 
 Vite serves the app locally and opens it in a browser. To work on the UI without
-a running backend, use `npm run dev:offline --workspace=app`; this disables
+a running backend, use `npm run dev:offline`; this disables
 authentication and remote sync while keeping the local database available.
-Build with `npm run build --workspace=app`.
 
 ## Basic architecture
 
