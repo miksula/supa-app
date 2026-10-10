@@ -13,6 +13,12 @@ Unless noted otherwise, run commands from the repository root.
 - PowerSync CLI
 - Docker
 
+The repository pins the Supabase CLI as a development dependency. Prefer
+`npx --no-install supabase ...` for direct CLI commands so the local version is
+used and no package is downloaded implicitly. The existing `npm run` scripts
+resolve the local CLI automatically. If using Bun for CLI commands, the
+equivalent is `bunx --no-install supabase ...`.
+
 ## Start and stop services
 
 Start both local services at project root:
@@ -34,11 +40,10 @@ PowerSync service and sync configuration are in `powersync/`.
 
 App-owned database schema changes belong in `supabase/migrations/`. The
 migrations create the `lists` and `todos` tables and the `powersync` publication
-used for logical replication. Apply pending migrations to a running local
-database with:
+used for logical replication. Apply pending migrations to a running local database with:
 
 ```bash
-supabase migration up --local --workdir=stack
+npx --no-install supabase db push --local --workdir=stack
 ```
 
 The PowerSync sync configuration is in `powersync/sync-config.yaml`. It defines
@@ -50,14 +55,28 @@ rows are synchronized.
 Keep migration history focused and readable:
 
 1. Create a timestamped migration with
-   `supabase migration new <name> --workdir=stack`.
+   `npx --no-install supabase migration new <name> --workdir=stack`.
 2. Write only the intended app-owned DDL in the new file under
    `stack/supabase/migrations/`.
 3. Apply and verify locally with
-   `supabase migration up --local --workdir=stack`. Use
-   `supabase db reset --workdir=stack` when you need to rebuild the local
+   `npx --no-install supabase db push --local --workdir=stack`. Use
+   `npx --no-install supabase db reset --workdir=stack` when you need to rebuild the local
    database from migrations and seed data.
-4. Treat `supabase db diff` as a draft: keep only relevant statements rather
+4. Preview migrations before applying them to a linked project with:
+
+   ```bash
+   npx --no-install supabase db push --linked --dry-run --workdir=stack
+   ```
+
+   Apply them to the linked project with:
+
+   ```bash
+   npx --no-install supabase db push --linked --workdir=stack
+   ```
+
+   The project must be linked first with `npx --no-install supabase link`, and the database
+   password may be requested by the CLI.
+5. Treat `supabase db diff` as a draft: keep only relevant statements rather
    than committing generated schema, grant, role, or platform changes blindly.
 
 Prefer hand-written migrations for app-owned tables, columns, indexes,
