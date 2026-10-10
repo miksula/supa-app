@@ -1,8 +1,8 @@
 # Supa App
 
 A npm-managed monorepo for an offline-capable todo app. It combines a Lit/Vite
-browser client with a local Supabase backend and a self-hosted PowerSync service.
-See [app/README.md](app/README.md) and [backend/README.md](backend/README.md) for
+browser client with a local Supabase database and a self-hosted PowerSync service.
+See [app/README.md](app/README.md) and [stack/README.md](stack/README.md) for
 detailed setup instructions.
 
 ## Local development
@@ -14,24 +14,24 @@ The following executables are required for local development:
 - `powersync` to generate the sync schema and run the PowerSync service.
 - `docker` to run the local backend services.
 
-Install dependencies with npm, then follow the backend guide to start Supabase
-and PowerSync. Configure `app/.env.local` from the provided template and run the
-app from the repository root:
+Install dependencies with npm, configure `app/.env.local` from the provided
+template, then start the local stack and app from the repository root:
 
 ```sh
 npm install # or: bun install
-npm run dev --workspace=app
+npm run stack:up
+npm run app:start
 ```
 
 To work on the UI without a running backend, use
-`npm run dev:offline --workspace=app`. See [app/README.md](app/README.md) for
-more details.
+`npm run dev:offline --workspace=app`. See [app/README.md](app/README.md) and
+[stack/README.md](stack/README.md) for more details.
 
 ## Repository map
 
 - `app/` — browser app, routing, Supabase Auth, local database and sync client.
-- `backend/supabase/` — local Supabase configuration, migrations, and seed data.
-- `backend/powersync/` — PowerSync service, Docker setup, and user-scoped sync
+- `stack/supabase/` — local Supabase configuration, migrations, and seed data.
+- `stack/powersync/` — PowerSync service, Docker setup, and user-scoped sync
   configuration.
 - `packages/router/` — shared client-side router workspace package.
 

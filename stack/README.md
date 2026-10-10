@@ -1,10 +1,11 @@
-# Supabase and PowerSync Backend
+# Local Supabase and PowerSync Stack
 
-This directory contains the local Supabase and self-hosted PowerSync setup.
+This directory contains the local Supabase and self-hosted PowerSync stack.
 Supabase provides Auth and Postgres; PowerSync replicates authorized Postgres
 data to the app's local database and uploads local writes.
 
-Unless noted otherwise, run commands from `backend/`.
+The root `package.json` provides commands for starting and stopping the stack.
+Unless noted otherwise, run commands from the repository root.
 
 ## Prerequisites
 
@@ -17,15 +18,13 @@ Unless noted otherwise, run commands from `backend/`.
 Start both local services:
 
 ```bash
-supabase start
-powersync docker start
+npm run stack:up
 ```
 
 Stop them when finished:
 
 ```bash
-powersync docker stop
-supabase stop
+npm run stack:down
 ```
 
 Supabase configuration, migrations, and seed data are in `supabase/`.
@@ -48,8 +47,8 @@ powersync docker configure --database=external --storage=external
 Initialize and start Supabase if it has not already been initialized:
 
 ```bash
-supabase init
-supabase start
+supabase init --workdir=stack
+supabase start --workdir=stack
 ```
 
 Configure the external database and storage connection strings in
@@ -69,7 +68,7 @@ used for logical replication. Apply pending migrations to a running local
 database with:
 
 ```bash
-supabase migration up --local
+supabase migration up --local --workdir=stack
 ```
 
 The PowerSync sync configuration is in `powersync/sync-config.yaml`. It defines
@@ -82,8 +81,8 @@ Check the PowerSync service and generate the app's TypeScript schema from the
 PowerSync configuration:
 
 ```bash
-powersync status
-powersync generate schema --output=ts --output-path=../app/src/lib/schema.ts --directory=./powersync
+powersync status --directory=stack/powersync
+npm run schema:generate
 ```
 
 Create a local Supabase user through the Auth API:
@@ -98,12 +97,14 @@ curl -X POST 'http://127.0.0.1:54321/auth/v1/signup' \
 
 Keep migration history focused and readable:
 
-1. Create a timestamped migration with `supabase migration new <name>`.
+1. Create a timestamped migration with
+   `supabase migration new <name> --workdir=stack`.
 2. Write only the intended app-owned DDL in the new file under
-   `supabase/migrations/`.
-3. Apply and verify locally with `supabase migration up --local`. Use
-   `supabase db reset` when you need to rebuild the local database from
-   migrations and seed data.
+   `stack/supabase/migrations/`.
+3. Apply and verify locally with
+   `supabase migration up --local --workdir=stack`. Use
+   `supabase db reset --workdir=stack` when you need to rebuild the local
+   database from migrations and seed data.
 4. Treat `supabase db diff` as a draft: keep only relevant statements rather
    than committing generated schema, grant, role, or platform changes blindly.
 
@@ -117,9 +118,9 @@ Before upgrading the Supabase CLI when local Supabase data matters, back up the
 database and stop the stack without a backup:
 
 ```bash
-supabase db diff -f my_schema
-supabase db dump --local --data-only > supabase/seed.sql
-supabase stop --no-backup
+supabase db diff -f my_schema --workdir=stack
+supabase db dump --local --data-only --workdir=stack > stack/supabase/seed.sql
+supabase stop --no-backup --workdir=stack
 ```
 
 To restore a database from a hosted Supabase project, follow the
