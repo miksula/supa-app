@@ -12,6 +12,7 @@ export type TodoListCardOptions = {
 export type TodoListCardController = {
   element: HTMLElement;
   update: (list: TodoListData, index: number) => void;
+  setPosition: (position: number) => void;
   destroy: () => void;
 };
 
@@ -147,6 +148,10 @@ export function TodoListCard(
   deleteButton.addEventListener("blur", onDeleteBlur);
   deleteButton.addEventListener("click", onDelete);
 
+  const setPosition = (position: number) => {
+    el.style.transform = `translateX(${position * 100}%)`;
+  };
+
   function update(nextList: TodoListData, nextIndex: number) {
     list = nextList;
     titleButton.textContent = list.name || "...";
@@ -155,7 +160,7 @@ export function TodoListCard(
       titleInput.value = currentName();
     }
 
-    el.style.transform = `translateX(${nextIndex * 100}%)`;
+    setPosition(nextIndex);
     el.style.height = "310px";
 
     TodoList(todoList, list, {
@@ -169,6 +174,7 @@ export function TodoListCard(
   return {
     element: el,
     update,
+    setPosition,
     destroy: () => {
       titleButton.removeEventListener("click", startEditing);
       titleButton.removeEventListener("focus", startEditing);

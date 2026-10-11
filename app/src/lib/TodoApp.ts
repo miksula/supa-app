@@ -46,6 +46,9 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
   const abortController = new AbortController();
 
   let container: HTMLElement | null = null;
+  let listIds: string[] = [];
+  let currentListIndex = 0;
+  let hasReceivedListSnapshot = false;
 
   function renderComponent() {
     render(
@@ -53,7 +56,12 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
         <div class="todo-frame -custom -animated" style="flex-grow: 1;">
           <div class="leftcontrols">
             <p>
-              <button type="button" class="app-button -circle -xl back" title="Previous">
+              <button
+                type="button"
+                class="app-button -circle -xl back"
+                title="Previous"
+                @click=${() => seekLists(-1)}
+              >
                 <img class="app-icon" src="${previousIcon}" alt="" aria-hidden="true" />
               </button>
             </p>
@@ -61,7 +69,12 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
           <div class="content"></div>
           <div class="rightcontrols">
             <p>
-              <button type="button" class="app-button -circle -xl forward" title="Next">
+              <button
+                type="button"
+                class="app-button -circle -xl forward"
+                title="Next"
+                @click=${() => seekLists(1)}
+              >
                 <img class="app-icon" src="${nextIcon}" alt="" aria-hidden="true" />
               </button>
             </p>
@@ -91,6 +104,33 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
   // Provides a way to manage each card's lifecycle and maintain state.
   const cardControllers = new Map<string, TodoListCardController>();
 
+  function updateCardPositions() {
+    listIds.forEach((listId, index) => {
+      cardControllers.get(listId)?.setPosition(index - currentListIndex);
+    });
+  }
+
+  function seekLists(delta: number) {
+    if (listIds.length === 0) {
+      return;
+    }
+
+    currentListIndex = Math.max(
+      0,
+      Math.min(listIds.length - 1, currentListIndex + delta),
+    );
+    updateCardPositions();
+  }
+
+  function getVisibleCardCount(listContainer: HTMLElement) {
+    const firstCard = listContainer.firstElementChild;
+    if (!(firstCard instanceof HTMLElement) || firstCard.offsetWidth === 0) {
+      return 1;
+    }
+
+    return Math.max(1, Math.floor(listContainer.clientWidth / firstCard.offsetWidth));
+  }
+
   /*
     TodoListCard owns its card DOM, event listeners, and interaction state.
     Keeps one controller per list ID so database updates call update() on the
@@ -106,6 +146,13 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
     }
     const listContainer = container;
     const lists = mapTodoLists(rows);
+    const previousListIds = new Set(listIds);
+    const newListIndex = hasReceivedListSnapshot
+      ? lists.findIndex((list) => !previousListIds.has(list.id))
+      : -1;
+
+    listIds = lists.map((list) => list.id);
+    currentListIndex = Math.min(currentListIndex, Math.max(0, listIds.length - 1));
 
     // The active card IDs are calculated from the latest database query results.
     const activeListIds = new Set(lists.map((list) => list.id));
@@ -119,7 +166,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
       }
     }
 
-    // Appends each card in the order supplied by SQL query.
+    // Inserts each card in the order supplied by the SQL query.
     lists.forEach((list, index) => {
       let controller = cardControllers.get(list.id);
 
@@ -128,7 +175,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
       if (!controller) {
         const card = document.createElement("div");
 
-        controller = TodoListCard(card, list, index, {
+        controller = TodoListCard(card, list, index - currentListIndex, {
           onSubmit,
           onCompleted,
           onRename,
@@ -137,38 +184,41 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
 
         cardControllers.set(list.id, controller);
       } else {
-        controller.update(list, index);
+        controller.update(list, index - currentListIndex);
       }
 
       /*
-        Appending an existing DOM element does not clone it or create a duplicate. A DOM element 
-        can only have one position in one parent. If it is already a child of container, append() 
-        will move it to the end of the container.
-
-        Because the loop processes lists in SQL order, appending each card in sequence ensures the 
-        DOM order matches the database order:
+        insertBefore() moves an existing DOM element; it does not clone it or create a duplicate.
+        Because the loop processes lists in SQL order, inserting each card at its expected index
+        keeps the DOM order synchronized with the database order.
 
           lists = [A, B, C]
 
-          append(A) -> A
-          append(B) -> A, B
-          append(C) -> A, B, C
+          insertBefore(A, null) -> A
+          insertBefore(B, null) -> A, B
+          insertBefore(C, null) -> A, B, C
 
-        If the order changes:  
-
-          lists = [C, A, B]
-
-          append(C) -> A, B, C
-          append(A) -> B, C, A
-          append(B) -> C, A, B
+        Cards already at the expected index are not moved. This avoids unnecessary DOM work and
+        prevents DevTools from highlighting the entire container subtree on every data update.
       */
-      // Avoid moving every card on each subscription update. Besides unnecessary DOM
-      // work, repeated moves make DevTools highlight the entire container subtree.
       const cardAtIndex = listContainer.children[index];
       if (cardAtIndex !== controller.element) {
         listContainer.insertBefore(controller.element, cardAtIndex ?? null);
       }
     });
+
+    if (newListIndex >= 0) {
+      const visibleCardCount = getVisibleCardCount(listContainer);
+      const firstVisibleIndex = currentListIndex;
+      const lastVisibleIndex = currentListIndex + visibleCardCount - 1;
+
+      if (newListIndex < firstVisibleIndex || newListIndex > lastVisibleIndex) {
+        currentListIndex = newListIndex;
+      }
+    }
+
+    updateCardPositions();
+    hasReceivedListSnapshot = true;
   }
 
   renderComponent();
