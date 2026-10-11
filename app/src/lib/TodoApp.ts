@@ -104,7 +104,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
     if (!container) {
       throw new Error("Unable to render todo lists: list container is missing");
     }
-
+    const listContainer = container;
     const lists = mapTodoLists(rows);
 
     // The active card IDs are calculated from the latest database query results.
@@ -162,7 +162,12 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
           append(A) -> B, C, A
           append(B) -> C, A, B
       */
-      container?.append(controller.element);
+      // Avoid moving every card on each subscription update. Besides unnecessary DOM
+      // work, repeated moves make DevTools highlight the entire container subtree.
+      const cardAtIndex = listContainer.children[index];
+      if (cardAtIndex !== controller.element) {
+        listContainer.insertBefore(controller.element, cardAtIndex ?? null);
+      }
     });
   }
 

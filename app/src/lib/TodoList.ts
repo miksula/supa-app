@@ -1,4 +1,5 @@
 import { html, render } from "lit";
+import { repeat } from "lit/directives/repeat.js";
 import checkIcon from "@/assets/check-icon.svg";
 import plusIcon from "@/assets/plus-icon.svg";
 import type { ListWithTodoRow, Todo } from "@/lib/TodoStore.ts";
@@ -57,7 +58,13 @@ function TodoInput(listId: string, onSubmit: TodoListOptions["onSubmit"]) {
 export function TodoList(el: HTMLElement, list: TodoListData, options: TodoListOptions) {
   render(
     html`
-      <div class="items">${list.items.map((todo) => TodoItem(todo, options.onCompleted))}</div>
+      <div class="items">
+        ${repeat(
+          list.items,
+          (todo) => todo.id,
+          (todo) => TodoItem(todo, options.onCompleted),
+        )}
+      </div>
       ${TodoInput(list.id, options.onSubmit)}
     `,
     el,
