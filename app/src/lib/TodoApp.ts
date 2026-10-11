@@ -42,10 +42,131 @@ const mapTodoLists = (rows: ListWithTodoRow[]): TodoListData[] => {
   return [...lists.values()];
 };
 
-const Icon = (src: string) => html`<img class="app-icon" src="${src}" alt="" aria-hidden="true" />`;
-
 export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
   const abortController = new AbortController();
+
+  let container: HTMLElement | null = null;
+
+  function renderComponent() {
+    render(
+      html`
+        <div class="todo-frame -custom -animated" style="height: 360px;">
+          <div class="leftcontrols">
+            <p>
+              <button type="button" class="app-button -circle -xl back" title="Previous">
+                <img class="app-icon" src="${previousIcon}" alt="" aria-hidden="true" />
+              </button>
+            </p>
+          </div>
+          <div class="container"></div>
+          <div class="rightcontrols">
+            <p>
+              <button type="button" class="app-button -circle -xl forward" title="Next">
+                <img class="app-icon" src="${nextIcon}" alt="" aria-hidden="true" />
+              </button>
+            </p>
+            <p>
+              <button
+                type="button"
+                class="app-button -circle -xl add"
+                title="Add custom list"
+                @click=${onAddList}
+              >
+                <img class="app-icon" src="${addListIcon}" alt="" aria-hidden="true" />
+              </button>
+            </p>
+          </div>
+        </div>
+      `,
+      el,
+    );
+
+    container = el.querySelector<HTMLElement>(".todo-frame > .container");
+
+    if (!container) {
+      throw new Error("Unable to mount todo app: list container is missing");
+    }
+  }
+
+  // Provides a way to manage each card's lifecycle and maintain state.
+  const cardControllers = new Map<string, TodoListCardController>();
+
+  /*
+    TodoListCard owns its card DOM, event listeners, and interaction state.
+    Keeps one controller per list ID so database updates call update() on the
+    existing card instead of letting the parent Lit render recreate it.
+
+    Note: This preserves focused inputs and editing state while giving removed
+    cards an explicit destroy() lifecycle. TodoApp owns the outer frame and
+    reconciles the card list; TodoListCard owns each card's DOM.
+  */
+  function renderLists(rows: ListWithTodoRow[]) {
+    if (!container) {
+      throw new Error("Unable to render todo lists: list container is missing");
+    }
+
+    const lists = mapTodoLists(rows);
+
+    // The active card IDs are calculated from the latest database query results.
+    const activeListIds = new Set(lists.map((list) => list.id));
+
+    for (const [listId, controller] of cardControllers) {
+      // Delete - Any card not the active set will be removed from the DOM and destroyed.
+      if (!activeListIds.has(listId)) {
+        controller.destroy();
+        controller.element.remove();
+        cardControllers.delete(listId);
+      }
+    }
+
+    // Appends each card in the order supplied by SQL query.
+    lists.forEach((list, index) => {
+      let controller = cardControllers.get(list.id);
+
+      // Add - If a list item (card) is not already in cardControllers, a new TodoListCard()
+      // is mounted and added to the map.
+      if (!controller) {
+        const card = document.createElement("div");
+
+        controller = TodoListCard(card, list, index, {
+          onSubmit,
+          onCompleted,
+          onRename,
+          onDelete,
+        });
+
+        cardControllers.set(list.id, controller);
+      } else {
+        controller.update(list, index);
+      }
+
+      /*
+        Appending an existing DOM element does not clone it or create a duplicate. A DOM element 
+        can only have one position in one parent. If it is already a child of container, append() 
+        will move it to the end of the container.
+
+        Because the loop processes lists in SQL order, appending each card in sequence ensures the 
+        DOM order matches the database order:
+
+          lists = [A, B, C]
+
+          append(A) -> A
+          append(B) -> A, B
+          append(C) -> A, B, C
+
+        If the order changes:  
+
+          lists = [C, A, B]
+
+          append(C) -> A, B, C
+          append(A) -> B, C, A
+          append(B) -> C, A, B
+      */
+      container?.append(controller.element);
+    });
+  }
+
+  renderComponent();
 
   async function onSubmit(event: SubmitEvent, listId: string) {
     event.preventDefault();
@@ -112,86 +233,6 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
   async function onDelete(listId: string) {
     await store.deleteList(listId);
   }
-
-  const cardControllers = new Map<string, TodoListCardController>();
-  let container: HTMLElement | null = null;
-
-  function renderFrame() {
-    render(
-      html`
-        <div class="todo-frame -custom -animated" style="height: 360px;">
-          <div class="leftcontrols">
-            <p>
-              <button type="button" class="app-button -circle -xl back" title="Previous">
-                ${Icon(previousIcon)}
-              </button>
-            </p>
-          </div>
-          <div class="container"></div>
-          <div class="rightcontrols">
-            <p>
-              <button type="button" class="app-button -circle -xl forward" title="Next">
-                ${Icon(nextIcon)}
-              </button>
-            </p>
-            <p>
-              <button
-                type="button"
-                class="app-button -circle -xl add"
-                title="Add custom list"
-                @click=${onAddList}
-              >
-                ${Icon(addListIcon)}
-              </button>
-            </p>
-          </div>
-        </div>
-      `,
-      el,
-    );
-
-    container = el.querySelector<HTMLElement>(".todo-frame > .container");
-    if (!container) {
-      throw new Error("Unable to mount todo app: list container is missing");
-    }
-  }
-
-  function renderLists(rows: ListWithTodoRow[]) {
-    if (!container) {
-      throw new Error("Unable to render todo lists: list container is missing");
-    }
-
-    const lists = mapTodoLists(rows);
-    const activeListIds = new Set(lists.map((list) => list.id));
-
-    for (const [listId, controller] of cardControllers) {
-      if (!activeListIds.has(listId)) {
-        controller.destroy();
-        controller.element.remove();
-        cardControllers.delete(listId);
-      }
-    }
-
-    lists.forEach((list, index) => {
-      let controller = cardControllers.get(list.id);
-      if (!controller) {
-        const card = document.createElement("div");
-        controller = TodoListCard(card, list, index, {
-          onSubmit,
-          onCompleted,
-          onRename,
-          onDelete,
-        });
-        cardControllers.set(list.id, controller);
-      } else {
-        controller.update(list, index);
-      }
-
-      container?.append(controller.element);
-    });
-  }
-
-  renderFrame();
 
   void (async () => {
     try {

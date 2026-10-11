@@ -12,8 +12,6 @@ type TodoListOptions = {
   onCompleted: (event: Event, todoId: string) => void;
 };
 
-const Icon = (src: string) => html`<img class="app-icon" src="${src}" alt="" aria-hidden="true" />`;
-
 function TodoItem(todo: Todo, onCompleted: TodoListOptions["onCompleted"]) {
   return html`
     <div class="todo-item ${todo.completed ? "-done" : ""}" data-key="${todo.id}">
@@ -34,7 +32,7 @@ function TodoItem(todo: Todo, onCompleted: TodoListOptions["onCompleted"]) {
           value="${todo.description}"
         />
         <button type="button" class="app-button save" title="Save" tabindex="-1">
-          ${Icon(checkIcon)}
+          <img class="app-icon" src="${checkIcon}" alt="" aria-hidden="true" />
         </button>
       </p>
     </div>
@@ -50,7 +48,7 @@ function TodoInput(listId: string, onSubmit: TodoListOptions["onSubmit"]) {
     >
       <input type="text" name="description" class="input use-focus-other" aria-label="Add todo" />
       <button type="submit" class="app-button save" title="Add todo" tabindex="-1">
-        ${Icon(plusIcon)}
+        <img class="app-icon" src="${plusIcon}" alt="" aria-hidden="true" />
       </button>
     </form>
   `;

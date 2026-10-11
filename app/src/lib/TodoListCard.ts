@@ -1,3 +1,4 @@
+import { html, render } from "lit";
 import trashIcon from "@/assets/trash-icon.svg";
 import { TodoList, type TodoListData } from "@/lib/TodoList.ts";
 
@@ -26,25 +27,29 @@ export function TodoListCard(
 
   el.className = "card todo-custom-list";
   el.dataset.key = list.id;
-  el.innerHTML = `
-    <div class="header">
-      <h2 class="title">
-        <button type="button" title="Edit"></button>
-      </h2>
-      <p class="form">
-        <input name="edit-title" type="text" class="input use-focus-other" aria-label="Title" />
-        <button type="button" class="app-button delete" title="Delete">
-          <img class="app-icon" src="${trashIcon}" alt="" aria-hidden="true" />
-        </button>
-      </p>
-    </div>
-    <div class="todo-list"></div>
-  `;
 
-  const titleButton = el.querySelector<HTMLButtonElement>(".title > button");
-  const titleInput = el.querySelector<HTMLInputElement>(".form > .input");
-  const deleteButton = el.querySelector<HTMLButtonElement>(".delete");
-  const todoList = el.querySelector<HTMLElement>(".todo-list");
+  render(
+    html`
+      <div class="header">
+        <h2 class="title">
+          <button type="button" title="Edit"></button>
+        </h2>
+        <p class="form">
+          <input name="edit-title" type="text" class="input use-focus-other" aria-label="Title" />
+          <button type="button" class="app-button delete" title="Delete">
+            <img class="app-icon" src="${trashIcon}" alt="" aria-hidden="true" />
+          </button>
+        </p>
+      </div>
+      <div class="todo-list"></div>
+    `,
+    el,
+  );
+
+  const titleButton = el.querySelector<HTMLButtonElement>(".title > button")!;
+  const titleInput = el.querySelector<HTMLInputElement>(".form > .input")!;
+  const deleteButton = el.querySelector<HTMLButtonElement>(".delete")!;
+  const todoList = el.querySelector<HTMLElement>(".todo-list")!;
 
   if (!titleButton || !titleInput || !deleteButton || !todoList) {
     throw new Error("Unable to mount todo list card: required element is missing");
@@ -142,19 +147,22 @@ export function TodoListCard(
   deleteButton.addEventListener("blur", onDeleteBlur);
   deleteButton.addEventListener("click", onDelete);
 
-  const update = (nextList: TodoListData, nextIndex: number) => {
+  function update(nextList: TodoListData, nextIndex: number) {
     list = nextList;
     titleButton.textContent = list.name || "...";
+
     if (!editing) {
       titleInput.value = currentName();
     }
+
     el.style.transform = `translateX(${nextIndex * 100}%)`;
     el.style.height = "310px";
+
     TodoList(todoList, list, {
       onSubmit: options.onSubmit,
       onCompleted: options.onCompleted,
     });
-  };
+  }
 
   update(list, index);
 
@@ -170,7 +178,8 @@ export function TodoListCard(
       deleteButton.removeEventListener("touchstart", preserveEditOnDeletePointerDown);
       deleteButton.removeEventListener("blur", onDeleteBlur);
       deleteButton.removeEventListener("click", onDelete);
-      el.replaceChildren();
+      // Let Lit handle the removal of the card's DOM since it calls the render().
+      render(undefined, el);
     },
   };
 }
