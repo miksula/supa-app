@@ -10,6 +10,9 @@
     background-color: var(--white);
     outline: 1px solid var(--grey-4);
 
+    display: flex;
+    flex-direction: column;
+
     &.rounded {
       border-radius: calc(var(--radius) * 1.4);
       border-radius: 5px;

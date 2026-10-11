@@ -50,7 +50,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
   function renderComponent() {
     render(
       html`
-        <div class="todo-frame -custom -animated" style="height: 360px;">
+        <div class="todo-frame -custom -animated" style="flex-grow: 1;">
           <div class="leftcontrols">
             <p>
               <button type="button" class="app-button -circle -xl back" title="Previous">
@@ -58,7 +58,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
               </button>
             </p>
           </div>
-          <div class="container"></div>
+          <div class="content"></div>
           <div class="rightcontrols">
             <p>
               <button type="button" class="app-button -circle -xl forward" title="Next">
@@ -81,7 +81,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
       el,
     );
 
-    container = el.querySelector<HTMLElement>(".todo-frame > .container");
+    container = el.querySelector<HTMLElement>(".todo-frame > .content");
 
     if (!container) {
       throw new Error("Unable to mount todo app: list container is missing");
