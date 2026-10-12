@@ -26,7 +26,7 @@ export function TodoListCard(
   let editing = false;
   let skipBlurSave = false;
 
-  el.className = "card todo-custom-list";
+  el.className = "card todo-list-card";
   el.dataset.key = list.id;
 
   render(

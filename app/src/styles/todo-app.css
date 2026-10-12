@@ -1,31 +1,31 @@
-.todo-frame {
-  container: todo-frame / inline-size;
+.todo-app {
+  container: todo-app / inline-size;
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) 52px;
   user-select: none;
 }
 
-.todo-frame > .leftcontrols,
-.todo-frame > .rightcontrols {
+.todo-app > .leftcontrols,
+.todo-app > .rightcontrols {
   grid-row: 1;
   padding: 1.5em 0;
   text-align: center;
 }
 
-.todo-frame > .leftcontrols {
+.todo-app > .leftcontrols {
   grid-column: 1;
 }
 
-.todo-frame > .rightcontrols {
+.todo-app > .rightcontrols {
   grid-column: 3;
 }
 
-.todo-frame > .leftcontrols > p,
-.todo-frame > .rightcontrols > p {
+.todo-app > .leftcontrols > p,
+.todo-app > .rightcontrols > p {
   margin: 0 0 0.5em;
 }
 
-.todo-frame > .content {
+.todo-app > .content {
   container: todo-cards / inline-size;
   display: grid;
   grid-column: 2;
@@ -34,7 +34,7 @@
   overflow: hidden;
 }
 
-.todo-frame > .content > .card {
+.todo-app > .content > .card {
   grid-area: 1 / 1;
   align-self: start;
   width: 100%;
@@ -43,12 +43,8 @@
     opacity 0.2s ease-out;
 }
 
-.todo-frame.-animated {
-  transition: height 0.2s ease-out;
-}
-
-@container todo-frame (min-width: 600px) {
-  .todo-frame {
+@container todo-app (min-width: 600px) {
+  .todo-app {
     grid-template-columns: 70px minmax(0, 1fr) 70px;
   }
 }
@@ -57,25 +53,25 @@
  * Card breakpoints use the container's inline size, not the frame's size.
  */
 @container todo-cards (min-width: 460px) {
-  .todo-frame > .content > .card {
+  .todo-app > .content > .card {
     width: 50%;
   }
 }
 
 @container todo-cards (min-width: 628px) {
-  .todo-frame > .content > .card {
+  .todo-app > .content > .card {
     width: 33.333%;
   }
 }
 
 @container todo-cards (min-width: 884px) {
-  .todo-frame > .content > .card {
+  .todo-app > .content > .card {
     width: 25%;
   }
 }
 
 @container todo-cards (min-width: 1140px) {
-  .todo-frame > .content > .card {
+  .todo-app > .content > .card {
     width: 20%;
   }
 }

@@ -1,4 +1,4 @@
-.todo-custom-list {
+.todo-list-card {
   padding: 0 0.5em;
   transition:
     transform 0.2s ease-out,
@@ -6,12 +6,12 @@
     box-shadow 0.2s ease-out;
 }
 
-.todo-custom-list > .header {
+.todo-list-card > .header {
   text-align: center;
   padding: 2em 0;
 }
 
-.todo-custom-list > .header > .title {
+.todo-list-card > .header > .title {
   margin: 0 0 10px;
   font-size: 1.5em;
   line-height: normal;
@@ -19,7 +19,7 @@
   color: var(--main-color);
 }
 
-.todo-custom-list > .header > .title > button {
+.todo-list-card > .header > .title > button {
   font: inherit;
   color: inherit;
   background: transparent;
@@ -28,14 +28,14 @@
   cursor: pointer;
 }
 
-.todo-custom-list > .header > .form {
+.todo-list-card > .header > .form {
   display: none;
   margin: 0 0 10px;
   font-size: 1em;
   line-height: 1em;
 }
 
-.todo-custom-list > .header > .form > .input {
+.todo-list-card > .header > .form > .input {
   width: 70%;
   font-size: 1.5em;
   line-height: normal;
@@ -51,21 +51,21 @@
   background: inherit;
 }
 
-.todo-custom-list > .header > .form > .delete {
+.todo-list-card > .header > .form > .delete {
   position: absolute;
   right: 0.5em;
   top: 2em;
 }
 
-.todo-custom-list.-editing > .header > .title {
+.todo-list-card.-editing > .header > .title {
   display: none;
 }
 
-.todo-custom-list.-editing > .header > .form {
+.todo-list-card.-editing > .header > .form {
   display: block;
 }
 
-.todo-custom-list.-dragging {
+.todo-list-card.-dragging {
   box-shadow:
     10px 0 12px -14px rgb(0 0 0 / 30%),
     -10px 0 12px -14px rgb(0 0 0 / 30%);
@@ -73,7 +73,7 @@
   opacity: 0.8;
 }
 
-.todo-custom-list.-placeholder {
+.todo-list-card.-placeholder {
   transition: none !important;
   visibility: hidden;
 }

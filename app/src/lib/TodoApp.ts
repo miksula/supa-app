@@ -53,7 +53,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
   function renderComponent() {
     render(
       html`
-        <div class="todo-frame -custom -animated" style="flex-grow: 1;">
+        <div class="todo-app" style="flex-grow: 1;">
           <div class="leftcontrols">
             <p>
               <button
@@ -94,7 +94,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
       el,
     );
 
-    container = el.querySelector<HTMLElement>(".todo-frame > .content");
+    container = el.querySelector<HTMLElement>(".todo-app > .content");
 
     if (!container) {
       throw new Error("Unable to mount todo app: list container is missing");
@@ -115,10 +115,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
       return;
     }
 
-    currentListIndex = Math.max(
-      0,
-      Math.min(listIds.length - 1, currentListIndex + delta),
-    );
+    currentListIndex = Math.max(0, Math.min(listIds.length - 1, currentListIndex + delta));
     updateCardPositions();
   }
 
