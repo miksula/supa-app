@@ -37,6 +37,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
 
   let currentPath = initialPath;
   let currentSession = authService.session;
+  let isMenuOpen = false;
   let isLoggingOut = false;
   let syncStatus: SyncStatusData | null = null;
 
@@ -69,15 +70,20 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
             <button
               type="button"
               class="avatar size-8"
-              popovertarget="user-menu"
               aria-label="Avaa käyttäjävalikko"
+              aria-expanded="${isMenuOpen}"
+              @click="${toggleMenu}"
             >
               <span class="text-sm font-medium text-white">
                 ${getUserInitials(currentSession)}
               </span>
             </button>
 
-            <div id="user-menu" class="menu" popover="auto">
+            <div
+              id="user-menu"
+              class="menu ${isMenuOpen ? "-is-open" : ""}"
+              aria-hidden="${!isMenuOpen}"
+            >
               <div class="user-info" role="presentation">
                 <strong>Signed in as</strong>
                 <span>${userLabel}</span>
@@ -95,14 +101,27 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     );
   };
 
+  const toggleMenu = () => {
+    isMenuOpen = !isMenuOpen;
+    renderComponent();
+  };
+
   const closeMenu = () => {
-    try {
-      const menu = el.querySelector<HTMLElement>("#user-menu");
-      if (menu?.matches(":popover-open")) {
-        menu.hidePopover();
-      }
-    } catch {
-      // Menu not open or popover unsupported
+    if (isMenuOpen) {
+      isMenuOpen = false;
+      renderComponent();
+    }
+  };
+
+  const onDocumentClick = (event: MouseEvent) => {
+    if (!(event.target instanceof Element) || !event.target.closest(".account")) {
+      closeMenu();
+    }
+  };
+
+  const onDocumentKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      closeMenu();
     }
   };
 
@@ -142,11 +161,15 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   });
 
   router.addRouteListener(updatePath);
+  document.addEventListener("click", onDocumentClick);
+  document.addEventListener("keydown", onDocumentKeydown);
 
   el.disposeAppBar = () => {
     disposeSessionListener();
     disposeSyncListener();
     router.removeRouteListener(updatePath);
+    document.removeEventListener("click", onDocumentClick);
+    document.removeEventListener("keydown", onDocumentKeydown);
     delete el.disposeAppBar;
   };
 

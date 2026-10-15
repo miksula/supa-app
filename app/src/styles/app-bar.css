@@ -37,9 +37,8 @@
     padding: 0;
     transition: opacity 150ms ease;
     user-select: none;
-    anchor-name: --user-menu-anchor;
   }
-  
+
   :scope > .account > .avatar:hover {
     opacity: 1;
   }
@@ -59,44 +58,26 @@
     margin: 0;
     inset: auto;
     color: inherit;
-
-    /* Anchor positioning */
-    position-anchor: --user-menu-anchor;
-    top: anchor(bottom);
-    right: anchor(right);
-    margin-block-start: 0.5rem;
-    position-try-fallbacks: flip-block, flip-inline;
-
-    /* Fallback positioning for browsers without anchor positioning */
-    @supports not (position-anchor: --test) {
-      position: fixed;
-      top: 4.5rem;
-      right: calc(var(--spacing) * 6);
-
-      @media (width < 40rem) {
-        right: calc(var(--spacing) * 4);
-      }
-    }
-
-    /* Transition into and out of top layer */
     opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
     transform: scale(0.92) translateY(-6px);
     transform-origin: top right;
+    visibility: hidden;
+    z-index: 10;
     transition:
       opacity 120ms ease-out,
       transform 120ms ease-out,
-      display 120ms allow-discrete,
-      overlay 120ms allow-discrete;
+      visibility 120ms allow-discrete;
   }
 
-  :scope > .account > .menu:popover-open {
+  :scope > .account > .menu.-is-open {
     opacity: 1;
+    pointer-events: auto;
     transform: scale(1) translateY(0);
-
-    @starting-style {
-      opacity: 0;
-      transform: scale(0.92) translateY(-6px);
-    }
+    visibility: visible;
   }
 
   :scope > .account > .menu > .user-info {
@@ -148,12 +129,8 @@
       transition-duration: 0.01ms;
     }
 
-    :scope > .account > .menu:popover-open {
+    :scope > .account > .menu.-is-open {
       transform: none;
-
-      @starting-style {
-        transform: none;
-      }
     }
   }
 
