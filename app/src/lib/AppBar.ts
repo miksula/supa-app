@@ -41,7 +41,9 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   let currentSession = authService.session;
   let isMenuOpen = false;
   let isLoggingOut = false;
-  let isDarkMode = document.documentElement.classList.contains("-invertcolorscheme");
+  let invertColorScheme = localStorage.getItem("invertColorScheme") === "true";
+  const colorSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  let isDarkMode = colorSchemeQuery.matches !== invertColorScheme;
   let syncStatus: SyncStatusData | null = null;
 
   const renderComponent = () => {
@@ -132,9 +134,20 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   };
 
   const toggleTheme = () => {
-    isDarkMode = !isDarkMode;
-    document.documentElement.classList.toggle("-invertcolorscheme", isDarkMode);
+    invertColorScheme = !invertColorScheme;
+    localStorage.setItem("invertColorScheme", String(invertColorScheme));
+    updateColorScheme();
+  };
+
+  const updateColorScheme = () => {
+    isDarkMode = colorSchemeQuery.matches !== invertColorScheme;
+    document.documentElement.style.colorScheme = isDarkMode ? "dark" : "light";
+    document.body.classList.toggle("-invertcolorscheme", invertColorScheme);
     renderComponent();
+  };
+
+  const onColorSchemeChange = () => {
+    updateColorScheme();
   };
 
   const onDocumentClick = (event: MouseEvent) => {
@@ -188,6 +201,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   router.addRouteListener(updatePath);
   document.addEventListener("click", onDocumentClick);
   document.addEventListener("keydown", onDocumentKeydown);
+  colorSchemeQuery.addEventListener("change", onColorSchemeChange);
 
   el.disposeAppBar = () => {
     disposeSessionListener();
@@ -195,9 +209,12 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     router.removeRouteListener(updatePath);
     document.removeEventListener("click", onDocumentClick);
     document.removeEventListener("keydown", onDocumentKeydown);
+    colorSchemeQuery.removeEventListener("change", onColorSchemeChange);
+    document.body.classList.remove("-invertcolorscheme");
+    document.documentElement.style.removeProperty("color-scheme");
     delete el.disposeAppBar;
   };
 
-  renderComponent();
+  updateColorScheme();
   dispatchAction(el, "loadSyncStatus");
 }
