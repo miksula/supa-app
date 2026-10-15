@@ -7,10 +7,10 @@
   }
 
   :scope > .content {
-    background-color: var(--white);
+    background-color: var(--main-bg);
     display: flex;
     flex-direction: column;
-    outline: 1px solid var(--grey-4);
+    outline: 1px solid var(--main-border-light);
     overflow: auto;
     padding: 1rem;
   }

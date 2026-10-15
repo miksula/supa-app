@@ -43,7 +43,7 @@
   }
 
   :scope > form > input {
-    color: var(--black);
+    color: var(--main-text);
     width: 100%;
     font-size: 15px;
     line-height: calc(1.25 / 0.875);
@@ -65,18 +65,18 @@
   }
 
   :scope > form > button[type="submit"] {
-    width: 100%;
-    background-color: var(--black);
-    color: var(--white);
+    background-color: var(--button-active-bg);
     border-radius: calc(var(--radius) * 0.8);
+    color: var(--button-active-text);
     padding-block: calc(var(--spacing) * 1.25);
     outline: 3px solid transparent;
     outline-offset: 1px;
     transition: outline-color 150ms ease;
+    width: 100%;
   }
 
   :scope > form > button[type="submit"]:focus-visible {
-    outline: 3px solid var(--focus-outline);
+    outline: 3px solid var(--outline-color);
   }
 
   :scope > #login-status {

@@ -5,6 +5,8 @@ import { authService } from "@/lib/auth.ts";
 import { dispatchAction, onData, type SyncStatusData } from "@/lib/events.ts";
 import appLogo from "@/assets/logo.svg";
 import logoutIcon from "@/assets/logout-icon.svg";
+import moonIcon from "@/assets/moon-icon.svg";
+import sunIcon from "@/assets/sun-icon.svg";
 import type { Session } from "@supabase/supabase-js";
 
 type AppBarElement = HTMLElement & { disposeAppBar?: () => void };
@@ -39,6 +41,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   let currentSession = authService.session;
   let isMenuOpen = false;
   let isLoggingOut = false;
+  let isDarkMode = document.documentElement.classList.contains("-invertcolorscheme");
   let syncStatus: SyncStatusData | null = null;
 
   const renderComponent = () => {
@@ -65,6 +68,21 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
           </div>
 
           <span class="sync-status" role="status"> ${getSyncLabel(syncStatus)} </span>
+
+          <button
+            type="button"
+            class="app-button theme-toggle"
+            aria-label="${isDarkMode ? "Vaihda vaaleaan teemaan" : "Vaihda tummaan teemaan"}"
+            aria-pressed="${isDarkMode}"
+            @click="${toggleTheme}"
+          >
+            <img
+              class="app-icon"
+              src="${isDarkMode ? sunIcon : moonIcon}"
+              alt=""
+              aria-hidden="true"
+            />
+          </button>
 
           <div class="account">
             <button
@@ -111,6 +129,12 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
       isMenuOpen = false;
       renderComponent();
     }
+  };
+
+  const toggleTheme = () => {
+    isDarkMode = !isDarkMode;
+    document.documentElement.classList.toggle("-invertcolorscheme", isDarkMode);
+    renderComponent();
   };
 
   const onDocumentClick = (event: MouseEvent) => {

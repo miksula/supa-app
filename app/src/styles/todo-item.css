@@ -29,7 +29,7 @@
     vertical-align: middle;
 
     &:focus-visible {
-      outline-color: var(--focus-outline);
+      outline-color: var(--outline-color);
     }
   }
 

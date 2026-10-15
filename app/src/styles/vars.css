@@ -33,5 +33,23 @@
   --button-active-text: var(--black);
   --button-active-bg: var(--grey-4);
   --button-highlight-text: var(--red);
-  --focus-outline: var(--blue);
+  --outline-color: var(--blue);
+}
+
+.-invertcolorscheme {
+  --main-text: var(--white);
+  --main-bg: var(--black);
+  --main-border: var(--grey-3);
+  --main-border-light: var(--grey-2);
+  --header-text: var(--grey-2);
+  --header-bg: var(--black);
+  --highlight-text: var(--red);
+  --disabled-text: var(--grey-1);
+  --aside-text: var(--grey-2);
+  --button-text: var(--grey-2);
+  --button-bg: transparent;
+  --button-active-text: var(--white);
+  --button-active-bg: var(--grey-1);
+  --button-highlight-text: var(--red);
+  --outline-color: var(--blue);
 }
