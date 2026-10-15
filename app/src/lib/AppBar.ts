@@ -78,7 +78,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
             aria-pressed="${isDarkMode}"
             @click="${toggleTheme}"
           >
-            <span class="app-icon" aria-hidden="true">${unsafeSVG(colorSchemeIcon)}</span>
+            <span aria-hidden="true">${unsafeSVG(colorSchemeIcon)}</span>
           </button>
 
           <div class="account">
@@ -137,7 +137,6 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   const updateColorScheme = () => {
     isDarkMode = colorSchemeQuery.matches !== invertColorScheme;
     document.documentElement.style.colorScheme = isDarkMode ? "dark" : "light";
-    document.body.classList.toggle("-invertcolorscheme", invertColorScheme);
     renderComponent();
   };
 
@@ -205,7 +204,6 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     document.removeEventListener("click", onDocumentClick);
     document.removeEventListener("keydown", onDocumentKeydown);
     colorSchemeQuery.removeEventListener("change", onColorSchemeChange);
-    document.body.classList.remove("-invertcolorscheme");
     document.documentElement.style.removeProperty("color-scheme");
     delete el.disposeAppBar;
   };

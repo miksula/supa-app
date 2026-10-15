@@ -19,77 +19,21 @@
   --radius: 0.625rem;
 
   /* UI color mapping */
-  --main-text: var(--black);
-  --main-bg: var(--grey-bg);
-  --main-border: var(--grey-2);
-  --main-border-light: var(--grey-3);
-  --header-text: var(--grey-1);
+  --main-text: light-dark(var(--black), var(--white));
+  --main-bg: light-dark(var(--grey-bg), var(--black));
+  --main-border: light-dark(var(--grey-2), var(--grey-3));
+  --main-border-light: light-dark(var(--grey-3), var(--grey-2));
+  --header-text: light-dark(var(--grey-1), var(--grey-2));
   --error-text: var(--red);
-  --header-bg: var(--white);
+  --header-bg: light-dark(var(--white), var(--black));
   --highlight-text: var(--red);
-  --disabled-text: var(--grey-2);
+  --disabled-text: light-dark(var(--grey-2), var(--grey-1));
   --muted-foreground: var(--grey-muted);
-  --aside-text: var(--grey-1);
-  --button-text: var(--grey-1);
-  --button-bg: var(--white);
-  --button-active-text: var(--black);
-  --button-active-bg: var(--grey-4);
+  --aside-text: light-dark(var(--grey-1), var(--grey-2));
+  --button-text: light-dark(var(--grey-1), var(--grey-2));
+  --button-bg: light-dark(var(--white), transparent);
+  --button-active-text: light-dark(var(--black), var(--white));
+  --button-active-bg: light-dark(var(--grey-4), var(--grey-1));
   --button-highlight-text: var(--red);
   --outline-color: var(--blue);
-}
-
-.-invertcolorscheme {
-  --main-text: var(--white);
-  --main-bg: var(--black);
-  --main-border: var(--grey-3);
-  --main-border-light: var(--grey-2);
-  --header-text: var(--grey-2);
-  --header-bg: var(--black);
-  --highlight-text: var(--red);
-  --disabled-text: var(--grey-1);
-  --aside-text: var(--grey-2);
-  --button-text: var(--grey-2);
-  --button-bg: transparent;
-  --button-active-text: var(--white);
-  --button-active-bg: var(--grey-1);
-  --button-highlight-text: var(--red);
-  --outline-color: var(--blue);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --main-text: var(--white);
-    --main-bg: var(--black);
-    --main-border: var(--grey-3);
-    --main-border-light: var(--grey-2);
-    --header-text: var(--grey-2);
-    --header-bg: var(--black);
-    --highlight-text: var(--red);
-    --disabled-text: var(--grey-1);
-    --aside-text: var(--grey-2);
-    --button-text: var(--grey-2);
-    --button-bg: transparent;
-    --button-active-text: var(--white);
-    --button-active-bg: var(--grey-1);
-    --button-highlight-text: var(--red);
-    --outline-color: var(--blue);
-  }
-
-  .-invertcolorscheme {
-    --main-text: var(--black);
-    --main-bg: var(--grey-bg);
-    --main-border: var(--grey-2);
-    --main-border-light: var(--grey-3);
-    --header-text: var(--grey-1);
-    --header-bg: var(--white);
-    --highlight-text: var(--red);
-    --disabled-text: var(--grey-2);
-    --aside-text: var(--grey-1);
-    --button-text: var(--grey-1);
-    --button-bg: var(--white);
-    --button-active-text: var(--black);
-    --button-active-bg: var(--grey-4);
-    --button-highlight-text: var(--red);
-    --outline-color: var(--blue);
-  }
 }
