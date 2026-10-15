@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "app:start": "npm run dev -w app",
+    "app:start:offline": "npm run dev:offline -w app",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
