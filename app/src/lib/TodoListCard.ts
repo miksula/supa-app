@@ -58,6 +58,10 @@ export function TodoListCard(
 
   const currentName = () => list.name ?? "";
 
+  const focusTitleButton = () => {
+    titleButton.focus();
+  };
+
   const startEditing = () => {
     editing = true;
     el.classList.add("-editing");
@@ -70,9 +74,10 @@ export function TodoListCard(
     editing = false;
     titleInput.value = currentName();
     el.classList.remove("-editing");
+    focusTitleButton();
   };
 
-  const saveTitleInput = async () => {
+  const saveTitleInput = async (restoreFocus = false) => {
     if (!editing || skipBlurSave) {
       skipBlurSave = false;
       return;
@@ -83,7 +88,14 @@ export function TodoListCard(
 
     const name = titleInput.value.trim();
     if (name === currentName()) {
+      if (restoreFocus) {
+        focusTitleButton();
+      }
       return;
+    }
+
+    if (restoreFocus) {
+      focusTitleButton();
     }
 
     try {
@@ -116,7 +128,7 @@ export function TodoListCard(
       cancelEditing();
     } else if (event.key === "Enter") {
       event.preventDefault();
-      void saveTitleInput();
+      void saveTitleInput(true);
     }
   };
 
@@ -140,7 +152,6 @@ export function TodoListCard(
   };
 
   titleButton.addEventListener("click", startEditing);
-  titleButton.addEventListener("focus", startEditing);
   titleInput.addEventListener("blur", onTitleBlur);
   titleInput.addEventListener("keydown", onTitleKeydown);
   deleteButton.addEventListener("mousedown", preserveEditOnDeletePointerDown);
@@ -177,7 +188,6 @@ export function TodoListCard(
     setPosition,
     destroy: () => {
       titleButton.removeEventListener("click", startEditing);
-      titleButton.removeEventListener("focus", startEditing);
       titleInput.removeEventListener("blur", onTitleBlur);
       titleInput.removeEventListener("keydown", onTitleKeydown);
       deleteButton.removeEventListener("mousedown", preserveEditOnDeletePointerDown);
