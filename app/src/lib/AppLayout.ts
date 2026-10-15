@@ -7,7 +7,7 @@ export const AppLayout: LayoutFactory = (container: HTMLElement): LayoutInstance
     html`
       <div class="app-layout">
         <header></header>
-        <div class="content rounded" data-slot="page"></div>
+        <main class="content rounded" data-slot="page"></main>
       </div>
     `,
     container,
