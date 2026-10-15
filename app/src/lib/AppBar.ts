@@ -5,8 +5,8 @@ import { authService } from "@/lib/auth.ts";
 import { dispatchAction, onData, type SyncStatusData } from "@/lib/events.ts";
 import appLogo from "@/assets/logo.svg";
 import logoutIcon from "@/assets/logout-icon.svg";
-import moonIcon from "@/assets/moon-icon.svg";
-import sunIcon from "@/assets/sun-icon.svg";
+import colorSchemeIcon from "@/assets/color-scheme-icon.svg?raw";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import type { Session } from "@supabase/supabase-js";
 
 type AppBarElement = HTMLElement & { disposeAppBar?: () => void };
@@ -78,12 +78,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
             aria-pressed="${isDarkMode}"
             @click="${toggleTheme}"
           >
-            <img
-              class="app-icon"
-              src="${isDarkMode ? sunIcon : moonIcon}"
-              alt=""
-              aria-hidden="true"
-            />
+            <span class="app-icon" aria-hidden="true">${unsafeSVG(colorSchemeIcon)}</span>
           </button>
 
           <div class="account">
