@@ -8,13 +8,13 @@
     border-radius: calc(var(--radius) * 1.4);
   }
 
-  h1 {
+  :scope > h1 {
     text-align: center;
     font-size: var(--text-2xl);
     font-weight: var(--font-weight-bold);
   }
 
-  h1 + p {
+  :scope > h1 + p {
     color: var(--muted-foreground);
     margin-top: calc(var(--spacing) * 2);
     text-align: center;
@@ -23,7 +23,7 @@
     max-width: var(--container-sm);
   }
 
-  form {
+  :scope > form {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -31,18 +31,18 @@
     margin-top: calc(var(--spacing) * 6);
   }
 
-  label {
+  :scope > form > label {
     user-select: none;
     font-weight: var(--font-weight-medium);
     font-size: var(--text-sm);
     line-height: 1.375;
-
-    &:has(+ input:user-invalid) {
-      color: var(--error-text);
-    }
   }
 
-  input {
+  :scope > form > label:has(+ input:user-invalid) {
+    color: var(--error-text);
+  }
+
+  :scope > form > input {
     color: var(--black);
     width: 100%;
     font-size: 15px;
@@ -52,19 +52,19 @@
     transition: border-bottom-color 150ms ease;
     padding-block: calc(var(--spacing) * 1);
     padding-inline: 0;
-
-    &:focus-visible {
-      border-bottom-color: var(--main-border);
-    }
-
-    &:user-invalid,
-    &:user-invalid:focus-visible {
-      border-bottom-color: var(--error-text);
-      color: var(--error-text);
-    }
   }
 
-  button[type="submit"] {
+  :scope > form > input:focus-visible {
+    border-bottom-color: var(--main-border);
+  }
+
+  :scope > form > input:user-invalid,
+  :scope > form > input:user-invalid:focus-visible {
+    border-bottom-color: var(--error-text);
+    color: var(--error-text);
+  }
+
+  :scope > form > button[type="submit"] {
     width: 100%;
     background-color: var(--black);
     color: var(--white);
@@ -73,19 +73,19 @@
     outline: 3px solid transparent;
     outline-offset: 1px;
     transition: outline-color 150ms ease;
-
-    &:focus-visible {
-      outline: 3px solid var(--main-border-light);
-    }
   }
 
-  #login-status {
+  :scope > form > button[type="submit"]:focus-visible {
+    outline: 3px solid var(--main-border-light);
+  }
+
+  :scope > #login-status {
     color: var(--error-text);
     font-size: var(--text-sm);
     text-align: center;
+  }
 
-    &[aria-hidden="true"] {
-      visibility: hidden;
-    }
+  :scope > #login-status[aria-hidden="true"] {
+    visibility: hidden;
   }
 }

@@ -1,31 +1,33 @@
-.todo-item-input {
-  position: relative;
-  margin: 0 0 0 30px;
-  font-size: 0.8em;
-  line-height: 1.5em;
-  transition: transform 0.2s ease-out;
-}
+@scope (.todo-item-input) {
+  :scope {
+    font-size: 0.8em;
+    line-height: 1.5em;
+    margin: 0 0 0 30px;
+    position: relative;
+    transition: transform 0.2s ease-out;
+  }
 
-.todo-item-input > .input {
-  border: 0;
-  border-bottom: 1px solid var(--main-border-light);
-  border-radius: 0;
-  outline: 0;
-  padding: 0.25em 30px 0.25em 0;
-  width: 100%;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: 1.5em;
-  background: transparent;
-  color: inherit;
-}
+  :scope > .input {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--main-border-light);
+    border-radius: 0;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.5em;
+    outline: 0;
+    padding: 0.25em 30px 0.25em 0;
+    width: 100%;
+  }
 
-.todo-item-input > .input:focus-visible {
-  border-bottom: 1px solid var(--main-border);
-}
+  :scope > .input:focus-visible {
+    border-bottom: 1px solid var(--main-border);
+  }
 
-.todo-item-input > .save {
-  position: absolute;
-  top: 0.15em;
-  right: 0;
+  :scope > .save {
+    position: absolute;
+    right: 0;
+    top: 0.15em;
+  }
 }

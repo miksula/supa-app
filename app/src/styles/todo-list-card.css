@@ -1,79 +1,81 @@
-.todo-list-card {
-  padding: 0 0.5em;
-  transition:
-    transform 0.2s ease-out,
-    opacity 0.2s ease-out,
-    box-shadow 0.2s ease-out;
-}
+@scope (.todo-list-card) {
+  :scope {
+    padding: 0 0.5em;
+    transition:
+      transform 0.2s ease-out,
+      opacity 0.2s ease-out,
+      box-shadow 0.2s ease-out;
+  }
 
-.todo-list-card > .header {
-  text-align: center;
-  padding: 2em 0;
-}
+  :scope > .header {
+    padding: 2em 0;
+    text-align: center;
+  }
 
-.todo-list-card > .header > .title {
-  margin: 0 0 10px;
-  font-size: 1.5em;
-  line-height: normal;
-  font-weight: var(--font-weight-bold);
-  color: var(--main-color);
-}
+  :scope > .header > .title {
+    color: var(--main-color);
+    font-size: 1.5em;
+    font-weight: var(--font-weight-bold);
+    line-height: normal;
+    margin: 0 0 10px;
+  }
 
-.todo-list-card > .header > .title > button {
-  font: inherit;
-  color: inherit;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-}
+  :scope > .header > .title > button {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+  }
 
-.todo-list-card > .header > .form {
-  display: none;
-  margin: 0 0 10px;
-  font-size: 1em;
-  line-height: 1em;
-}
+  :scope > .header > .form {
+    display: none;
+    font-size: 1em;
+    line-height: 1em;
+    margin: 0 0 10px;
+  }
 
-.todo-list-card > .header > .form > .input {
-  width: 70%;
-  font-size: 1.5em;
-  line-height: normal;
-  font-family: inherit;
-  font-weight: bold;
-  text-align: center;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  border-radius: 0;
-  vertical-align: middle;
-  color: inherit;
-  background: inherit;
-}
+  :scope > .header > .form > .input {
+    background: inherit;
+    border: 0;
+    border-radius: 0;
+    color: inherit;
+    font-family: inherit;
+    font-size: 1.5em;
+    font-weight: bold;
+    line-height: normal;
+    outline: 0;
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+    width: 70%;
+  }
 
-.todo-list-card > .header > .form > .delete {
-  position: absolute;
-  right: 0.5em;
-  top: 2em;
-}
+  :scope > .header > .form > .delete {
+    position: absolute;
+    right: 0.5em;
+    top: 2em;
+  }
 
-.todo-list-card.-editing > .header > .title {
-  display: none;
-}
+  :scope.-editing > .header > .form {
+    display: block;
+  }
 
-.todo-list-card.-editing > .header > .form {
-  display: block;
-}
+  :scope.-editing > .header > .title {
+    display: none;
+  }
 
-.todo-list-card.-dragging {
-  box-shadow:
-    10px 0 12px -14px rgb(0 0 0 / 30%),
-    -10px 0 12px -14px rgb(0 0 0 / 30%);
-  background: var(--main-bg);
-  opacity: 0.8;
-}
+  :scope.-dragging {
+    background: var(--main-bg);
+    box-shadow:
+      10px 0 12px -14px rgb(0 0 0 / 30%),
+      -10px 0 12px -14px rgb(0 0 0 / 30%);
+    opacity: 0.8;
+  }
 
-.todo-list-card.-placeholder {
-  transition: none !important;
-  visibility: hidden;
+  :scope.-placeholder {
+    transition: none !important;
+    visibility: hidden;
+  }
 }

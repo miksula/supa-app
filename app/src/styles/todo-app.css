@@ -1,77 +1,79 @@
-.todo-app {
-  container: todo-app / inline-size;
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 52px;
-  user-select: none;
-}
-
-.todo-app > .leftcontrols,
-.todo-app > .rightcontrols {
-  grid-row: 1;
-  padding: 1.5em 0;
-  text-align: center;
-}
-
-.todo-app > .leftcontrols {
-  grid-column: 1;
-}
-
-.todo-app > .rightcontrols {
-  grid-column: 3;
-}
-
-.todo-app > .leftcontrols > p,
-.todo-app > .rightcontrols > p {
-  margin: 0 0 0.5em;
-}
-
-.todo-app > .content {
-  container: todo-cards / inline-size;
-  display: grid;
-  grid-column: 2;
-  grid-row: 1;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.todo-app > .content > .card {
-  grid-area: 1 / 1;
-  align-self: start;
-  width: 100%;
-  transition:
-    transform 0.2s ease-out,
-    opacity 0.2s ease-out;
-}
-
-@container todo-app (min-width: 600px) {
-  .todo-app {
-    grid-template-columns: 70px minmax(0, 1fr) 70px;
+@scope (.todo-app) {
+  :scope {
+    container: todo-app / inline-size;
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) 52px;
+    user-select: none;
   }
-}
 
-/*
- * Card breakpoints use the container's inline size, not the frame's size.
- */
-@container todo-cards (min-width: 460px) {
-  .todo-app > .content > .card {
-    width: 50%;
+  :scope > .leftcontrols,
+  :scope > .rightcontrols {
+    grid-row: 1;
+    padding: 1.5em 0;
+    text-align: center;
   }
-}
 
-@container todo-cards (min-width: 628px) {
-  .todo-app > .content > .card {
-    width: 33.333%;
+  :scope > .leftcontrols {
+    grid-column: 1;
   }
-}
 
-@container todo-cards (min-width: 884px) {
-  .todo-app > .content > .card {
-    width: 25%;
+  :scope > .rightcontrols {
+    grid-column: 3;
   }
-}
 
-@container todo-cards (min-width: 1140px) {
-  .todo-app > .content > .card {
-    width: 20%;
+  :scope > .leftcontrols > p,
+  :scope > .rightcontrols > p {
+    margin: 0 0 0.5em;
+  }
+
+  :scope > .content {
+    container: todo-cards / inline-size;
+    display: grid;
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  :scope > .content > .card {
+    align-self: start;
+    grid-area: 1 / 1;
+    transition:
+      transform 0.2s ease-out,
+      opacity 0.2s ease-out;
+    width: 100%;
+  }
+
+  @container todo-app (min-width: 600px) {
+    :scope {
+      grid-template-columns: 70px minmax(0, 1fr) 70px;
+    }
+  }
+
+  /*
+   * Card breakpoints use the content container's inline size.
+   */
+  @container todo-cards (min-width: 460px) {
+    :scope > .content > .card {
+      width: 50%;
+    }
+  }
+
+  @container todo-cards (min-width: 628px) {
+    :scope > .content > .card {
+      width: 33.333%;
+    }
+  }
+
+  @container todo-cards (min-width: 884px) {
+    :scope > .content > .card {
+      width: 25%;
+    }
+  }
+
+  @container todo-cards (min-width: 1140px) {
+    :scope > .content > .card {
+      width: 20%;
+    }
   }
 }

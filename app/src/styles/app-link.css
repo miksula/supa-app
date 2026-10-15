@@ -1,3 +1,5 @@
-.app-link {
-  text-decoration: underline;
+@scope (.app-link) {
+  :scope {
+    text-decoration: underline;
+  }
 }

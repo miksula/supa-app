@@ -7,7 +7,7 @@
     padding-inline: calc(var(--spacing) * 6);
   }
 
-  > .links {
+  :scope > .links {
     align-items: center;
     display: flex;
     flex: 1;
@@ -15,16 +15,16 @@
     visibility: hidden;
   }
 
-  > .sync-status {
+  :scope > .sync-status {
     color: var(--muted-foreground);
     font-size: var(--text-xs);
   }
 
-  > .account {
+  :scope > .account {
     position: relative;
   }
 
-  > .account > .avatar {
+  :scope > .account > .avatar {
     align-items: center;
     background-color: var(--grey-1);
     border: 0;
@@ -40,15 +40,15 @@
     anchor-name: --user-menu-anchor;
   }
   
-  > .account > .avatar:hover {
+  :scope > .account > .avatar:hover {
     opacity: 1;
   }
 
-  > .account > .avatar:focus-visible {
+  :scope > .account > .avatar:focus-visible {
     outline-color: var(--main-border);
   }
 
-  > .account > .menu {
+  :scope > .account > .menu {
     background: var(--main-bg);
     border: 1px solid var(--main-border-light);
     border-radius: var(--radius);
@@ -89,7 +89,7 @@
       overlay 120ms allow-discrete;
   }
 
-  > .account > .menu:popover-open {
+  :scope > .account > .menu:popover-open {
     opacity: 1;
     transform: scale(1) translateY(0);
 
@@ -99,26 +99,26 @@
     }
   }
 
-  > .account > .menu > .user-info {
+  :scope > .account > .menu > .user-info {
     border-bottom: 1px solid var(--main-border-light);
     display: grid;
     gap: 0.125rem;
     padding: calc(var(--spacing) * 3);
   }
 
-  > .account > .menu > .user-info strong {
+  :scope > .account > .menu > .user-info > strong {
     color: var(--main-text);
     font-size: var(--text-sm);
     font-weight: var(--font-weight-medium);
   }
 
-  > .account > .menu > .user-info span {
+  :scope > .account > .menu > .user-info > span {
     color: var(--muted-foreground);
     font-size: var(--text-xs);
     overflow-wrap: anywhere;
   }
 
-  > .account > .menu > .logout {
+  :scope > .account > .menu > .logout {
     align-items: center;
     background: transparent;
     border: 0;
@@ -134,21 +134,21 @@
     width: 100%;
   }
 
-  > .account > .menu > .logout:disabled {
+  :scope > .account > .menu > .logout:disabled {
     color: var(--disabled-text);
   }
 
-  > .account > .menu > .logout:focus-visible {
+  :scope > .account > .menu > .logout:focus-visible {
     outline-color: var(--main-border-light);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    > .account > .menu {
+    :scope > .account > .menu {
       transform: none;
       transition-duration: 0.01ms;
     }
 
-    > .account > .menu:popover-open {
+    :scope > .account > .menu:popover-open {
       transform: none;
 
       @starting-style {

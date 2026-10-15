@@ -1,34 +1,36 @@
-.app-icon {
-  display: inline-block;
-  vertical-align: baseline;
-  height: 1em;
-  font-style: normal;
-}
+@scope (.app-icon) {
+  :scope {
+    display: inline-block;
+    font-style: normal;
+    height: 1em;
+    vertical-align: baseline;
+  }
 
-.app-icon > svg {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  vertical-align: middle;
-  fill: currentcolor;
-  transition: transform 0.1s ease-out;
-  position: relative;
-  top: -0.1em;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
+  :scope > svg {
+    backface-visibility: hidden;
+    display: inline-block;
+    fill: currentcolor;
+    height: 1em;
+    position: relative;
+    top: -0.1em;
+    transform: translateZ(0);
+    transition: transform 0.1s ease-out;
+    vertical-align: middle;
+    width: 1em;
+  }
 
-.app-icon[src] {
-  width: 1em;
-  vertical-align: middle;
-  position: relative;
-  top: -0.1em;
-}
+  :scope[src] {
+    position: relative;
+    top: -0.1em;
+    vertical-align: middle;
+    width: 1em;
+  }
 
-.app-icon.-r180 > svg {
-  transform: rotate(180deg);
-}
+  :scope.-r180 > svg {
+    transform: rotate(180deg);
+  }
 
-.app-icon.-double > svg:nth-child(2) {
-  margin-left: -0.5em;
+  :scope.-double > svg:nth-child(2) {
+    margin-left: -0.5em;
+  }
 }
