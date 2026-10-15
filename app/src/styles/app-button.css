@@ -1,58 +1,60 @@
-.app-button {
-  display: inline-block;
-  font-size: 1em;
-  line-height: 1em;
-  background: transparent;
-  margin: 0;
-  padding: 0.25em;
-  border: 0;
-  outline: 0;
-  cursor: pointer;
-  vertical-align: middle;
-  border-radius: 4px;
-  transition:
-    color 0.1s ease-out,
-    background-color 0.1s ease-out,
-    transform 0.1s ease-out;
-  color: var(--button-text);
-}
+@scope (.app-button) {
+  :scope {
+    display: inline-block;
+    font-size: 1em;
+    line-height: 1em;
+    background: transparent;
+    margin: 0;
+    padding: 0.25em;
+    border: 0;
+    outline: 0;
+    cursor: pointer;
+    vertical-align: middle;
+    border-radius: 4px;
+    transition:
+      color 0.1s ease-out,
+      background-color 0.1s ease-out,
+      transform 0.1s ease-out;
+    color: var(--button-text);
+  }
 
-.app-button:hover {
-  color: var(--button-active-text);
-}
+  &:hover {
+    color: var(--button-active-text);
+  }
 
-.app-button:active {
-  transform: translate(0, 1px);
-  color: var(--button-active-text);
-  background-color: var(--button-active-bg);
-}
+  &:active {
+    transform: translate(0, 1px);
+    color: var(--button-active-text);
+    background-color: var(--button-active-bg);
+  }
 
-.app-button:focus-visible {
-  outline: 2px solid var(--highlight-text);
-  outline-offset: 2px;
-}
+  &:focus-visible {
+    outline: 2px solid var(--highlight-text);
+    outline-offset: 2px;
+  }
 
-.app-button.-circle {
-  width: 1.5em;
-  height: 1.5em;
-  border-radius: 50%;
-}
+  &.-circle {
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 50%;
+  }
 
-.app-button.-xl {
-  font-size: 1.5em;
-}
+  &.-xl {
+    font-size: 1.5em;
+  }
 
-.app-button.-highlight {
-  color: var(--button-highlight-text);
-  font-weight: bold;
-}
+  &.-highlight {
+    color: var(--button-highlight-text);
+    font-weight: bold;
+  }
 
-.app-button.-highlight:hover {
-  color: var(--button-active-text);
-}
+  &.-highlight:hover {
+    color: var(--button-active-text);
+  }
 
-@media (width >= 600px) {
-  .app-button.-xl {
-    font-size: 2em;
+  @media (width >= 600px) {
+    :scope(&.-xl) {
+      font-size: 2em;
+    }
   }
 }

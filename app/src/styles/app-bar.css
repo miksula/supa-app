@@ -7,7 +7,7 @@
     padding-inline: calc(var(--spacing) * 6);
   }
 
-  .links {
+  > .links {
     align-items: center;
     display: flex;
     flex: 1;
@@ -15,16 +15,16 @@
     visibility: hidden;
   }
 
-  .sync-status {
+  > .sync-status {
     color: var(--muted-foreground);
     font-size: var(--text-xs);
   }
 
-  .account {
+  > .account {
     position: relative;
   }
 
-  .avatar {
+  > .account > .avatar {
     align-items: center;
     background-color: var(--grey-1);
     border: 0;
@@ -38,17 +38,17 @@
     transition: opacity 150ms ease;
     user-select: none;
     anchor-name: --user-menu-anchor;
-
-    &:hover {
-      opacity: 1;
-    }
-
-    &:focus-visible {
-      outline-color: var(--main-border);
-    }
+  }
+  
+  > .account > .avatar:hover {
+    opacity: 1;
   }
 
-  .menu {
+  > .account > .avatar:focus-visible {
+    outline-color: var(--main-border);
+  }
+
+  > .account > .menu {
     background: var(--main-bg);
     border: 1px solid var(--main-border-light);
     border-radius: var(--radius);
@@ -87,38 +87,38 @@
       transform 120ms ease-out,
       display 120ms allow-discrete,
       overlay 120ms allow-discrete;
+  }
 
-    &:popover-open {
-      opacity: 1;
-      transform: scale(1) translateY(0);
+  > .account > .menu:popover-open {
+    opacity: 1;
+    transform: scale(1) translateY(0);
 
-      @starting-style {
-        opacity: 0;
-        transform: scale(0.92) translateY(-6px);
-      }
+    @starting-style {
+      opacity: 0;
+      transform: scale(0.92) translateY(-6px);
     }
   }
 
-  .user-info {
+  > .account > .menu > .user-info {
     border-bottom: 1px solid var(--main-border-light);
     display: grid;
     gap: 0.125rem;
     padding: calc(var(--spacing) * 3);
-
-    strong {
-      color: var(--main-text);
-      font-size: var(--text-sm);
-      font-weight: var(--font-weight-medium);
-    }
-
-    span {
-      color: var(--muted-foreground);
-      font-size: var(--text-xs);
-      overflow-wrap: anywhere;
-    }
   }
 
-  .logout {
+  > .account > .menu > .user-info strong {
+    color: var(--main-text);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  > .account > .menu > .user-info span {
+    color: var(--muted-foreground);
+    font-size: var(--text-xs);
+    overflow-wrap: anywhere;
+  }
+
+  > .account > .menu > .logout {
     align-items: center;
     background: transparent;
     border: 0;
@@ -132,23 +132,23 @@
     border-radius: var(--radius);
     text-align: left;
     width: 100%;
+  }
 
-    &:disabled {
-      color: var(--disabled-text);
-    }
+  > .account > .menu > .logout:disabled {
+    color: var(--disabled-text);
+  }
 
-    &:focus-visible {
-      outline-color: var(--main-border-light);
-    }
+  > .account > .menu > .logout:focus-visible {
+    outline-color: var(--main-border-light);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .menu {
+    > .account > .menu {
       transform: none;
       transition-duration: 0.01ms;
     }
 
-    .menu:popover-open {
+    > .account > .menu:popover-open {
       transform: none;
 
       @starting-style {
