@@ -120,8 +120,9 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   };
 
   const onDocumentKeydown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
+    if (event.key === "Escape" && isMenuOpen) {
       closeMenu();
+      el.querySelector<HTMLButtonElement>(".avatar")?.focus();
     }
   };
 
