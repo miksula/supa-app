@@ -26,7 +26,11 @@
     color: inherit;
     cursor: pointer;
     font: inherit;
-    padding: 0;
+    padding: 0 9px;
+  }
+
+  :scope > .header > .title > button:focus-visible {
+    outline-color: var(--focus-outline);
   }
 
   :scope > .header > .form {

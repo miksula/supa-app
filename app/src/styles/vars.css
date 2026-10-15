@@ -11,6 +11,7 @@
   --grey-bg: lab(98.26% 0 0);
   --grey-muted: lab(48.496% 0 0);
   --red: lab(47.09% 63.229 22.179);
+  --blue: oklch(87% 16% 253deg);
 
   /* Border radius */
   --radius: 0.625rem;
@@ -32,4 +33,5 @@
   --button-active-text: var(--black);
   --button-active-bg: var(--grey-4);
   --button-highlight-text: var(--red);
+  --focus-outline: var(--blue);
 }

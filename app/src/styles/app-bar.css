@@ -44,7 +44,7 @@
   }
 
   :scope > .account > .avatar:focus-visible {
-    outline-color: var(--main-border);
+    outline-color: var(--focus-outline);
   }
 
   :scope > .account > .menu {
@@ -120,7 +120,7 @@
   }
 
   :scope > .account > .menu > .logout:focus-visible {
-    outline-color: var(--main-border-light);
+    outline-color: var(--focus-outline);
   }
 
   @media (prefers-reduced-motion: reduce) {

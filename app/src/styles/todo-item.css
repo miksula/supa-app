@@ -27,6 +27,10 @@
   :scope > .checkbox > input {
     cursor: pointer;
     vertical-align: middle;
+
+    &:focus-visible {
+      outline-color: var(--focus-outline);
+    }
   }
 
   :scope > .label {

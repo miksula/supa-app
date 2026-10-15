@@ -76,7 +76,7 @@
   }
 
   :scope > form > button[type="submit"]:focus-visible {
-    outline: 3px solid var(--main-border-light);
+    outline: 3px solid var(--focus-outline);
   }
 
   :scope > #login-status {
