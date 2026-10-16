@@ -15,11 +15,6 @@
     visibility: hidden;
   }
 
-  :scope > .sync-status {
-    color: var(--muted-foreground);
-    font-size: var(--text-xs);
-  }
-
   :scope > .account {
     position: relative;
   }
@@ -63,14 +58,14 @@
     position: absolute;
     right: 0;
     top: calc(100% + 0.5rem);
-    transform: scale(0.92) translateY(-6px);
+    transform: translateY(-0.5rem) scale(0.95);
     transform-origin: top right;
     visibility: hidden;
     z-index: 10;
     transition:
-      opacity 120ms ease-out,
-      transform 120ms ease-out,
-      visibility 120ms allow-discrete;
+      opacity 150ms ease,
+      transform 150ms ease,
+      visibility 150ms allow-discrete;
   }
 
   :scope > .account > .menu.-is-open {
@@ -97,6 +92,32 @@
     color: var(--muted-foreground);
     font-size: var(--text-xs);
     overflow-wrap: anywhere;
+  }
+
+  :scope > .account > .menu > .user-info > .sync-status {
+    align-items: center;
+    color: var(--muted-foreground);
+    display: flex;
+    font-size: var(--text-xs);
+    gap: 0.375rem;
+    margin-top: 0.25rem;
+    overflow-wrap: anywhere;
+  }
+
+  :scope > .account > .menu > .user-info > .sync-status > .status-indicator {
+    background-color: var(--muted-foreground);
+    border-radius: calc(infinity * 1px);
+    flex: 0 0 0.375rem;
+    height: 0.375rem;
+    width: 0.375rem;
+  }
+
+  :scope > .account > .menu > .user-info > .sync-status.-is-connected > .status-indicator {
+    background-color: var(--green);
+  }
+
+  :scope > .account > .menu > .user-info > .sync-status.-is-error > .status-indicator {
+    background-color: var(--red);
   }
 
   :scope > .account > .menu > .logout {

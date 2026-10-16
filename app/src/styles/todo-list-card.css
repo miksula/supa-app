@@ -15,7 +15,7 @@
   :scope > .header > .title {
     color: var(--main-text);
     font-size: 1.5em;
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     line-height: normal;
     margin: 0 0 10px;
   }

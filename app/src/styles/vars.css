@@ -9,10 +9,7 @@
     color-scheme: light;
   }
 
-  --font-sans: "Geist",
-  ui-sans-serif,
-  system-ui,
-  sans-serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --radius: 0.625rem;
   --white: var(--color-white, #fff);
   --black: var(--color-black, #000);
@@ -25,6 +22,7 @@
   --grey-bg: var(--color-zinc-50);
   --grey-muted: var(--color-zinc-500);
   --red: var(--color-red-600);
+  --green: var(--color-green-600);
   --blue: var(--color-blue-400);
 
   /* -----------------------------------------------------------------
@@ -45,14 +43,14 @@
   /* -----------------------------------------------------------------
    * UI Semantic Tokens
    * ----------------------------------------------------------------- */
-  --main-text: light-dark(var(--color-zinc-900), lch(100% 0 272 / 1));
+  --main-text: light-dark(var(--color-zinc-900), var(--color-zinc-50));
   --muted-foreground: light-dark(var(--color-zinc-500), var(--color-zinc-400));
   --header-text: light-dark(var(--color-zinc-700), var(--color-zinc-200));
   --aside-text: light-dark(var(--color-zinc-700), var(--color-zinc-300));
   --disabled-text: light-dark(var(--color-zinc-300), var(--color-zinc-600));
 
   --main-border: light-dark(var(--color-zinc-300), var(--color-zinc-700));
-  --main-border-light: light-dark(var(--color-zinc-200), var(--color-zinc-800));
+  --main-border-light: light-dark(var(--color-zinc-200), var(--color-zinc-700));
 
   /* Interactive / Buttons */
   --button-text: light-dark(var(--color-zinc-700), var(--color-zinc-200));
@@ -66,5 +64,5 @@
   --button-highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
   --outline-color: light-dark(var(--color-blue-500), var(--color-blue-400));
 
-  --avatar-bg: light-dark(var(--color-zinc-700), var(--color-zinc-600));
+  --avatar-bg: light-dark(var(--color-zinc-700), var(--color-indigo-500));
 }

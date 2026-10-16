@@ -1,4 +1,4 @@
-import { html, render } from "lit";
+import { html, nothing, render } from "lit";
 import "@/lib/AppLink.ts";
 import "@/lib/AppIcon.ts";
 import { router } from "@packages/router";
@@ -29,6 +29,10 @@ function getSyncLabel(status: SyncStatusData | null) {
   if (status.connecting) return "Yhdistetään...";
   if (!status.connected) return "Ei yhteyttä";
   return status.downloading || status.uploading ? "Synkronoidaan..." : "Synkronoitu";
+}
+
+function getSyncStatusClass(status: SyncStatusData) {
+  return status.error || !status.connected ? "-is-error" : "-is-connected";
 }
 
 function getColorScheme(): "light" | "dark" {
@@ -69,7 +73,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     render(
       html`
         <nav class="app-bar" aria-label="Päänavigaatio">
-          <div class="flex gap-3 items-center justify-center">
+          <div class="flex gap-2 items-center justify-center">
             <app-icon name="logo" size="24"></app-icon>
             <span class="text-base font-medium">Supa Todo</span>
           </div>
@@ -85,8 +89,6 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               `,
             )}
           </div>
-
-          <span class="sync-status" role="status"> ${getSyncLabel(syncStatus)} </span>
 
           <button
             type="button"
@@ -119,10 +121,20 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               <div class="user-info" role="presentation">
                 <strong>Signed in as</strong>
                 <span>${userLabel}</span>
+                ${
+                  syncStatus
+                    ? html`
+                        <span class="sync-status ${getSyncStatusClass(syncStatus)}" role="status">
+                          <span class="status-indicator" aria-hidden="true"></span>
+                          ${getSyncLabel(syncStatus)}
+                        </span>
+                      `
+                    : nothing
+                }
               </div>
 
               <button class="logout" type="button" ?disabled="${isLoggingOut}" @click="${logout}">
-                <app-icon name="logout" class="text-base mr-2"></app-icon>
+                <app-icon name="logout" size="16" class="mr-2"></app-icon>
                 ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
               </button>
             </div>
