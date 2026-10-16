@@ -69,9 +69,9 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     render(
       html`
         <nav class="app-bar" aria-label="Päänavigaatio">
-          <div class="flex gap-2 items-center">
-            <app-icon name="logo" class="text-xl"></app-icon>
-            <span class="text-base font-medium">Supa App</span>
+          <div class="flex gap-3 items-center justify-center">
+            <app-icon name="logo" size="24"></app-icon>
+            <span class="text-base font-medium">Supa Todo</span>
           </div>
 
           <div class="links">
