@@ -26,7 +26,7 @@
 
   :scope > .account > .avatar {
     align-items: center;
-    background-color: var(--grey-1);
+    background-color: var(--avatar-bg, var(--grey-1));
     border: 0;
     border-radius: calc(infinity * 1px);
     cursor: pointer;
@@ -48,7 +48,7 @@
   }
 
   :scope > .account > .menu {
-    background: var(--main-bg);
+    background: var(--surface-raised, var(--main-bg));
     border: 1px solid var(--main-border-light);
     border-radius: var(--radius);
     box-shadow: 0 6px 12px color-mix(in srgb, var(--black) 12%, transparent);

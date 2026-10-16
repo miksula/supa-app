@@ -31,6 +31,27 @@ function getSyncLabel(status: SyncStatusData | null) {
   return status.downloading || status.uploading ? "Synkronoidaan..." : "Synkronoitu";
 }
 
+function getColorScheme(): "light" | "dark" {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+  if (meta?.content === "dark" || meta?.content === "light") {
+    return meta.content;
+  }
+  const stored = localStorage.getItem("color-scheme");
+  if (stored === "dark" || stored === "light") {
+    return stored;
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function setColorScheme(scheme: "light" | "dark") {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+  if (meta) {
+    meta.content = scheme;
+  }
+  document.documentElement.style.colorScheme = scheme;
+  localStorage.setItem("color-scheme", scheme);
+}
+
 export function AppBar(el: AppBarElement, initialPath = router.path) {
   el.disposeAppBar?.();
 
@@ -38,9 +59,8 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   let currentSession = authService.session;
   let isMenuOpen = false;
   let isLoggingOut = false;
-  let invertColorScheme = localStorage.getItem("invertColorScheme") === "true";
   const colorSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
-  let isDarkMode = colorSchemeQuery.matches !== invertColorScheme;
+  let isDarkMode = getColorScheme() === "dark";
   let syncStatus: SyncStatusData | null = null;
 
   const renderComponent = () => {
@@ -126,19 +146,17 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   };
 
   const toggleTheme = () => {
-    invertColorScheme = !invertColorScheme;
-    localStorage.setItem("invertColorScheme", String(invertColorScheme));
-    updateColorScheme();
-  };
-
-  const updateColorScheme = () => {
-    isDarkMode = colorSchemeQuery.matches !== invertColorScheme;
-    document.documentElement.style.colorScheme = isDarkMode ? "dark" : "light";
+    const nextScheme = isDarkMode ? "light" : "dark";
+    setColorScheme(nextScheme);
+    isDarkMode = nextScheme === "dark";
     renderComponent();
   };
 
   const onColorSchemeChange = () => {
-    updateColorScheme();
+    if (!localStorage.getItem("color-scheme")) {
+      isDarkMode = colorSchemeQuery.matches;
+      renderComponent();
+    }
   };
 
   const onDocumentClick = (event: MouseEvent) => {
@@ -201,10 +219,8 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     document.removeEventListener("click", onDocumentClick);
     document.removeEventListener("keydown", onDocumentKeydown);
     colorSchemeQuery.removeEventListener("change", onColorSchemeChange);
-    document.documentElement.style.removeProperty("color-scheme");
     delete el.disposeAppBar;
   };
 
-  updateColorScheme();
   dispatchAction(el, "loadSyncStatus");
 }

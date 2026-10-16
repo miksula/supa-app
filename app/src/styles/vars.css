@@ -1,39 +1,67 @@
 :root {
   color-scheme: light dark;
 
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-
-  /* Named colors */
-  --white: lab(99.655% 0 0);
-  --black: lab(2.759% 0.106 -0.39);
-  --grey-1: lab(39.707% 0.318 -14.447);
-  --grey-2: lab(72.02% 1.144 -4.097);
-  --grey-3: lab(84.286% 0.547 -1.985);
-  --grey-4: lab(92.872% -2.207 -2.918);
-  --grey-bg: lab(98.26% 0 0);
-  --grey-muted: lab(48.496% 0 0);
-  --red: lab(47.09% 63.229 22.179);
-  --blue: oklch(87% 16% 253deg);
-
-  /* Border radius */
   --radius: 0.625rem;
+  --white: var(--color-white, #fff);
+  --black: var(--color-black, #000);
 
-  /* UI color mapping */
-  --main-text: light-dark(var(--black), var(--white));
-  --main-bg: light-dark(var(--grey-bg), var(--black));
-  --main-border: light-dark(var(--grey-2), var(--grey-3));
-  --main-border-light: light-dark(var(--grey-3), var(--grey-2));
-  --header-text: light-dark(var(--grey-1), var(--grey-2));
-  --error-text: var(--red);
-  --header-bg: light-dark(var(--white), var(--black));
-  --highlight-text: var(--red);
-  --disabled-text: light-dark(var(--grey-2), var(--grey-1));
-  --muted-foreground: var(--grey-muted);
-  --aside-text: light-dark(var(--grey-1), var(--grey-2));
-  --button-text: light-dark(var(--grey-1), var(--grey-2));
-  --button-bg: light-dark(var(--white), transparent);
-  --button-active-text: light-dark(var(--black), var(--white));
-  --button-active-bg: light-dark(var(--grey-4), var(--grey-1));
-  --button-highlight-text: var(--red);
-  --outline-color: var(--blue);
+  /* Backward-compatible aliases mapped to standard scale */
+  --grey-1: var(--color-slate-700);
+  --grey-2: var(--color-slate-400);
+  --grey-3: var(--color-slate-300);
+  --grey-4: var(--color-slate-200);
+  --grey-bg: var(--color-slate-50);
+  --grey-muted: var(--color-slate-500);
+  --red: var(--color-red-600);
+  --blue: var(--color-blue-400);
+
+  /* -----------------------------------------------------------------
+   * Surface Tiers (Depth in Light & Dark Mode)
+   * ----------------------------------------------------------------- */
+  /* Base page canvas: soft light slate vs. deep dark slate (not pitch black) */
+  --main-bg: light-dark(var(--color-slate-50), var(--color-slate-950));
+
+  /* Card / Container surface: pure white in light, elevated slate-900 in dark */
+  --surface-card: light-dark(var(--color-white), var(--color-slate-900));
+
+  /* Raised surface: menus, popovers, dropdowns */
+  --surface-raised: light-dark(var(--color-white), var(--color-slate-800));
+
+  /* Header surface */
+  --header-bg: light-dark(var(--color-white), var(--color-slate-900));
+
+  /* -----------------------------------------------------------------
+   * UI Semantic Tokens
+   * ----------------------------------------------------------------- */
+  --main-text: light-dark(var(--color-slate-900), var(--color-slate-100));
+  --muted-foreground: light-dark(var(--color-slate-500), var(--color-slate-400));
+  --header-text: light-dark(var(--color-slate-700), var(--color-slate-200));
+  --aside-text: light-dark(var(--color-slate-700), var(--color-slate-300));
+  --disabled-text: light-dark(var(--color-slate-300), var(--color-slate-600));
+
+  --main-border: light-dark(var(--color-slate-300), var(--color-slate-700));
+  --main-border-light: light-dark(var(--color-slate-200), var(--color-slate-800));
+
+  /* Interactive / Buttons */
+  --button-text: light-dark(var(--color-slate-700), var(--color-slate-200));
+  --button-bg: light-dark(var(--color-white), transparent);
+  --button-active-text: light-dark(var(--color-slate-950), var(--color-white));
+  --button-active-bg: light-dark(var(--color-slate-200), var(--color-slate-800));
+
+  /* Accents & Status (tuned for dark-mode contrast) */
+  --error-text: light-dark(var(--color-red-600), var(--color-red-400));
+  --highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
+  --button-highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
+  --outline-color: light-dark(var(--color-blue-500), var(--color-blue-400));
+
+  --avatar-bg: light-dark(var(--color-slate-700), var(--color-slate-600));
 }
