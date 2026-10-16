@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import trashIcon from "@/assets/trash-icon.svg";
+import "@/lib/AppIcon.ts";
 import { TodoList, type TodoListData } from "@/lib/TodoList.ts";
 
 export type TodoListCardOptions = {
@@ -38,7 +38,7 @@ export function TodoListCard(
         <p class="form">
           <input name="edit-title" type="text" class="input use-focus-other" aria-label="Title" />
           <button type="button" class="app-button delete" title="Delete">
-            <img class="app-icon" src="${trashIcon}" alt="" aria-hidden="true" />
+            <app-icon name="trash"></app-icon>
           </button>
         </p>
       </div>

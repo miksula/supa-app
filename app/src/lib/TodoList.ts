@@ -1,7 +1,6 @@
 import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-import checkIcon from "@/assets/check-icon.svg";
-import plusIcon from "@/assets/plus-icon.svg";
+import "@/lib/AppIcon.ts";
 import type { ListWithTodoRow, Todo } from "@/lib/TodoStore.ts";
 
 export type TodoListData = Pick<ListWithTodoRow, "id" | "created_at" | "name" | "owner_id"> & {
@@ -33,7 +32,7 @@ function TodoItem(todo: Todo, onCompleted: TodoListOptions["onCompleted"]) {
           value="${todo.description}"
         />
         <button type="button" class="app-button save" title="Save" tabindex="-1">
-          <img class="app-icon" src="${checkIcon}" alt="" aria-hidden="true" />
+          <app-icon name="check"></app-icon>
         </button>
       </p>
     </div>
@@ -49,7 +48,7 @@ function TodoInput(listId: string, onSubmit: TodoListOptions["onSubmit"]) {
     >
       <input type="text" name="description" class="input use-focus-other" aria-label="Add todo" />
       <button type="submit" class="app-button save" title="Add todo" tabindex="-1">
-        <img class="app-icon" src="${plusIcon}" alt="" aria-hidden="true" />
+        <app-icon name="plus"></app-icon>
       </button>
     </form>
   `;

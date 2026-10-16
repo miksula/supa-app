@@ -1,4 +1,4 @@
-@scope (.app-icon) {
+@scope (app-icon) {
   :scope {
     display: inline-block;
     font-style: normal;
@@ -9,19 +9,11 @@
   :scope > svg {
     backface-visibility: hidden;
     display: inline-block;
-    fill: currentcolor;
     height: 1em;
     position: relative;
     top: -0.1em;
     transform: translateZ(0);
     transition: transform 0.1s ease-out;
-    vertical-align: middle;
-    width: 1em;
-  }
-
-  :scope[src] {
-    position: relative;
-    top: -0.1em;
     vertical-align: middle;
     width: 1em;
   }

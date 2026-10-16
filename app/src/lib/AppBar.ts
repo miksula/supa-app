@@ -1,12 +1,9 @@
 import { html, render } from "lit";
 import "@/lib/AppLink.ts";
+import "@/lib/AppIcon.ts";
 import { router } from "@packages/router";
 import { authService } from "@/lib/auth.ts";
 import { dispatchAction, onData, type SyncStatusData } from "@/lib/events.ts";
-import appLogo from "@/assets/logo.svg";
-import logoutIcon from "@/assets/logout-icon.svg";
-import colorSchemeIcon from "@/assets/color-scheme-icon.svg?raw";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import type { Session } from "@supabase/supabase-js";
 
 type AppBarElement = HTMLElement & { disposeAppBar?: () => void };
@@ -53,7 +50,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
       html`
         <nav class="app-bar" aria-label="Päänavigaatio">
           <div class="flex gap-2 items-center">
-            <img src="${appLogo}" class="size-5" alt="Supa App" />
+            <app-icon name="logo" class="text-xl"></app-icon>
             <span class="text-base font-medium">Supa App</span>
           </div>
 
@@ -78,7 +75,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
             aria-pressed="${isDarkMode}"
             @click="${toggleTheme}"
           >
-            <span aria-hidden="true">${unsafeSVG(colorSchemeIcon)}</span>
+            <app-icon name="colorScheme" class="text-lg"></app-icon>
           </button>
 
           <div class="account">
@@ -105,7 +102,7 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               </div>
 
               <button class="logout" type="button" ?disabled="${isLoggingOut}" @click="${logout}">
-                <img src="${logoutIcon}" alt="Logout Icon" class="size-4 inline-block mr-2" />
+                <app-icon name="logout" class="text-base mr-2"></app-icon>
                 ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
               </button>
             </div>
