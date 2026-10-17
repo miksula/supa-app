@@ -1,5 +1,6 @@
 import { html, render } from "lit";
 import type { LayoutFactory, LayoutInstance } from "./types.ts";
+import { Sidebar } from "./Sidebar.ts";
 
 export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInstance => {
   render(
@@ -14,6 +15,8 @@ export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInst
 
   const asideEl = container.querySelector<HTMLElement>(".sidebar-layout > aside")!;
   const slot = container.querySelector<HTMLElement>('[data-slot="page"]')!;
+
+  Sidebar(asideEl);
 
   return {
     element: container.firstElementChild as HTMLElement,

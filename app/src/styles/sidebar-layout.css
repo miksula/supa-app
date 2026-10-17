@@ -1,0 +1,20 @@
+@scope (.sidebar-layout) {
+  :scope {
+    --sidebar-width: 15rem;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    display: grid;
+    gap: 0rem;
+    min-height: 100dvh;
+    padding: calc(var(--spacing) * 2);
+    transition: grid-template-columns 200ms linear;
+  }
+
+  :scope > aside {
+    padding: calc(var(--spacing) * 2);
+  }
+
+  :scope > main {
+    border-radius: calc(var(--radius) * 1.4);
+    background-color: var(--surface-card);
+  }
+}

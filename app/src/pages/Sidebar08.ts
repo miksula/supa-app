@@ -25,7 +25,11 @@ export function Sidebar08(target: HTMLElement) {
               <div>Enterprise</div>
             </a>
           </header>
-          <nav class="sidebar-08__sidebar-content" aria-label="Primary navigation">
+          <nav
+            style="visibility:hidden"
+            class="sidebar-08__sidebar-content"
+            aria-label="Primary navigation"
+          >
             <div>
               <div>Platform</div>
               <ul>
@@ -83,7 +87,7 @@ export function Sidebar08(target: HTMLElement) {
         </aside>
 
         <main class="sidebar-08__main" data-slot="sidebar-inset">
-          <header class="sidebar-08__header">
+          <header style="visibility:hidden" class="sidebar-08__header">
             <div>
               <button
                 class="sidebar-08__toggle"

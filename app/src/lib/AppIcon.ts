@@ -9,6 +9,7 @@ import nextIcon from "@/assets/next-icon.svg?raw";
 import plusIcon from "@/assets/plus-icon.svg?raw";
 import previousIcon from "@/assets/previous-icon.svg?raw";
 import trashIcon from "@/assets/trash-icon.svg?raw";
+import commandIcon from "@/assets/commad-icon.svg?raw";
 
 const icons = {
   addList: addListIcon,
@@ -20,6 +21,7 @@ const icons = {
   plus: plusIcon,
   previous: previousIcon,
   trash: trashIcon,
+  command: commandIcon,
 } as const;
 
 type AppIconName = keyof typeof icons;

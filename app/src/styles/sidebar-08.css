@@ -1,25 +1,20 @@
 @scope (.sidebar-08) {
   :scope {
-    background-color: var(--main-bg);
+    --sidebar-width: 15rem;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
     color: var(--main-text);
     display: grid;
-    gap: 0.75rem;
-    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    gap: 0rem;
     min-height: 100dvh;
-    padding: 0.75rem;
-    --sidebar-width: 16rem;
+    padding: 0.5rem;
     transition: grid-template-columns 200ms linear;
   }
 
   .sidebar-08__sidebar {
-    background-color: var(--surface-card);
-    border: 1px solid var(--main-border-light);
-    border-radius: var(--radius);
     display: grid;
     grid-column: 1;
     grid-row: 1;
     grid-template-rows: auto minmax(0, 1fr) auto;
-    min-width: 0;
     overflow: hidden;
     transition: transform 200ms linear;
   }
@@ -36,6 +31,8 @@
   }
 
   .sidebar-08__main {
+    border-radius: calc(var(--radius) * 1.4);
+    background-color: var(--surface-card);
     display: grid;
     grid-column: 2;
     grid-row: 1;
@@ -45,7 +42,6 @@
 
   .sidebar-08__header {
     align-items: center;
-    border: 1px solid var(--main-border-light);
     border-radius: var(--radius);
     display: flex;
     gap: 1rem;
@@ -90,9 +86,6 @@
   }
 
   .sidebar-08__content {
-    background-color: var(--surface-card);
-    border: 1px solid var(--main-border-light);
-    border-radius: var(--radius);
     min-width: 0;
     overflow: auto;
     padding: 1.5rem;

@@ -6,6 +6,8 @@
 @import "./app-layout.css";
 @import "./app-link.css";
 @import "./app-bar.css";
+@import "./sidebar-layout.css";
+@import "./sidebar.css";
 @import "./sidebar-footer.css";
 @import "./app-button.css";
 @import "./app-icon.css";

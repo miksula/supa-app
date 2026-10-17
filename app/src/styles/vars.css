@@ -16,6 +16,7 @@
   --red: var(--color-red-600);
   --green: var(--color-green-600);
   --blue: var(--color-blue-400);
+  --blue-primary: lab(36.9089% 35.0961 -85.6872);
 
   /*
    * Neutral Light/Dark Bridge Tokens (--nl/--nd)
@@ -50,11 +51,12 @@
   --nd-900: var(--color-newyork-900);
   --nd-950: var(--color-newyork-950);
 
-  --main-bg: light-dark(var(--nl-50), var(--nd-950));
-  --surface-card: light-dark(var(--nl-card), var(--nd-850));
+  --main-bg: light-dark(var(--nl-50), var(--nd-850));
+  --surface-card: light-dark(var(--nl-card), var(--nd-950));
   --surface-raised: light-dark(var(--nl-raised), var(--nd-800));
   --header-bg: light-dark(var(--nl-card), var(--nd-900));
 
+  --sidebar-primary: var(--blue-primary);
   --main-text: light-dark(var(--nl-900), var(--nd-50));
   --header-text: light-dark(var(--nl-700), var(--nd-200));
   --disabled-text: light-dark(var(--nl-300), var(--nd-600));
