@@ -8,10 +8,14 @@
   <meta name="color-scheme" content="light dark" />
   <script>
     (() => {
-      const stored = localStorage.getItem("color-scheme");
-      if (stored === "dark" || stored === "light") {
-        document.querySelector('meta[name="color-scheme"]').content = stored;
-        document.documentElement.style.colorScheme = stored;
+      const storedScheme = localStorage.getItem("color-scheme");
+      if (storedScheme === "dark" || storedScheme === "light") {
+        document.querySelector('meta[name="color-scheme"]').content = storedScheme;
+        document.documentElement.style.colorScheme = storedScheme;
+      }
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme === "zinc" || storedTheme === "slate") {
+        document.documentElement.setAttribute("data-theme", storedTheme);
       }
     })();
   </script>

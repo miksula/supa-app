@@ -1,10 +1,9 @@
 @scope (.app-bar) {
   :scope {
+    width: 100%;
     align-items: center;
     display: flex;
     gap: calc(var(--spacing) * 5);
-    min-height: 4rem;
-    padding-inline: calc(var(--spacing) * 6);
   }
 
   :scope > .links {
@@ -129,12 +128,6 @@
 
     :scope > .account > .menu.-is-open {
       transform: none;
-    }
-  }
-
-  @media (width < 40rem) {
-    :scope {
-      padding-inline: calc(var(--spacing) * 4);
     }
   }
 }

@@ -13,56 +13,121 @@
   --radius: 0.625rem;
   --white: var(--color-white, #fff);
   --black: var(--color-black, #000);
-
-  /* Backward-compatible aliases mapped to standard scale */
-  --grey-1: var(--color-zinc-700);
-  --grey-2: var(--color-zinc-400);
-  --grey-3: var(--color-zinc-300);
-  --grey-4: var(--color-zinc-200);
-  --grey-bg: var(--color-zinc-50);
-  --grey-muted: var(--color-zinc-500);
   --red: var(--color-red-600);
   --green: var(--color-green-600);
   --blue: var(--color-blue-400);
 
   /* -----------------------------------------------------------------
+   * Linear-Inspired Slated Gray Scale (Primitives)
+   * ----------------------------------------------------------------- */
+  --slated-50: oklch(98.5% 0.003 255deg);
+  --slated-100: oklch(95.5% 0.005 255deg);
+  --slated-200: oklch(91% 0.008 255deg);
+  --slated-300: oklch(84% 0.011 255deg);
+  --slated-400: oklch(69% 0.014 255deg);
+  --slated-500: oklch(54% 0.016 255deg);
+  --slated-600: oklch(40% 0.016 255deg);
+  --slated-700: oklch(29% 0.015 255deg);
+  --slated-800: oklch(22.5% 0.014 255deg);
+  --slated-850: oklch(18% 0.013 255deg);
+  --slated-900: oklch(14.5% 0.011 255deg);
+  --slated-950: oklch(12% 0.009 255deg);
+
+  /* -----------------------------------------------------------------
+   * Neutral Bridge Tokens (Default: Slate)
+   * ----------------------------------------------------------------- */
+  --n-50: var(--slated-50);
+  --n-100: var(--slated-100);
+  --n-200: var(--slated-200);
+  --n-300: var(--slated-300);
+  --n-400: var(--slated-400);
+  --n-500: var(--slated-500);
+  --n-600: var(--slated-600);
+  --n-700: var(--slated-700);
+  --n-800: var(--slated-800);
+  --n-850: var(--slated-850);
+  --n-900: var(--slated-900);
+  --n-950: var(--slated-950);
+
+  /* Backward-compatible aliases */
+  --grey-1: var(--n-700);
+  --grey-2: var(--n-400);
+  --grey-3: var(--n-300);
+  --grey-4: var(--n-200);
+  --grey-bg: var(--n-50);
+  --grey-muted: var(--n-500);
+
+  /* -----------------------------------------------------------------
    * Surface Tiers (Depth in Light & Dark Mode)
    * ----------------------------------------------------------------- */
-  /* Base page canvas: soft light zinc vs. deep dark zinc (not pitch black) */
-  --main-bg: light-dark(var(--color-zinc-50), var(--color-zinc-950));
+  /* Base page canvas */
+  --main-bg: light-dark(var(--n-50), var(--n-950));
 
-  /* Card / Container surface: pure white in light, elevated zinc-900 in dark */
-  --surface-card: light-dark(var(--color-white), var(--color-zinc-900));
+  /* Card / Container surface */
+  --surface-card: light-dark(var(--color-white), var(--n-850));
 
   /* Raised surface: menus, popovers, dropdowns */
-  --surface-raised: light-dark(var(--color-white), var(--color-zinc-800));
+  --surface-raised: light-dark(var(--color-white), var(--n-800));
 
   /* Header surface */
-  --header-bg: light-dark(var(--color-white), var(--color-zinc-900));
+  --header-bg: light-dark(var(--color-white), var(--n-900));
 
   /* -----------------------------------------------------------------
    * UI Semantic Tokens
    * ----------------------------------------------------------------- */
-  --main-text: light-dark(var(--color-zinc-900), var(--color-zinc-50));
-  --muted-foreground: light-dark(var(--color-zinc-500), var(--color-zinc-400));
-  --header-text: light-dark(var(--color-zinc-700), var(--color-zinc-200));
-  --aside-text: light-dark(var(--color-zinc-700), var(--color-zinc-300));
-  --disabled-text: light-dark(var(--color-zinc-300), var(--color-zinc-600));
+  --main-text: light-dark(var(--n-900), var(--n-50));
+  --muted-foreground: light-dark(var(--n-500), var(--n-400));
+  --header-text: light-dark(var(--n-700), var(--n-200));
+  --aside-text: light-dark(var(--n-700), var(--n-300));
+  --disabled-text: light-dark(var(--n-300), var(--n-600));
 
-  --main-border: light-dark(var(--color-zinc-300), var(--color-zinc-700));
-  --main-border-light: light-dark(var(--color-zinc-200), var(--color-zinc-700));
+  --main-border: light-dark(var(--n-300), var(--n-700));
+  --main-border-light: light-dark(var(--n-200), var(--n-700));
 
   /* Interactive / Buttons */
-  --button-text: light-dark(var(--color-zinc-700), var(--color-zinc-200));
+  --button-text: light-dark(var(--n-700), var(--n-200));
   --button-bg: light-dark(var(--color-white), transparent);
-  --button-active-text: light-dark(var(--color-zinc-950), var(--color-white));
-  --button-active-bg: light-dark(var(--color-zinc-200), var(--color-zinc-800));
+  --button-active-text: light-dark(var(--n-950), var(--color-white));
+  --button-active-bg: light-dark(var(--n-200), var(--n-800));
 
-  /* Accents & Status (tuned for dark-mode contrast) */
+  /* Accents & Status */
   --error-text: light-dark(var(--color-red-600), var(--color-red-400));
   --highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
   --button-highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
   --outline-color: light-dark(var(--color-blue-500), var(--color-blue-400));
 
-  --avatar-bg: light-dark(var(--color-zinc-700), var(--color-indigo-500));
+  --avatar-bg: light-dark(var(--n-700), var(--color-indigo-500));
+
+  /* -----------------------------------------------------------------
+   * Theme Variants
+   * ----------------------------------------------------------------- */
+  &[data-theme="slate"] {
+    --n-50: var(--slated-50);
+    --n-100: var(--slated-100);
+    --n-200: var(--slated-200);
+    --n-300: var(--slated-300);
+    --n-400: var(--slated-400);
+    --n-500: var(--slated-500);
+    --n-600: var(--slated-600);
+    --n-700: var(--slated-700);
+    --n-800: var(--slated-800);
+    --n-850: var(--slated-850);
+    --n-900: var(--slated-900);
+    --n-950: var(--slated-950);
+  }
+
+  &[data-theme="zinc"] {
+    --n-50: var(--color-zinc-50);
+    --n-100: var(--color-zinc-100);
+    --n-200: var(--color-zinc-200);
+    --n-300: var(--color-zinc-300);
+    --n-400: var(--color-zinc-400);
+    --n-500: var(--color-zinc-500);
+    --n-600: var(--color-zinc-600);
+    --n-700: var(--color-zinc-700);
+    --n-800: var(--color-zinc-800);
+    --n-850: oklch(18% 0.006 285.9deg);
+    --n-900: var(--color-zinc-900);
+    --n-950: var(--color-zinc-950);
+  }
 }

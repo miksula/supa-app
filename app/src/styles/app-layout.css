@@ -6,6 +6,19 @@
     min-height: 100dvh;
   }
 
+  :scope > header {
+    align-items: center;
+    display: flex;
+    min-height: 4rem;
+    padding-inline: calc(var(--spacing) * 6);
+  }
+
+  @media (width < 40rem) {
+    :scope > header {
+      padding-inline: calc(var(--spacing) * 4);
+    }
+  }
+
   :scope > .content {
     background-color: var(--surface-card, var(--main-bg));
     display: flex;
@@ -19,5 +32,9 @@
     border-radius: 5px;
     margin-block: 0;
     margin-inline: 1rem;
+  }
+
+  :scope > footer {
+    padding: 0.5rem 1rem;
   }
 }
