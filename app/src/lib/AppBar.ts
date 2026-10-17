@@ -118,25 +118,34 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               class="menu ${isMenuOpen ? "-is-open" : ""}"
               aria-hidden="${!isMenuOpen}"
             >
-              <div class="user-info" role="presentation">
-                <strong>Signed in as</strong>
-                <span>${userLabel}</span>
-                ${
-                  syncStatus
-                    ? html`
-                        <span class="sync-status ${getSyncStatusClass(syncStatus)}" role="status">
-                          <span class="status-indicator" aria-hidden="true"></span>
-                          ${getSyncLabel(syncStatus)}
-                        </span>
-                      `
-                    : nothing
-                }
-              </div>
+              <section>
+                <div class="user-info" role="presentation">
+                  <strong>Signed in as</strong>
+                  <span>${userLabel}</span>
+                </div>
+              </section>
 
-              <button class="logout" type="button" ?disabled="${isLoggingOut}" @click="${logout}">
-                <app-icon name="logout" size="16" class="mr-2"></app-icon>
-                ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
-              </button>
+              <section>
+                <div class="user-sync-status">
+                  ${
+                    syncStatus
+                      ? html`
+                          <span class="sync-status ${getSyncStatusClass(syncStatus)}" role="status">
+                            <span class="status-indicator" aria-hidden="true"></span>
+                            ${getSyncLabel(syncStatus)}
+                          </span>
+                        `
+                      : nothing
+                  }
+                </div>
+              </section>
+
+              <section>
+                <button class="logout" type="button" ?disabled="${isLoggingOut}" @click="${logout}">
+                  <app-icon name="logout" size="16" class="mr-2"></app-icon>
+                  ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
+                </button>
+              </section>
             </div>
           </div>
         </nav>

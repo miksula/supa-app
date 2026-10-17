@@ -75,26 +75,29 @@
     visibility: visible;
   }
 
-  :scope > .account > .menu > .user-info {
+  :scope > .account > .menu > section {
     border-bottom: 1px solid var(--main-border-light);
+  }
+
+  :scope > .account > .menu .user-info {
     display: grid;
     gap: 0.125rem;
     padding: calc(var(--spacing) * 3);
   }
 
-  :scope > .account > .menu > .user-info > strong {
+  :scope > .account > .menu .user-info > strong {
     color: var(--main-text);
     font-size: var(--text-sm);
     font-weight: var(--font-weight-medium);
   }
 
-  :scope > .account > .menu > .user-info > span {
+  :scope > .account > .menu .user-info > span {
     color: var(--muted-foreground);
     font-size: var(--text-xs);
     overflow-wrap: anywhere;
   }
 
-  :scope > .account > .menu > .user-info > .sync-status {
+  :scope > .account > .menu .user-sync-status .sync-status {
     align-items: center;
     color: var(--muted-foreground);
     display: flex;
@@ -104,7 +107,7 @@
     overflow-wrap: anywhere;
   }
 
-  :scope > .account > .menu > .user-info > .sync-status > .status-indicator {
+  :scope > .account > .menu .sync-status > .status-indicator {
     background-color: var(--muted-foreground);
     border-radius: calc(infinity * 1px);
     flex: 0 0 0.375rem;
@@ -112,15 +115,15 @@
     width: 0.375rem;
   }
 
-  :scope > .account > .menu > .user-info > .sync-status.-is-connected > .status-indicator {
+  :scope > .account > .menu .sync-status.-is-connected > .status-indicator {
     background-color: var(--green);
   }
 
-  :scope > .account > .menu > .user-info > .sync-status.-is-error > .status-indicator {
+  :scope > .account > .menu .sync-status.-is-error > .status-indicator {
     background-color: var(--red);
   }
 
-  :scope > .account > .menu > .logout {
+  :scope > .account > .menu .logout {
     align-items: center;
     background: transparent;
     border: 0;
@@ -136,11 +139,11 @@
     width: 100%;
   }
 
-  :scope > .account > .menu > .logout:disabled {
+  :scope > .account > .menu .logout:disabled {
     color: var(--disabled-text);
   }
 
-  :scope > .account > .menu > .logout:focus-visible {
+  :scope > .account > .menu .logout:focus-visible {
     outline-color: var(--outline-color);
   }
 
