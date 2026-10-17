@@ -1,7 +1,7 @@
 # Supa App
 
 A npm-managed monorepo for an offline-capable todo app. It combines a Lit/Vite
-browser client with a local Supabase database and a self-hosted PowerSync service.
+browser client with a Supabase database and a self-hosted PowerSync service.
 See [app/README.md](app/README.md) and [stack/README.md](stack/README.md) for
 detailed setup instructions.
 
@@ -10,8 +10,6 @@ detailed setup instructions.
 The following binaries are required for running the application:
 
 - `node` and `npm` (or `bun`) to install dependencies, build and run the dev server.
-- `supabase` to manage the local Supabase backend.
-- `powersync` to generate the sync schema and run the PowerSync service.
 - `docker` (or `orbstack`) to run the local backend services.
 
 Install dependencies with npm, configure `app/.env.local` from the provided
