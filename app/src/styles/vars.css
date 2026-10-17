@@ -18,77 +18,162 @@
   --blue: var(--color-blue-400);
 
   /* -----------------------------------------------------------------
-   * Linear-Inspired Slated Gray Scale (Primitives)
+   * Linear-Inspired Slated Palette (Primitives)
    * ----------------------------------------------------------------- */
-  --slated-50: oklch(98.5% 0.003 255deg);
+  --slated-50:  oklch(98.5% 0.003 255deg);
   --slated-100: oklch(95.5% 0.005 255deg);
-  --slated-200: oklch(91% 0.008 255deg);
-  --slated-300: oklch(84% 0.011 255deg);
-  --slated-400: oklch(69% 0.014 255deg);
-  --slated-500: oklch(54% 0.016 255deg);
-  --slated-600: oklch(40% 0.016 255deg);
-  --slated-700: oklch(29% 0.015 255deg);
+  --slated-200: oklch(91.0% 0.008 255deg);
+  --slated-300: oklch(84.0% 0.011 255deg);
+  --slated-400: oklch(69.0% 0.014 255deg);
+  --slated-500: oklch(54.0% 0.016 255deg);
+  --slated-600: oklch(40.0% 0.016 255deg);
+  --slated-700: oklch(29.0% 0.015 255deg);
   --slated-800: oklch(22.5% 0.014 255deg);
-  --slated-850: oklch(18% 0.013 255deg);
+  --slated-850: oklch(18.0% 0.013 255deg);
   --slated-900: oklch(14.5% 0.011 255deg);
-  --slated-950: oklch(12% 0.009 255deg);
+  --slated-950: oklch(12.0% 0.009 255deg);
 
   /* -----------------------------------------------------------------
-   * Neutral Bridge Tokens (Default: Slate)
+   * Neutral Light Bridge Tokens (--nl-*) - Default: Basic (Zinc)
    * ----------------------------------------------------------------- */
-  --n-50: var(--slated-50);
-  --n-100: var(--slated-100);
-  --n-200: var(--slated-200);
-  --n-300: var(--slated-300);
-  --n-400: var(--slated-400);
-  --n-500: var(--slated-500);
-  --n-600: var(--slated-600);
-  --n-700: var(--slated-700);
-  --n-800: var(--slated-800);
-  --n-850: var(--slated-850);
-  --n-900: var(--slated-900);
-  --n-950: var(--slated-950);
+  --nl-50:  var(--color-zinc-50);
+  --nl-100: var(--color-zinc-100);
+  --nl-200: var(--color-zinc-200);
+  --nl-300: var(--color-zinc-300);
+  --nl-400: var(--color-zinc-400);
+  --nl-500: var(--color-zinc-500);
+  --nl-600: var(--color-zinc-600);
+  --nl-700: var(--color-zinc-700);
+  --nl-800: var(--color-zinc-800);
+  --nl-900: var(--color-zinc-900);
+  --nl-950: var(--color-zinc-950);
+  --nl-card: var(--color-white);
+  --nl-raised: var(--color-white);
 
-  /* Backward-compatible aliases */
-  --grey-1: var(--n-700);
-  --grey-2: var(--n-400);
-  --grey-3: var(--n-300);
-  --grey-4: var(--n-200);
-  --grey-bg: var(--n-50);
-  --grey-muted: var(--n-500);
+  /* -----------------------------------------------------------------
+   * Neutral Dark Bridge Tokens (--nd-*) - Default: Slate (Linear)
+   * ----------------------------------------------------------------- */
+  --nd-50:  var(--slated-50);
+  --nd-100: var(--slated-100);
+  --nd-200: var(--slated-200);
+  --nd-300: var(--slated-300);
+  --nd-400: var(--slated-400);
+  --nd-500: var(--slated-500);
+  --nd-600: var(--slated-600);
+  --nd-700: var(--slated-700);
+  --nd-800: var(--slated-800);
+  --nd-850: var(--slated-850);
+  --nd-900: var(--slated-900);
+  --nd-950: var(--slated-950);
+
+  /* -----------------------------------------------------------------
+   * Light Theme Variants
+   * ----------------------------------------------------------------- */
+  /* Basic: Clean neutral zinc scale */
+  &[data-light-theme="basic"],
+  &[data-theme="basic"] {
+    --nl-50:  var(--color-zinc-50);
+    --nl-100: var(--color-zinc-100);
+    --nl-200: var(--color-zinc-200);
+    --nl-300: var(--color-zinc-300);
+    --nl-400: var(--color-zinc-400);
+    --nl-500: var(--color-zinc-500);
+    --nl-600: var(--color-zinc-600);
+    --nl-700: var(--color-zinc-700);
+    --nl-800: var(--color-zinc-800);
+    --nl-900: var(--color-zinc-900);
+    --nl-950: var(--color-zinc-950);
+    --nl-card: var(--color-white);
+    --nl-raised: var(--color-white);
+  }
+
+  /* Radix Light: Radix Slate-inspired (crisp cool-white canvas, structured borders, high-contrast ink) */
+  &[data-light-theme="radix"],
+  &[data-theme="radix"] {
+    --nl-50:  oklch(99.2% 0.003 247deg); /* Radix Step 1: #fbfcfd */
+    --nl-100: oklch(95.8% 0.006 247deg); /* Radix Step 3: #f1f3f5 */
+    --nl-200: oklch(92.2% 0.008 247deg); /* Radix Step 5: #e6e8eb */
+    --nl-300: oklch(89.5% 0.009 247deg); /* Radix Step 6: #dfe3e6 */
+    --nl-400: oklch(86.5% 0.010 247deg); /* Radix Step 7: #d7dbdf */
+    --nl-500: oklch(62.0% 0.014 247deg); /* Radix Step 9: #889096 */
+    --nl-600: oklch(50.0% 0.014 247deg); /* Radix Step 11: #687076 */
+    --nl-700: oklch(38.0% 0.012 247deg);
+    --nl-800: oklch(27.0% 0.010 247deg);
+    --nl-900: oklch(18.5% 0.010 247deg); /* Radix Step 12: #11181c high contrast text */
+    --nl-950: oklch(13.0% 0.008 247deg);
+    --nl-card: var(--color-white);
+    --nl-raised: oklch(99.6% 0.002 247deg);
+  }
+
+  /* -----------------------------------------------------------------
+   * Dark Theme Variants
+   * ----------------------------------------------------------------- */
+  /* Slate: Linear-inspired cool slate with rich dark tiers */
+  &[data-dark-theme="slate"],
+  &[data-theme="slate"] {
+    --nd-50:  var(--slated-50);
+    --nd-100: var(--slated-100);
+    --nd-200: var(--slated-200);
+    --nd-300: var(--slated-300);
+    --nd-400: var(--slated-400);
+    --nd-500: var(--slated-500);
+    --nd-600: var(--slated-600);
+    --nd-700: var(--slated-700);
+    --nd-800: var(--slated-800);
+    --nd-850: var(--slated-850);
+    --nd-900: var(--slated-900);
+    --nd-950: var(--slated-950);
+  }
+
+  /* Zinc: Clean neutral dark scale */
+  &[data-dark-theme="zinc"],
+  &[data-theme="zinc"] {
+    --nd-50:  var(--color-zinc-50);
+    --nd-100: var(--color-zinc-100);
+    --nd-200: var(--color-zinc-200);
+    --nd-300: var(--color-zinc-300);
+    --nd-400: var(--color-zinc-400);
+    --nd-500: var(--color-zinc-500);
+    --nd-600: var(--color-zinc-600);
+    --nd-700: var(--color-zinc-700);
+    --nd-800: var(--color-zinc-800);
+    --nd-850: oklch(18.0% 0.006 285.9deg);
+    --nd-900: var(--color-zinc-900);
+    --nd-950: var(--color-zinc-950);
+  }
 
   /* -----------------------------------------------------------------
    * Surface Tiers (Depth in Light & Dark Mode)
    * ----------------------------------------------------------------- */
   /* Base page canvas */
-  --main-bg: light-dark(var(--n-50), var(--n-950));
+  --main-bg: light-dark(var(--nl-50), var(--nd-950));
 
   /* Card / Container surface */
-  --surface-card: light-dark(var(--color-white), var(--n-850));
+  --surface-card: light-dark(var(--nl-card), var(--nd-850));
 
   /* Raised surface: menus, popovers, dropdowns */
-  --surface-raised: light-dark(var(--color-white), var(--n-800));
+  --surface-raised: light-dark(var(--nl-raised), var(--nd-800));
 
   /* Header surface */
-  --header-bg: light-dark(var(--color-white), var(--n-900));
+  --header-bg: light-dark(var(--nl-card), var(--nd-900));
 
   /* -----------------------------------------------------------------
    * UI Semantic Tokens
    * ----------------------------------------------------------------- */
-  --main-text: light-dark(var(--n-900), var(--n-50));
-  --muted-foreground: light-dark(var(--n-500), var(--n-400));
-  --header-text: light-dark(var(--n-700), var(--n-200));
-  --aside-text: light-dark(var(--n-700), var(--n-300));
-  --disabled-text: light-dark(var(--n-300), var(--n-600));
+  --main-text: light-dark(var(--nl-900), var(--nd-50));
+  --muted-foreground: light-dark(var(--nl-500), var(--nd-400));
+  --header-text: light-dark(var(--nl-700), var(--nd-200));
+  --aside-text: light-dark(var(--nl-700), var(--nd-300));
+  --disabled-text: light-dark(var(--nl-300), var(--nd-600));
 
-  --main-border: light-dark(var(--n-300), var(--n-700));
-  --main-border-light: light-dark(var(--n-200), var(--n-700));
+  --main-border: light-dark(var(--nl-300), var(--nd-700));
+  --main-border-light: light-dark(var(--nl-200), var(--nd-700));
 
   /* Interactive / Buttons */
-  --button-text: light-dark(var(--n-700), var(--n-200));
-  --button-bg: light-dark(var(--color-white), transparent);
-  --button-active-text: light-dark(var(--n-950), var(--color-white));
-  --button-active-bg: light-dark(var(--n-200), var(--n-800));
+  --button-text: light-dark(var(--nl-700), var(--nd-200));
+  --button-bg: light-dark(var(--nl-card), transparent);
+  --button-active-text: light-dark(var(--nl-950), var(--color-white));
+  --button-active-bg: light-dark(var(--nl-200), var(--nd-800));
 
   /* Accents & Status */
   --error-text: light-dark(var(--color-red-600), var(--color-red-400));
@@ -96,38 +181,13 @@
   --button-highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
   --outline-color: light-dark(var(--color-blue-500), var(--color-blue-400));
 
-  --avatar-bg: light-dark(var(--n-700), var(--color-indigo-500));
+  --avatar-bg: light-dark(var(--nl-700), var(--color-indigo-500));
 
-  /* -----------------------------------------------------------------
-   * Theme Variants
-   * ----------------------------------------------------------------- */
-  &[data-theme="slate"] {
-    --n-50: var(--slated-50);
-    --n-100: var(--slated-100);
-    --n-200: var(--slated-200);
-    --n-300: var(--slated-300);
-    --n-400: var(--slated-400);
-    --n-500: var(--slated-500);
-    --n-600: var(--slated-600);
-    --n-700: var(--slated-700);
-    --n-800: var(--slated-800);
-    --n-850: var(--slated-850);
-    --n-900: var(--slated-900);
-    --n-950: var(--slated-950);
-  }
-
-  &[data-theme="zinc"] {
-    --n-50: var(--color-zinc-50);
-    --n-100: var(--color-zinc-100);
-    --n-200: var(--color-zinc-200);
-    --n-300: var(--color-zinc-300);
-    --n-400: var(--color-zinc-400);
-    --n-500: var(--color-zinc-500);
-    --n-600: var(--color-zinc-600);
-    --n-700: var(--color-zinc-700);
-    --n-800: var(--color-zinc-800);
-    --n-850: oklch(18% 0.006 285.9deg);
-    --n-900: var(--color-zinc-900);
-    --n-950: var(--color-zinc-950);
-  }
+  /* Backward-compatible aliases */
+  --grey-1: light-dark(var(--nl-700), var(--nd-700));
+  --grey-2: light-dark(var(--nl-400), var(--nd-400));
+  --grey-3: light-dark(var(--nl-300), var(--nd-300));
+  --grey-4: light-dark(var(--nl-200), var(--nd-200));
+  --grey-bg: light-dark(var(--nl-50), var(--nd-50));
+  --grey-muted: light-dark(var(--nl-500), var(--nd-500));
 }

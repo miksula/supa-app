@@ -13,10 +13,10 @@
         document.querySelector('meta[name="color-scheme"]').content = storedScheme;
         document.documentElement.style.colorScheme = storedScheme;
       }
-      const storedTheme = localStorage.getItem("theme");
-      if (storedTheme === "zinc" || storedTheme === "slate") {
-        document.documentElement.setAttribute("data-theme", storedTheme);
-      }
+      const lightTheme = localStorage.getItem("light-theme") || "basic";
+      const darkTheme = localStorage.getItem("dark-theme") || "slate";
+      document.documentElement.setAttribute("data-light-theme", lightTheme);
+      document.documentElement.setAttribute("data-dark-theme", darkTheme);
     })();
   </script>
 
