@@ -1,10 +1,9 @@
 @scope (.app-bar) {
   :scope {
+    width: 100%;
     align-items: center;
     display: flex;
     gap: calc(var(--spacing) * 5);
-    min-height: 4rem;
-    padding-inline: calc(var(--spacing) * 6);
   }
 
   :scope > .links {
@@ -15,18 +14,13 @@
     visibility: hidden;
   }
 
-  :scope > .sync-status {
-    color: var(--muted-foreground);
-    font-size: var(--text-xs);
-  }
-
   :scope > .account {
     position: relative;
   }
 
   :scope > .account > .avatar {
     align-items: center;
-    background-color: var(--grey-1);
+    background-color: var(--avatar-bg);
     border: 0;
     border-radius: calc(infinity * 1px);
     cursor: pointer;
@@ -44,11 +38,11 @@
   }
 
   :scope > .account > .avatar:focus-visible {
-    outline-color: var(--main-border);
+    outline-color: var(--outline-color);
   }
 
   :scope > .account > .menu {
-    background: var(--main-bg);
+    background: var(--surface-raised, var(--main-bg));
     border: 1px solid var(--main-border-light);
     border-radius: var(--radius);
     box-shadow: 0 6px 12px color-mix(in srgb, var(--black) 12%, transparent);
@@ -63,14 +57,14 @@
     position: absolute;
     right: 0;
     top: calc(100% + 0.5rem);
-    transform: scale(0.92) translateY(-6px);
+    transform: translateY(-0.5rem) scale(0.95);
     transform-origin: top right;
     visibility: hidden;
     z-index: 10;
     transition:
-      opacity 120ms ease-out,
-      transform 120ms ease-out,
-      visibility 120ms allow-discrete;
+      opacity 150ms ease,
+      transform 150ms ease,
+      visibility 150ms allow-discrete;
   }
 
   :scope > .account > .menu.-is-open {
@@ -80,26 +74,29 @@
     visibility: visible;
   }
 
-  :scope > .account > .menu > .user-info {
+  :scope > .account > .menu > section {
     border-bottom: 1px solid var(--main-border-light);
+  }
+
+  :scope > .account > .menu .user-info {
     display: grid;
     gap: 0.125rem;
     padding: calc(var(--spacing) * 3);
   }
 
-  :scope > .account > .menu > .user-info > strong {
+  :scope > .account > .menu .user-info > strong {
     color: var(--main-text);
     font-size: var(--text-sm);
     font-weight: var(--font-weight-medium);
   }
 
-  :scope > .account > .menu > .user-info > span {
+  :scope > .account > .menu .user-info > span {
     color: var(--muted-foreground);
     font-size: var(--text-xs);
     overflow-wrap: anywhere;
   }
 
-  :scope > .account > .menu > .logout {
+  :scope > .account > .menu .logout {
     align-items: center;
     background: transparent;
     border: 0;
@@ -115,12 +112,12 @@
     width: 100%;
   }
 
-  :scope > .account > .menu > .logout:disabled {
+  :scope > .account > .menu .logout:disabled {
     color: var(--disabled-text);
   }
 
-  :scope > .account > .menu > .logout:focus-visible {
-    outline-color: var(--main-border-light);
+  :scope > .account > .menu .logout:focus-visible {
+    outline-color: var(--outline-color);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -131,12 +128,6 @@
 
     :scope > .account > .menu.-is-open {
       transform: none;
-    }
-  }
-
-  @media (width < 40rem) {
-    :scope {
-      padding-inline: calc(var(--spacing) * 4);
     }
   }
 }

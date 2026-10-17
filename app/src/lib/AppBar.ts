@@ -1,10 +1,8 @@
 import { html, render } from "lit";
 import "@/lib/AppLink.ts";
+import "@/lib/AppIcon.ts";
 import { router } from "@packages/router";
 import { authService } from "@/lib/auth.ts";
-import { dispatchAction, onData, type SyncStatusData } from "@/lib/events.ts";
-import appLogo from "@/assets/logo.svg";
-import logoutIcon from "@/assets/logout-icon.svg";
 import type { Session } from "@supabase/supabase-js";
 
 type AppBarElement = HTMLElement & { disposeAppBar?: () => void };
@@ -24,12 +22,25 @@ function getUserInitials(session: Session | null) {
     : (parts[0] ?? "K").slice(0, 2).toUpperCase();
 }
 
-function getSyncLabel(status: SyncStatusData | null) {
-  if (!status) return "";
-  if (status.error) return "Synkronointivirhe";
-  if (status.connecting) return "Yhdistetään...";
-  if (!status.connected) return "Ei yhteyttä";
-  return status.downloading || status.uploading ? "Synkronoidaan..." : "Synkronoitu";
+function getColorScheme(): "light" | "dark" {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+  if (meta?.content === "dark" || meta?.content === "light") {
+    return meta.content;
+  }
+  const stored = localStorage.getItem("color-scheme");
+  if (stored === "dark" || stored === "light") {
+    return stored;
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function setColorScheme(scheme: "light" | "dark") {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+  if (meta) {
+    meta.content = scheme;
+  }
+  document.documentElement.style.colorScheme = scheme;
+  localStorage.setItem("color-scheme", scheme);
 }
 
 export function AppBar(el: AppBarElement, initialPath = router.path) {
@@ -39,7 +50,8 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   let currentSession = authService.session;
   let isMenuOpen = false;
   let isLoggingOut = false;
-  let syncStatus: SyncStatusData | null = null;
+  const colorSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  let isDarkMode = getColorScheme() === "dark";
 
   const renderComponent = () => {
     const userLabel = currentSession?.user.email ?? "Käyttäjä";
@@ -47,9 +59,9 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     render(
       html`
         <nav class="app-bar" aria-label="Päänavigaatio">
-          <div class="flex gap-2 items-center">
-            <img src="${appLogo}" class="size-5" alt="Supa App" />
-            <span class="text-base font-medium">Supa App</span>
+          <div class="flex gap-2 items-center justify-center">
+            <app-icon name="logo" size="24"></app-icon>
+            <span class="text-base font-medium">Supa Todo</span>
           </div>
 
           <div class="links">
@@ -64,7 +76,15 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
             )}
           </div>
 
-          <span class="sync-status" role="status"> ${getSyncLabel(syncStatus)} </span>
+          <button
+            type="button"
+            class="app-button theme-toggle"
+            aria-label="${isDarkMode ? "Vaihda vaaleaan teemaan" : "Vaihda tummaan teemaan"}"
+            aria-pressed="${isDarkMode}"
+            @click="${toggleTheme}"
+          >
+            <app-icon name="colorScheme" class="text-lg"></app-icon>
+          </button>
 
           <div class="account">
             <button
@@ -84,15 +104,19 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
               class="menu ${isMenuOpen ? "-is-open" : ""}"
               aria-hidden="${!isMenuOpen}"
             >
-              <div class="user-info" role="presentation">
-                <strong>Signed in as</strong>
-                <span>${userLabel}</span>
-              </div>
+              <section>
+                <div class="user-info" role="presentation">
+                  <strong>Signed in as</strong>
+                  <span>${userLabel}</span>
+                </div>
+              </section>
 
-              <button class="logout" type="button" ?disabled="${isLoggingOut}" @click="${logout}">
-                <img src="${logoutIcon}" alt="Logout Icon" class="size-4 inline-block mr-2" />
-                ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
-              </button>
+              <section>
+                <button class="logout" type="button" ?disabled="${isLoggingOut}" @click="${logout}">
+                  <app-icon name="logout" size="16" class="mr-2"></app-icon>
+                  ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
+                </button>
+              </section>
             </div>
           </div>
         </nav>
@@ -109,6 +133,20 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   const closeMenu = () => {
     if (isMenuOpen) {
       isMenuOpen = false;
+      renderComponent();
+    }
+  };
+
+  const toggleTheme = () => {
+    const nextScheme = isDarkMode ? "light" : "dark";
+    setColorScheme(nextScheme);
+    isDarkMode = nextScheme === "dark";
+    renderComponent();
+  };
+
+  const onColorSchemeChange = () => {
+    if (!localStorage.getItem("color-scheme")) {
+      isDarkMode = colorSchemeQuery.matches;
       renderComponent();
     }
   };
@@ -156,24 +194,17 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     renderComponent();
   });
 
-  const disposeSyncListener = onData(el, "syncStatus", function updateSyncStatus(status) {
-    syncStatus = status;
-    renderComponent();
-  });
-
   router.addRouteListener(updatePath);
   document.addEventListener("click", onDocumentClick);
   document.addEventListener("keydown", onDocumentKeydown);
+  colorSchemeQuery.addEventListener("change", onColorSchemeChange);
 
   el.disposeAppBar = () => {
     disposeSessionListener();
-    disposeSyncListener();
     router.removeRouteListener(updatePath);
     document.removeEventListener("click", onDocumentClick);
     document.removeEventListener("keydown", onDocumentKeydown);
+    colorSchemeQuery.removeEventListener("change", onColorSchemeChange);
     delete el.disposeAppBar;
   };
-
-  renderComponent();
-  dispatchAction(el, "loadSyncStatus");
 }

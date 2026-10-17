@@ -1,7 +1,5 @@
 import { html, render } from "lit";
-import addListIcon from "@/assets/add-list-icon.svg";
-import nextIcon from "@/assets/next-icon.svg";
-import previousIcon from "@/assets/previous-icon.svg";
+import "@/lib/AppIcon.ts";
 import { authService } from "@/lib/auth.ts";
 import { powersync } from "@/lib/client.ts";
 import { TodoListCard, type TodoListCardController } from "@/lib/TodoListCard.ts";
@@ -62,7 +60,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
                 title="Previous"
                 @click=${() => seekLists(-1)}
               >
-                <img class="app-icon" src="${previousIcon}" alt="" aria-hidden="true" />
+                <app-icon name="previous"></app-icon>
               </button>
             </p>
           </div>
@@ -75,7 +73,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
                 title="Next"
                 @click=${() => seekLists(1)}
               >
-                <img class="app-icon" src="${nextIcon}" alt="" aria-hidden="true" />
+                <app-icon name="next"></app-icon>
               </button>
             </p>
             <p>
@@ -85,7 +83,7 @@ export function TodoApp(el: HTMLElement, store = new TodoStore(powersync)) {
                 title="Add custom list"
                 @click=${onAddList}
               >
-                <img class="app-icon" src="${addListIcon}" alt="" aria-hidden="true" />
+                <app-icon name="addList"></app-icon>
               </button>
             </p>
           </div>

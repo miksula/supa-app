@@ -1,35 +1,180 @@
 :root {
+  color-scheme: light dark;
+
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-
-  /* Named colors */
-  --white: lab(99.655% 0 0);
-  --black: lab(2.759% 0.106 -0.39);
-  --grey-1: lab(39.707% 0.318 -14.447);
-  --grey-2: lab(72.02% 1.144 -4.097);
-  --grey-3: lab(84.286% 0.547 -1.985);
-  --grey-4: lab(92.872% -2.207 -2.918);
-  --grey-bg: lab(98.26% 0 0);
-  --grey-muted: lab(48.496% 0 0);
-  --red: lab(47.09% 63.229 22.179);
-
-  /* Border radius */
   --radius: 0.625rem;
+  --white: var(--color-white, #fff);
+  --black: var(--color-black, #000);
+  --red: var(--color-red-600);
+  --green: var(--color-green-600);
+  --blue: var(--color-blue-400);
 
-  /* UI color mapping */
-  --main-text: var(--black);
-  --main-bg: var(--grey-bg);
-  --main-border: var(--grey-2);
-  --main-border-light: var(--grey-3);
-  --header-text: var(--grey-1);
-  --error-text: var(--red);
-  --header-bg: var(--white);
-  --highlight-text: var(--red);
-  --disabled-text: var(--grey-2);
-  --muted-foreground: var(--grey-muted);
-  --aside-text: var(--grey-1);
-  --button-text: var(--grey-1);
-  --button-bg: var(--white);
-  --button-active-text: var(--black);
-  --button-active-bg: var(--grey-4);
-  --button-highlight-text: var(--red);
+  /* -----------------------------------------------------------------
+   * Neutral Light Bridge Tokens (--nl-*) - Default: Zinc (Basic)
+   * ----------------------------------------------------------------- */
+  --nl-50: var(--color-zinc-50);
+  --nl-100: var(--color-zinc-100);
+  --nl-200: var(--color-zinc-200);
+  --nl-300: var(--color-zinc-300);
+  --nl-400: var(--color-zinc-400);
+  --nl-500: var(--color-zinc-500);
+  --nl-600: var(--color-zinc-600);
+  --nl-700: var(--color-zinc-700);
+  --nl-800: var(--color-zinc-800);
+  --nl-900: var(--color-zinc-900);
+  --nl-950: var(--color-zinc-950);
+  --nl-card: var(--color-white);
+  --nl-raised: var(--color-white);
+
+  /* -----------------------------------------------------------------
+   * Neutral Dark Bridge Tokens (--nd-*) - Default: Slate
+   * ----------------------------------------------------------------- */
+  --nd-50: var(--color-slated-50);
+  --nd-100: var(--color-slated-100);
+  --nd-200: var(--color-slated-200);
+  --nd-300: var(--color-slated-300);
+  --nd-400: var(--color-slated-400);
+  --nd-500: var(--color-slated-500);
+  --nd-600: var(--color-slated-600);
+  --nd-700: var(--color-slated-700);
+  --nd-800: var(--color-slated-800);
+  --nd-850: var(--color-slated-850);
+  --nd-900: var(--color-slated-900);
+  --nd-950: var(--color-slated-950);
+
+  /* -----------------------------------------------------------------
+   * Light Theme Variants
+   * ----------------------------------------------------------------- */
+  /* Basic: Clean neutral zinc scale */
+  &[data-light-theme="basic"],
+  &[data-theme="basic"] {
+    --nl-50: var(--color-zinc-50);
+    --nl-100: var(--color-zinc-100);
+    --nl-200: var(--color-zinc-200);
+    --nl-300: var(--color-zinc-300);
+    --nl-400: var(--color-zinc-400);
+    --nl-500: var(--color-zinc-500);
+    --nl-600: var(--color-zinc-600);
+    --nl-700: var(--color-zinc-700);
+    --nl-800: var(--color-zinc-800);
+    --nl-900: var(--color-zinc-900);
+    --nl-950: var(--color-zinc-950);
+    --nl-card: var(--color-white);
+    --nl-raised: var(--color-white);
+  }
+
+  /* Radix Light: Radix Slate-inspired (crisp cool-white canvas, structured borders, high-contrast ink) */
+  &[data-light-theme="radix"],
+  &[data-theme="radix"] {
+    --nl-50: var(--color-radix-50);
+    --nl-100: var(--color-radix-100);
+    --nl-200: var(--color-radix-200);
+    --nl-300: var(--color-radix-300);
+    --nl-400: var(--color-radix-400);
+    --nl-500: var(--color-radix-500);
+    --nl-600: var(--color-radix-600);
+    --nl-700: var(--color-radix-700);
+    --nl-800: var(--color-radix-800);
+    --nl-900: var(--color-radix-900);
+    --nl-950: var(--color-radix-950);
+    --nl-card: var(--color-white);
+    --nl-raised: oklch(99.6% 0.002 247deg);
+  }
+
+  /* -----------------------------------------------------------------
+   * Dark Theme Variants
+   * ----------------------------------------------------------------- */
+  /* Slate: Linear-inspired cool slate with rich dark tiers */
+  &[data-dark-theme="slate"],
+  &[data-theme="slate"] {
+    --nd-50: var(--color-slated-50);
+    --nd-100: var(--color-slated-100);
+    --nd-200: var(--color-slated-200);
+    --nd-300: var(--color-slated-300);
+    --nd-400: var(--color-slated-400);
+    --nd-500: var(--color-slated-500);
+    --nd-600: var(--color-slated-600);
+    --nd-700: var(--color-slated-700);
+    --nd-800: var(--color-slated-800);
+    --nd-850: var(--color-slated-850);
+    --nd-900: var(--color-slated-900);
+    --nd-950: var(--color-slated-950);
+  }
+
+  /* Zinc: Clean neutral dark scale */
+  &[data-dark-theme="zinc"],
+  &[data-theme="zinc"] {
+    --nd-50: var(--color-zinc-50);
+    --nd-100: var(--color-zinc-100);
+    --nd-200: var(--color-zinc-200);
+    --nd-300: var(--color-zinc-300);
+    --nd-400: var(--color-zinc-400);
+    --nd-500: var(--color-zinc-500);
+    --nd-600: var(--color-zinc-600);
+    --nd-700: var(--color-zinc-700);
+    --nd-800: var(--color-zinc-800);
+    --nd-850: oklch(18% 0.006 285.9deg);
+    --nd-900: var(--color-zinc-900);
+    --nd-950: var(--color-zinc-950);
+  }
+
+  /* New York: Shadcn's neutral dark palette */
+  &[data-dark-theme="newyork"],
+  &[data-theme="newyork"] {
+    --nd-50: var(--color-newyork-50);
+    --nd-100: var(--color-newyork-100);
+    --nd-200: var(--color-newyork-200);
+    --nd-300: var(--color-newyork-300);
+    --nd-400: var(--color-newyork-400);
+    --nd-500: var(--color-newyork-500);
+    --nd-600: var(--color-newyork-600);
+    --nd-700: var(--color-newyork-700);
+    --nd-800: var(--color-newyork-800);
+    --nd-850: var(--color-newyork-850);
+    --nd-900: var(--color-newyork-900);
+    --nd-950: var(--color-newyork-950);
+  }
+
+  /* Base page canvas */
+  --main-bg: light-dark(var(--nl-50), var(--nd-950));
+
+  /* Card / Container surface */
+  --surface-card: light-dark(var(--nl-card), var(--nd-850));
+
+  /* Raised surface: menus, popovers, dropdowns */
+  --surface-raised: light-dark(var(--nl-raised), var(--nd-800));
+
+  /* Header surface */
+  --header-bg: light-dark(var(--nl-card), var(--nd-900));
+
+  /* UI Semantic Tokens */
+  --main-text: light-dark(var(--nl-900), var(--nd-50));
+  --header-text: light-dark(var(--nl-700), var(--nd-200));
+  --disabled-text: light-dark(var(--nl-300), var(--nd-600));
+
+  --main-border: light-dark(var(--nl-300), var(--nd-700));
+  --main-border-light: light-dark(var(--nl-200), var(--nd-700));
+  --muted-foreground: light-dark(var(--nl-500), var(--nd-400));
+
+  /* Interactive / Buttons */
+  --button-text: light-dark(var(--nl-700), var(--nd-200));
+  --button-bg: light-dark(var(--nl-card), transparent);
+  --button-active-text: light-dark(var(--nl-950), var(--color-white));
+  --button-active-bg: light-dark(var(--nl-200), var(--nd-800));
+
+  /* Accents & Status */
+  --error-text: light-dark(var(--color-red-600), var(--color-red-400));
+  --highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
+  --button-highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
+  --outline-color: light-dark(var(--color-blue-500), var(--color-blue-400));
+
+  --avatar-bg: light-dark(var(--nl-700), var(--color-indigo-500));
 }
