@@ -17,7 +17,12 @@
   --green: var(--color-green-600);
   --blue: var(--color-blue-400);
 
-  /* Both color schemes use the Shadcn New York neutral palette. */
+  /*
+   * Neutral Light/Dark Bridge Tokens (--nl/--nd)
+   *
+   * Keeps semantic light- and dark-mode references separate from the palette 
+   * so themes can be changed without updating every component token.
+   */
   --nl-50: var(--color-newyork-50);
   --nl-100: var(--color-newyork-100);
   --nl-200: var(--color-newyork-200);
