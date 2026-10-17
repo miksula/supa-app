@@ -39,24 +39,24 @@ export function Sidebar(target: HTMLElement) {
                     <app-icon name="next" size="16"></app-icon>
                   </button>
                   <div class="collapsible ml-8">
-                    <ul>
+                    <ul class="menu flex min-w-0 flex-col gap-1">
                       <li>
-                        <a href="#">
+                        <a href="#" class="flex py-1.5">
                           <span class="font-normal text-sm">Introduction</span>
                         </a>
                       </li>
                       <li>
-                        <a href="#">
+                        <a href="#" class="flex py-1.5">
                           <span class="font-normal text-sm">Get Started</span>
                         </a>
                       </li>
                       <li>
-                        <a href="#">
+                        <a href="#" class="flex py-1.5">
                           <span class="font-normal text-sm">Tutorials</span>
                         </a>
                       </li>
                       <li>
-                        <a href="#">
+                        <a href="#" class="flex py-1.5">
                           <span class="font-normal text-sm">Changelog</span>
                         </a>
                       </li>

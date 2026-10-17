@@ -37,7 +37,22 @@
     color: var(--nd-300);
   }
 
-  :scope > .content li:hover a {
+  :scope > .content > .group > ul > li:hover > a {
+    border-radius: calc(var(--radius) * 0.8);
+    cursor: pointer;
+    background-color: var(--nd-800);
+  }
+
+  :scope > .content > .group > ul ul {
+    border-left: 1px solid var(--nd-700);
+    margin-left: -1rem;
+  }
+
+  :scope > .content > .group > ul ul > li {
+    padding-inline: 1rem;
+  }
+
+  :scope > .content > .group > ul ul > li:hover > a {
     border-radius: calc(var(--radius) * 0.8);
     cursor: pointer;
     background-color: var(--nd-800);
