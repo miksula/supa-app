@@ -36,4 +36,10 @@
     font-weight: 400;
     color: var(--nd-300);
   }
+
+  :scope > .content li:hover a {
+    border-radius: calc(var(--radius) * 0.8);
+    cursor: pointer;
+    background-color: var(--nd-800);
+  }
 }
