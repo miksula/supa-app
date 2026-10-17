@@ -97,32 +97,6 @@
     overflow-wrap: anywhere;
   }
 
-  :scope > .account > .menu .user-sync-status .sync-status {
-    align-items: center;
-    color: var(--muted-foreground);
-    display: flex;
-    font-size: var(--text-xs);
-    gap: 0.375rem;
-    margin-top: 0.25rem;
-    overflow-wrap: anywhere;
-  }
-
-  :scope > .account > .menu .sync-status > .status-indicator {
-    background-color: var(--muted-foreground);
-    border-radius: calc(infinity * 1px);
-    flex: 0 0 0.375rem;
-    height: 0.375rem;
-    width: 0.375rem;
-  }
-
-  :scope > .account > .menu .sync-status.-is-connected > .status-indicator {
-    background-color: var(--green);
-  }
-
-  :scope > .account > .menu .sync-status.-is-error > .status-indicator {
-    background-color: var(--red);
-  }
-
   :scope > .account > .menu .logout {
     align-items: center;
     background: transparent;

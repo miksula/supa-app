@@ -2,7 +2,7 @@
   :scope {
     display: grid;
     grid-template-columns: 100%;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto 1fr auto;
     min-height: 100dvh;
   }
 
@@ -17,7 +17,7 @@
 
   :scope > .content.rounded {
     border-radius: 5px;
-    margin-block: 0 1rem;
+    margin-block: 0;
     margin-inline: 1rem;
   }
 }

@@ -1,9 +1,8 @@
-import { html, nothing, render } from "lit";
+import { html, render } from "lit";
 import "@/lib/AppLink.ts";
 import "@/lib/AppIcon.ts";
 import { router } from "@packages/router";
 import { authService } from "@/lib/auth.ts";
-import { dispatchAction, onData, type SyncStatusData } from "@/lib/events.ts";
 import type { Session } from "@supabase/supabase-js";
 
 type AppBarElement = HTMLElement & { disposeAppBar?: () => void };
@@ -21,18 +20,6 @@ function getUserInitials(session: Session | null) {
   return parts.length > 1
     ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
     : (parts[0] ?? "K").slice(0, 2).toUpperCase();
-}
-
-function getSyncLabel(status: SyncStatusData | null) {
-  if (!status) return "";
-  if (status.error) return "Synkronointivirhe";
-  if (status.connecting) return "Yhdistetään...";
-  if (!status.connected) return "Ei yhteyttä";
-  return status.downloading || status.uploading ? "Synkronoidaan..." : "Synkronoitu";
-}
-
-function getSyncStatusClass(status: SyncStatusData) {
-  return status.error || !status.connected ? "-is-error" : "-is-connected";
 }
 
 function getColorScheme(): "light" | "dark" {
@@ -65,7 +52,6 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
   let isLoggingOut = false;
   const colorSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
   let isDarkMode = getColorScheme() === "dark";
-  let syncStatus: SyncStatusData | null = null;
 
   const renderComponent = () => {
     const userLabel = currentSession?.user.email ?? "Käyttäjä";
@@ -122,21 +108,6 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
                 <div class="user-info" role="presentation">
                   <strong>Signed in as</strong>
                   <span>${userLabel}</span>
-                </div>
-              </section>
-
-              <section>
-                <div class="user-sync-status">
-                  ${
-                    syncStatus
-                      ? html`
-                          <span class="sync-status ${getSyncStatusClass(syncStatus)}" role="status">
-                            <span class="status-indicator" aria-hidden="true"></span>
-                            ${getSyncLabel(syncStatus)}
-                          </span>
-                        `
-                      : nothing
-                  }
                 </div>
               </section>
 
@@ -223,11 +194,6 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
     renderComponent();
   });
 
-  const disposeSyncListener = onData(el, "syncStatus", function updateSyncStatus(status) {
-    syncStatus = status;
-    renderComponent();
-  });
-
   router.addRouteListener(updatePath);
   document.addEventListener("click", onDocumentClick);
   document.addEventListener("keydown", onDocumentKeydown);
@@ -235,13 +201,10 @@ export function AppBar(el: AppBarElement, initialPath = router.path) {
 
   el.disposeAppBar = () => {
     disposeSessionListener();
-    disposeSyncListener();
     router.removeRouteListener(updatePath);
     document.removeEventListener("click", onDocumentClick);
     document.removeEventListener("keydown", onDocumentKeydown);
     colorSchemeQuery.removeEventListener("change", onColorSchemeChange);
     delete el.disposeAppBar;
   };
-
-  dispatchAction(el, "loadSyncStatus");
 }

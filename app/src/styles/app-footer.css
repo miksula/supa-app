@@ -1,0 +1,33 @@
+@scope (.app-layout) {
+  :scope > footer {
+    padding: 0.5rem 1rem;
+  }
+}
+
+@scope (.app-footer) {
+  :scope {
+    align-items: center;
+    color: var(--muted-foreground);
+    display: flex;
+    font-size: var(--text-xs);
+    gap: 0.375rem;
+    justify-content: flex-end;
+    min-height: 1.5rem;
+  }
+
+  :scope > .status-indicator {
+    background-color: var(--muted-foreground);
+    border-radius: calc(infinity * 1px);
+    flex: 0 0 0.375rem;
+    height: 0.375rem;
+    width: 0.375rem;
+  }
+
+  :scope.-is-connected > .status-indicator {
+    background-color: var(--green);
+  }
+
+  :scope.-is-error > .status-indicator {
+    background-color: var(--red);
+  }
+}
