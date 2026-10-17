@@ -16,7 +16,7 @@ function getSyncStatusClass(status: SyncStatusData) {
 }
 
 type LightTheme = "basic" | "radix";
-type DarkTheme = "slate" | "zinc";
+type DarkTheme = "newyork" | "slate" | "zinc";
 
 function getActiveLightTheme(): LightTheme {
   const current = document.documentElement.getAttribute("data-light-theme");
@@ -38,11 +38,11 @@ function setActiveLightTheme(theme: LightTheme) {
 
 function getActiveDarkTheme(): DarkTheme {
   const current = document.documentElement.getAttribute("data-dark-theme");
-  if (current === "slate" || current === "zinc") {
+  if (current === "newyork" || current === "slate" || current === "zinc") {
     return current;
   }
   const stored = localStorage.getItem("dark-theme");
-  if (stored === "slate" || stored === "zinc") {
+  if (stored === "newyork" || stored === "slate" || stored === "zinc") {
     return stored;
   }
   return "slate";
@@ -114,6 +114,14 @@ export function AppFooter(el: AppFooterElement) {
             ${
               isDark
                 ? html`
+                    <button
+                      type="button"
+                      class="theme-btn ${activeDarkTheme === "newyork" ? "-is-active" : ""}"
+                      aria-pressed="${activeDarkTheme === "newyork"}"
+                      @click="${() => selectDarkTheme("newyork")}"
+                    >
+                      New York
+                    </button>
                     <button
                       type="button"
                       class="theme-btn ${activeDarkTheme === "slate" ? "-is-active" : ""}"

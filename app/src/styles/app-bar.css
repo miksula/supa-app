@@ -20,7 +20,7 @@
 
   :scope > .account > .avatar {
     align-items: center;
-    background-color: var(--avatar-bg, var(--grey-1));
+    background-color: var(--avatar-bg);
     border: 0;
     border-radius: calc(infinity * 1px);
     cursor: pointer;
