@@ -1,4 +1,4 @@
-@scope (.app-footer) {
+@scope (.sidebar-footer) {
   :scope {
     align-items: center;
     color: var(--muted-foreground);

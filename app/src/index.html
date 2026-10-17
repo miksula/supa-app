@@ -13,10 +13,7 @@
         document.querySelector('meta[name="color-scheme"]').content = storedScheme;
         document.documentElement.style.colorScheme = storedScheme;
       }
-      const lightTheme = localStorage.getItem("light-theme") || "basic";
-      const darkTheme = localStorage.getItem("dark-theme") || "slate";
-      document.documentElement.setAttribute("data-light-theme", lightTheme);
-      document.documentElement.setAttribute("data-dark-theme", darkTheme);
+      document.documentElement.setAttribute("data-theme", "newyork");
     })();
   </script>
 

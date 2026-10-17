@@ -1,33 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  /* Slate color scale */
-  --color-slated-50: oklch(98.5% 0.003 255deg);
-  --color-slated-100: oklch(95.5% 0.005 255deg);
-  --color-slated-200: oklch(91% 0.008 255deg);
-  --color-slated-300: oklch(84% 0.011 255deg);
-  --color-slated-400: oklch(69% 0.014 255deg);
-  --color-slated-500: oklch(54% 0.016 255deg);
-  --color-slated-600: oklch(40% 0.016 255deg);
-  --color-slated-700: oklch(29% 0.015 255deg);
-  --color-slated-800: oklch(22.5% 0.014 255deg);
-  --color-slated-850: oklch(18% 0.013 255deg);
-  --color-slated-900: oklch(14.5% 0.011 255deg);
-  --color-slated-950: oklch(12% 0.009 255deg);
-
-  /* Radix color scale */
-  --color-radix-50: oklch(99.2% 0.003 247deg);
-  --color-radix-100: oklch(95.8% 0.006 247deg);
-  --color-radix-200: oklch(92.2% 0.008 247deg);
-  --color-radix-300: oklch(89.5% 0.009 247deg);
-  --color-radix-400: oklch(86.5% 0.01 247deg);
-  --color-radix-500: oklch(62% 0.014 247deg);
-  --color-radix-600: oklch(50% 0.014 247deg);
-  --color-radix-700: oklch(38% 0.012 247deg);
-  --color-radix-800: oklch(27% 0.01 247deg);
-  --color-radix-900: oklch(18.5% 0.01 247deg);
-  --color-radix-950: oklch(13% 0.008 247deg);
-
   /** Shadcn New York neutral scale */
   --color-newyork-50: oklch(98.5% 0 0deg);
   --color-newyork-100: oklch(95% 0 0deg);

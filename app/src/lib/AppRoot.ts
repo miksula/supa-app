@@ -3,15 +3,17 @@ import { router } from "@packages/router";
 import { AuthController } from "@/lib/AuthController.ts";
 import { SyncController } from "@/lib/SyncController.ts";
 import { enforceAuthRoute } from "@/lib/routeGuard.ts";
-import { AppLayout } from "@/lib/AppLayout.ts";
+// import { AppLayout } from "@/lib/AppLayout.ts";
+import { SidebarLayout } from "@/lib/SidebarLayout.ts";
 import { LoginLayout } from "@/lib/LoginLayout.ts";
-import { Home } from "@/pages/Home.ts";
+// import { Home } from "@/pages/Home.ts";
+import { Sidebar08 } from "@/pages/Sidebar08.ts";
 import { Login } from "@/pages/Login.ts";
 import type { LayoutFactory, LayoutInstance, MountFunction } from "@/lib/types.ts";
 
 // Extensible registry: add new layouts here or pass custom factories directly
 const layouts = {
-  app: AppLayout,
+  app: SidebarLayout,
   login: LoginLayout,
 } satisfies Record<string, LayoutFactory>;
 
@@ -35,7 +37,7 @@ export function AppRoot(el: HTMLElement) {
 
   router
     .get("/", () => {
-      route = { page: Home, layout: "app" };
+      route = { page: Sidebar08, layout: "app" };
     })
     .get("/login", () => {
       route = { page: Login, layout: "login" };

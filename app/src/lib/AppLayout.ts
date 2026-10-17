@@ -1,6 +1,6 @@
 import { html, render } from "lit";
 // import { AppBar } from "@/lib/AppBar.ts";
-// import { AppFooter } from "@/lib/AppFooter.ts";
+// import { SidebarFooter } from "@/lib/SidebarFooter.ts";
 import type { LayoutFactory, LayoutInstance } from "./types.ts";
 
 export const AppLayout: LayoutFactory = (container: HTMLElement): LayoutInstance => {
@@ -20,14 +20,14 @@ export const AppLayout: LayoutFactory = (container: HTMLElement): LayoutInstance
   const slot = container.querySelector<HTMLElement>('[data-slot="page"]')!;
 
   // AppBar(headerEl);
-  // AppFooter(footerEl);
+  // SidebarFooter(footerEl);
 
   return {
     element: container.firstElementChild as HTMLElement,
     contentSlot: slot,
     dispose: () => {
       (asideEl as HTMLElement & { disposeAppBar?: () => void }).disposeAppBar?.();
-      // (footerEl as HTMLElement & { disposeAppFooter?: () => void }).disposeAppFooter?.();
+      // (footerEl as HTMLElement & { disposeSidebarFooter?: () => void }).disposeSidebarFooter?.();
     },
   };
 };
