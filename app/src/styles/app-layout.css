@@ -34,7 +34,7 @@
     margin-inline: 1rem;
   }
 
-  :scope > footer {
+  /* :scope > footer {
     padding: 0.5rem 1rem;
-  }
+  } */
 }
