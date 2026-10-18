@@ -25,11 +25,25 @@ Never split the styling of a single element across both Tailwind and a CSS selec
 - **Anti-pattern:** `<div class="font-medium" data-label>` in template, plus `[data-label] { font-weight: 400; color: ... }` in CSS. The stylesheet overrides the Tailwind class due to higher specificity, leaving a dead class in the template.
 - **Rule:** If an element is extracted into the stylesheet, move **100%** of its presentation (layout, sizing, typography, colors) to the stylesheet. If it remains an inline utility element, keep it 100% in Tailwind.
 
-### 2. Shells in CSS, Leaves in Tailwind
-- **Component Shells / Containers → Scoped CSS:**
-  Anything that defines structural layouts, component boundaries, z-index, responsive media queries, CSS transitions/animations, or complex component state (`.sidebar`, `.sidebar-header`, `.menu-item`, `.menu-toggle`, `.sub-menu`).
-- **Leaf Elements → Tailwind Utilities:**
-  Simple text formatting, icons, and micro-spacers (`truncate`, `text-sm`, `text-xs`, `font-medium`, `size-4`). There is no need to create a custom CSS class for a simple `<span class="truncate text-sm">`.
+### 2. The 3-Level Styling Hierarchy (Shells & Intermediates in CSS, Leaves in Tailwind)
+Divide component elements into three strict tiers of responsibility:
+
+- **Tier 1: Root Shell (Scoped CSS — `:scope`):**
+  - **Elements:** The outermost mount container (`.sidebar`, `.app-bar`, `.todo-list-card`).
+  - **Owned Properties:** Component boundaries, grid/flex root layout, overall dimensions (e.g., `--sidebar-width: 15rem`, `height: 100%`), and component-wide CSS variables.
+
+- **Tier 2: Intermediate Structural Nodes / "In the Middle" (Scoped CSS):**
+  - **Elements:** Structural containers, section wrappers, and list items (`.sidebar-header`, `.sidebar-content`, `.sidebar-group`, `.menu-item`, `.menu-toggle`, `.sub-menu`).
+  - **Owned Properties:** **All positioning, coordinate contracts, spacing, dimensions, and flow:**
+    - Positioning coordinates: `position: relative`, `position: absolute`, `top`, `right`, `bottom`, `left`.
+    - Spacing & Flow: Flex/Grid direction, `gap`, and internal `padding`. (Avoid external `margin` on siblings; use parent `gap` instead).
+    - Dimensions: `width`, `height`, `min-width: 0`, `flex: 1`, `flex-shrink: 0`.
+  - **Strict Rule:** **Never allow layout utility classes (`absolute`, `top-1.5`, `ml-8`, `mt-6`, `w-full`, `h-8`) on intermediate nodes in the template.** These properties define structural relationships and must live in the scoped stylesheet so state transitions (such as `:scope.-is-collapsed`) and responsive media queries work without fighting inline classes.
+
+- **Tier 3: Leaf Elements (Inline Tailwind Utilities):**
+  - **Elements:** Terminal content elements only (`<span>`, `<app-icon>`, `<p>`).
+  - **Owned Properties:** Local typography and content-contained visuals only (`truncate`, `text-sm`, `text-xs`, `font-medium`, `size-4`, `text-(--muted-foreground)`).
+  - **Strict Rule:** Leaf utilities must never dictate external layout, margins, or positioning relative to siblings.
 
 ### 3. Consume Semantic Tokens, Not Palette Tokens
 In this project's design system (`app/src/styles/vars.css`):
