@@ -20,6 +20,7 @@
     "supabase:status": "supabase status --workdir stack"
   },
   "devDependencies": {
+    "@tailwindcss/node": "^4.2.2",
     "oxfmt": "^0.72.0",
     "oxlint": "^1.87.0",
     "powersync": "^0.10.2",

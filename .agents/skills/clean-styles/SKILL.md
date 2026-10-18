@@ -1,6 +1,6 @@
 ---
 name: clean-styles
-description: 'Refactor and extract bloated utility classes into clean scoped CSS stylesheets using @scope. Use when refactoring components with long Tailwind class strings, separating container/shell styles from leaf utilities, resolving specificity conflicts, or applying semantic design tokens to CSS.'
+description: 'Refactor and extract bloated utility classes into clean scoped CSS stylesheets using @scope and the toCSS compiler script. Use when refactoring components with long Tailwind class strings, separating container/shell styles from leaf utilities, resolving specificity conflicts, or applying semantic design tokens to CSS.'
 ---
 
 # Clean Styles: Utility-to-Scoped CSS Factoring
@@ -119,11 +119,26 @@ Ensure the component has a stylesheet in `app/src/styles/<component>.css`:
 2. Ensure it is imported in `app/src/styles/index.css`.
 3. Check `index.css` to confirm there are no duplicate imports.
 
-### Step 3: Extract Containers to Semantic Classes
+### Step 3: Extract Containers to Semantic Classes with `toCSS.js`
 For each identified container element:
 1. Replace the long Tailwind class string with a semantic class name (e.g. `.sidebar-header`, `.menu-item`, `.menu-link`).
-2. Move the positioning, layout (`display: flex`, `gap`, `padding`), and transitions into the corresponding CSS rule.
-3. If fast migration is preferred, use Tailwind v4 `@apply` for base utilities, keeping states and theme variables in native CSS.
+2. **Compile utilities automatically with `toCSS.js`**:
+   Use the utility script [toCSS.js](./scripts/toCSS.js) (or `node scripts/toCSS.js`) to compile the Tailwind utility string into clean, compiler-verified CSS:
+   ```bash
+   node scripts/toCSS.js sidebar-header "flex items-center gap-4 p-2"
+   ```
+   Output:
+   ```css
+   .sidebar-header {
+     display: flex;
+     align-items: center;
+     gap: calc(var(--spacing, 0.25rem) * 4);
+     padding: calc(var(--spacing, 0.25rem) * 2);
+   }
+   ```
+3. Paste the generated CSS into the scoped block in `app/src/styles/<component>.css`.
+4. Replace hardcoded colors with semantic design tokens (`var(--main-text)`, `var(--button-active-bg)`, `var(--main-border)`).
+5. Nest state modifiers (`&.-is-open`) and pseudo-classes (`&:hover`, `&:focus-visible`) following the **2+1 nesting rule**.
 
 ### Step 4: Keep Leaf Nodes Clean
 Leave leaf elements (`<span>`, `<app-icon>`) with focused Tailwind utilities:
