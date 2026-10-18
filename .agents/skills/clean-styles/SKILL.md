@@ -70,6 +70,24 @@ Use semantic state classes and ARIA attributes in template and CSS:
   }
   ```
 
+### 6. The "2+1" Nesting Limit Rule (Avoid the Pyramid of Doom)
+Because `@scope` already isolates styles to the component boundary, **never mirror HTML DOM depth into deep CSS nesting chains**. Keep selectors flat inside `@scope`:
+- **Level 1 (Target Elements):** Flat element selectors (`.sidebar-header`, `.menu-link`, `.sub-menu-link`). Do not nest `.sub-menu-link` inside `.sub-menu ul li`—its name is already unique within the scope.
+- **Level 2 (Pseudo-states & Modifiers):** Element pseudo-classes and state modifiers using `&` (`&:hover`, `&:focus-visible`, `&.-is-open`, `& > svg`).
+- **Level 3 (Max Ceiling / Contextual Overrides):** Parent context modifiers or media queries (e.g., `:scope.-is-collapsed &`, `@media (width < 48rem)`).
+- **Level 4+:** 🛑 **Anti-Pattern.** Never write `.sidebar { .content { .group { .menu { .item { .link { ... } } } } } }`. If nesting exceeds 2–3 levels, extract a direct semantic class name instead.
+
+### 7. Component Root Boundaries (`data-component="<name>"`)
+In Vanilla JS and Lit mount functions where no framework DevTools component tree exists, place `data-component="<name>"` on the **component's root container**:
+```html
+<div class="sidebar" data-component="sidebar">
+```
+- **Why:** 
+  - **DevTools Inspection:** Instantly reveals which TypeScript file owns and mounts the DOM sub-tree when scanning the Chrome DevTools Elements panel.
+  - **Console Debugging & E2E Testing:** Provides a clean, unambiguous hook (`document.querySelector('[data-component="sidebar"]')`) without coupling to styling classes.
+  - **Resilient `@scope` Anchor:** Serves as a dual selector target alongside the class name: `@scope (.sidebar, [data-component="sidebar"])`.
+- **Rule:** Use `data-component="<name>"` **only on the root boundary node**. Do not propagate `data-*` attributes down to internal child nodes—use clean, scoped classes (`.sidebar-header`, `.menu-link`) for all internal elements.
+
 ---
 
 ## Step-by-Step Refactoring Procedure
@@ -97,7 +115,7 @@ For each identified container element:
 Leave leaf elements (`<span>`, `<app-icon>`) with focused Tailwind utilities:
 ```html
 <span class="truncate text-sm font-medium">Local First</span>
-<span class="truncate text-xs text-muted">Supabase</span>
+<span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
 ```
 
 ### Step 5: Implement Interactive States and Modifiers
@@ -177,7 +195,7 @@ Handle `:hover`, `:active`, `:focus-visible`, and state modifiers (`.-is-open`, 
     </a>
     <div class="sidebar-brand-text">
       <span class="truncate text-sm font-medium">Local First</span>
-      <span class="truncate text-xs text-muted">Supabase</span>
+      <span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
     </div>
   </div>
 

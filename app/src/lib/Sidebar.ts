@@ -47,7 +47,7 @@ export function Sidebar(target: HTMLElement) {
             </a>
             <div class="sidebar-brand-text">
               <span class="truncate text-sm font-medium">Local First</span>
-              <span class="truncate text-xs text-muted">Supabase</span>
+              <span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
             </div>
           </div>
 
