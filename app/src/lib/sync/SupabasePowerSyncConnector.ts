@@ -1,7 +1,7 @@
 import { UpdateType } from "@powersync/web";
 import type { CommonPowerSyncDatabase, CrudEntry, PowerSyncBackendConnector } from "@powersync/web";
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { AuthService } from "./AuthService.ts";
+import { AuthService } from "../auth/AuthService.ts";
 
 /// Postgres Response codes that we cannot recover from by retrying.
 const FATAL_RESPONSE_CODES = [new RegExp("^22...$"), new RegExp("^23...$"), new RegExp("^42501$")];

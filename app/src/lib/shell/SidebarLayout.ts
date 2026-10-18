@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import type { LayoutFactory, LayoutInstance } from "./types.ts";
+import type { LayoutFactory, LayoutInstance } from "../types.ts";
 import { Sidebar } from "./Sidebar.ts";
 // import { SidebarOld } from "./SidebarOld.ts";
 

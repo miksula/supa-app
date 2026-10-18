@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import type { LayoutFactory, LayoutInstance } from "./types.ts";
+import type { LayoutFactory, LayoutInstance } from "../types.ts";
 
 export const LoginLayout: LayoutFactory = (container: HTMLElement): LayoutInstance => {
   render(

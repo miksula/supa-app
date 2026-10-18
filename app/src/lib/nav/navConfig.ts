@@ -1,0 +1,34 @@
+export type NavItem = {
+  title: string;
+  icon?: string;
+  url?: string;
+  items?: { title: string; url: string }[];
+};
+
+export const NAV_ITEMS: NavItem[] = [
+  {
+    title: "MyTodos",
+    icon: "command",
+    url: "/",
+  },
+  {
+    title: "Documentation",
+    icon: "bookOpenText",
+    items: [
+      { title: "Introduction", url: "/docs/introduction" },
+      { title: "Get Started", url: "/docs/get-started" },
+      { title: "Tutorials", url: "/docs/tutorials" },
+      { title: "Changelog", url: "/docs/changelog" },
+    ],
+  },
+  {
+    title: "Settings",
+    icon: "cog",
+    items: [
+      { title: "General", url: "/settings/general" },
+      { title: "Team", url: "/settings/team" },
+      { title: "Billing", url: "/settings/billing" },
+      { title: "Limits", url: "/settings/limits" },
+    ],
+  },
+];

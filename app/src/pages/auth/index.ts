@@ -1,7 +1,7 @@
 import { html, render } from "lit";
-import { authService } from "@/lib/auth.ts";
+import { authService } from "@/lib/auth/auth.ts";
 
-export function Login(el: HTMLElement) {
+export function LoginPage(el: HTMLElement) {
   let isSubmitting = false;
   let email = "mika@example.com";
   let password = "My1234NewStrongPassword";
@@ -10,11 +10,11 @@ export function Login(el: HTMLElement) {
   const renderComponent = () => {
     render(
       html`
-        <div class="login">
+        <div class="login" data-component="login-page">
           <h1 id="login-heading">Login to your account</h1>
           <p>Enter your email and password below to login to your account</p>
 
-          <form aria-labelledby="login-heading" @submit="${handleSubmit}">
+          <form aria-labelledby="login-heading" @submit="${(e: SubmitEvent) => handleSubmit(e)}">
             <label for="email">Email</label>
             <input
               class="mb-8"

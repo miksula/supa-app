@@ -1,13 +1,11 @@
 import { html, render } from "lit";
 import { router } from "@packages/router";
-import { AuthController } from "@/lib/AuthController.ts";
-import { SyncController } from "@/lib/SyncController.ts";
-import { enforceAuthRoute } from "@/lib/routeGuard.ts";
-// import { AppLayout } from "@/lib/AppLayout.ts";
-import { SidebarLayout } from "@/lib/SidebarLayout.ts";
-import { LoginLayout } from "@/lib/LoginLayout.ts";
-import { Home } from "@/pages/Home.ts";
-import { Login } from "@/pages/Login.ts";
+import { AuthController } from "@/lib/auth/AuthController.ts";
+import { enforceAuthRoute } from "@/lib/auth/routeGuard.ts";
+import { SyncController } from "@/lib/sync/SyncController.ts";
+import { SidebarLayout } from "@/lib/shell/SidebarLayout.ts";
+import { LoginLayout } from "@/lib/shell/LoginLayout.ts";
+import { LoginPage } from "@/pages/auth/index.ts";
 import type { LayoutFactory, LayoutInstance, MountFunction } from "@/lib/types.ts";
 
 // Extensible registry: add new layouts here or pass custom factories directly

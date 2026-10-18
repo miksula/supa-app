@@ -1,5 +1,5 @@
 import { html, render, nothing } from "lit";
-import "./AppIcon.ts";
+import "../../tmp/AppIcon.ts";
 
 type NavItem = {
   title: string;
