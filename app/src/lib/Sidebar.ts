@@ -1,10 +1,10 @@
-import { html, render } from "lit";
+import { html, render, nothing } from "lit";
 import "./AppIcon.ts";
 
 type NavItem = {
   title: string;
-  url?: string;
   icon: string;
+  url?: string;
   items?: { title: string; url: string }[];
 };
 
@@ -32,79 +32,27 @@ const items: NavItem[] = [
   },
 ];
 
-function NavMain(openItems: Set<string>, toggleItem: (title: string) => void) {
-  return html`
-    <div class="group">
-      <div class="label flex items-center h-8 text-xs font-medium">Application</div>
-      <ul class="menu flex min-w-0 flex-col gap-1">
-        ${items.map(
-          (item) => html`
-            <li class="-ml-2 ${item.items ? "relative" : ""}">
-              <a href="${item.url ?? "#"}" class="flex w-full items-center gap-2 px-2 py-1.5">
-                <app-icon name="${item.icon}" size="16"></app-icon>
-                <span class="font-normal text-sm">${item.title}</span>
-              </a>
-              ${
-                item.items &&
-                html`
-                  <button
-                    class="absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground ring-sidebar-ring outline-hidden transition-transform peer-hover/menu-button:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&amp;&gt;svg]:size-4 [&amp;&gt;svg]:shrink-0 after:absolute after:-inset-2 md:after:hidden peer-data-[size=sm]/menu-button:top-1 peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 group-data-[collapsible=icon]:hidden data-[state=open]:rotate-90"
-                    type="button"
-                    aria-expanded="${openItems.has(item.title)}"
-                    data-state="${openItems.has(item.title) ? "open" : "closed"}"
-                    aria-label="Toggle ${item.title}"
-                    @click=${() => toggleItem(item.title)}
-                  >
-                    <app-icon name="next" size="16"></app-icon>
-                  </button>
-                  ${
-                    openItems.has(item.title) &&
-                    html`
-                      <div class="collapsible ml-8">
-                        <ul class="menu flex min-w-0 flex-col gap-1">
-                          ${item.items.map(
-                            (subItem) => html`
-                              <li>
-                                <a href="${subItem.url}" class="flex py-1.5">
-                                  <span class="font-normal text-sm">${subItem.title}</span>
-                                </a>
-                              </li>
-                            `,
-                          )}
-                        </ul>
-                      </div>
-                    `
-                  }
-                `
-              }
-            </li>
-          `,
-        )}
-      </ul>
-    </div>
-  `;
-}
-
 export function Sidebar(target: HTMLElement) {
   const openItems = new Set(items.filter((item) => item.items).map((item) => item.title));
 
   const renderComponent = () => {
     render(
       html`
-        <div class="sidebar">
-          <div class="header">
-            <a href="#" class="flex items-center">
-              <div class="icon-container">
+        <div class="sidebar" data-component="sidebar">
+          <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+              <div class="sidebar-brand-icon">
                 <app-icon name="command" size="16"></app-icon>
               </div>
             </a>
-            <div class="text-container font-normal">
-              <span class="truncate text-sm">Local First</span>
-              <span class="truncate text-xs">Supabase</span>
+            <div class="sidebar-brand-text">
+              <span class="truncate text-sm font-medium">Local First</span>
+              <span class="truncate text-xs text-muted">Supabase</span>
             </div>
           </div>
-          <nav class="content">
-            ${NavMain(openItems, (title) => {
+
+          <nav class="sidebar-content">
+            ${NavMain(openItems, function toggleMenu(title) {
               if (openItems.has(title)) {
                 openItems.delete(title);
               } else {
@@ -120,4 +68,68 @@ export function Sidebar(target: HTMLElement) {
   };
 
   renderComponent();
+}
+
+function NavMain(openItems: Set<string>, toggleItem: (title: string) => void) {
+  return html`
+    <div class="sidebar-group">
+      <div class="sidebar-label">Application</div>
+      <ul class="sidebar-menu">
+        ${items.map((item) => MenuItem(item, openItems, toggleItem))}
+      </ul>
+    </div>
+  `;
+}
+
+function MenuItem(item: NavItem, openItems: Set<string>, toggleItem: (title: string) => void) {
+  const isOpen = openItems.has(item.title);
+
+  return html`
+    <li class="menu-item ${isOpen ? "-is-open" : ""}">
+      <a href="${item.url ?? "#"}" class="menu-link">
+        <app-icon name="${item.icon}" size="16"></app-icon>
+        <span class="truncate text-sm">${item.title}</span>
+      </a>
+      ${
+        item.items
+          ? html`
+              ${MenuButton(item.title, isOpen, toggleItem)}
+              ${isOpen ? SubMenu(item.items) : nothing}
+            `
+          : nothing
+      }
+    </li>
+  `;
+}
+
+function MenuButton(title: string, isOpen: boolean, toggleItem: (title: string) => void) {
+  return html`
+    <button
+      class="menu-toggle ${isOpen ? "-is-open" : ""}"
+      type="button"
+      aria-label="Toggle submenu"
+      aria-expanded="${isOpen}"
+      @click=${() => toggleItem(title)}
+    >
+      <app-icon name="next" size="16"></app-icon>
+    </button>
+  `;
+}
+
+function SubMenu(items: NonNullable<NavItem["items"]>) {
+  return html`
+    <div class="sub-menu">
+      <ul>
+        ${items.map(
+          (item) => html`
+            <li>
+              <a href="${item.url}" class="sub-menu-link">
+                <span class="truncate text-sm">${item.title}</span>
+              </a>
+            </li>
+          `,
+        )}
+      </ul>
+    </div>
+  `;
 }
