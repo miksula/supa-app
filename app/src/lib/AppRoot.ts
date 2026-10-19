@@ -23,10 +23,6 @@ type RouteConfig = {
   layout: LayoutName | LayoutFactory;
 };
 
-const redirect = (to: string) => {
-  router.navigate(to);
-};
-
 export function AppRoot(el: HTMLElement) {
   let route: RouteConfig;
   const auth = new AuthController();
@@ -37,6 +33,11 @@ export function AppRoot(el: HTMLElement) {
   // Track active layout instance to prevent unnecessary re-rendering
   let currentLayoutKey: unknown = null;
   let activeLayoutInstance: LayoutInstance | null = null;
+
+  // Navigation helper
+  const redirect = (to: string) => {
+    router.navigate(to);
+  };
 
   router
     .get("/", () => {
@@ -49,7 +50,7 @@ export function AppRoot(el: HTMLElement) {
       redirect("/docs/introduction");
     })
     .get("/docs/:id", (context) => {
-      const id = (context.param("id") as string) || "introduction";
+      const id = context.param("id") as string;
       route = {
         page: (target) => DocsPage(target, id),
         layout: "app",
