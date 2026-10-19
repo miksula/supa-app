@@ -4,6 +4,7 @@
     flex-direction: column;
     height: 100%;
     color: var(--main-text);
+    padding: calc(var(--spacing) * 2)
   }
 
   .sidebar-header {

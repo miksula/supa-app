@@ -4,7 +4,6 @@ import { createSyncLifecycle } from "@/sync/syncLifecycle.ts";
 import { authService } from "@/auth/auth.ts";
 import { enforceAuthRoute } from "@/auth/routeGuard.ts";
 
-
 export class AuthController {
   isBootstrapping = true;
 

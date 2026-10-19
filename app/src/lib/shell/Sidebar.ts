@@ -30,9 +30,7 @@ export function Sidebar(target: HTMLElement) {
   disposableTarget.disposeSidebar?.();
   disposableTarget.disposeAppBar?.();
 
-  const openItems = new Set<string>(
-    NAV_ITEMS.filter(isGroupActive).map((item) => item.title),
-  );
+  const openItems = new Set<string>(NAV_ITEMS.filter(isGroupActive).map((item) => item.title));
 
   const syncOpenItems = () => {
     for (const item of NAV_ITEMS) {
@@ -67,9 +65,7 @@ export function Sidebar(target: HTMLElement) {
             </div>
           </div>
 
-          <nav class="sidebar-content">
-            ${NavMain(openItems, toggleMenu)}
-          </nav>
+          <nav class="sidebar-content">${NavMain(openItems, toggleMenu)}</nav>
         </div>
       `,
       target,
@@ -116,12 +112,14 @@ function MenuItem(item: NavItem, openItems: Set<string>, toggleItem: (title: str
         href="${item.url ?? "#"}"
         class="menu-link ${active ? "-is-active" : ""}"
         aria-current="${active ? "page" : nothing}"
-        @click=${item.items && !item.url
-          ? (e: Event) => {
-              e.preventDefault();
-              toggleItem(item.title);
-            }
-          : nothing}
+        @click=${
+          item.items && !item.url
+            ? (e: Event) => {
+                e.preventDefault();
+                toggleItem(item.title);
+              }
+            : nothing
+        }
       >
         ${item.icon ? html`<app-icon name="${item.icon}" size="16"></app-icon>` : nothing}
         <span class="truncate text-sm">${item.title}</span>

@@ -60,9 +60,9 @@ export function Accordion() {
         >
           <div class="accordion-body">
             <p class="text-sm leading-relaxed text-(--muted-foreground)">
-              For large products, we deliver your product via a third party logistics company offering
-              you the “room of choice” scheduled delivery service. For small products, we offer free
-              parcel delivery.
+              For large products, we deliver your product via a third party logistics company
+              offering you the “room of choice” scheduled delivery service. For small products, we
+              offer free parcel delivery.
             </p>
           </div>
         </div>
@@ -87,8 +87,8 @@ export function Accordion() {
         >
           <div class="accordion-body">
             <p class="text-sm leading-relaxed text-(--muted-foreground)">
-              Scheduled delivery orders can be cancelled 72 hours prior to your selected delivery date
-              for full refund.
+              Scheduled delivery orders can be cancelled 72 hours prior to your selected delivery
+              date for full refund.
             </p>
           </div>
         </div>
@@ -96,4 +96,3 @@ export function Accordion() {
     </div>
   `;
 }
-

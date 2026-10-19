@@ -1,0 +1,8 @@
+@scope (.my-todos-page) {
+  :scope {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    height: 100%;
+  }
+}

@@ -51,6 +51,7 @@
   --nd-900: var(--color-newyork-900);
   --nd-950: var(--color-newyork-950);
 
+  --muted: light-dark(var(--nl-200), var(--nd-700));
   --main-bg: light-dark(var(--nl-50), var(--nd-850));
   --surface-card: light-dark(var(--nl-card), var(--nd-950));
   --surface-raised: light-dark(var(--nl-raised), var(--nd-800));

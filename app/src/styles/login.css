@@ -70,7 +70,9 @@
     padding-block: calc(var(--spacing) * 1);
     padding-inline: 0;
     outline: 0;
-    transition: border-bottom-color 150ms ease, color 150ms ease;
+    transition:
+      border-bottom-color 150ms ease,
+      color 150ms ease;
 
     &:focus-visible {
       border-bottom-color: var(--main-border);
@@ -110,7 +112,10 @@
     cursor: pointer;
     outline: 2px solid transparent;
     outline-offset: 2px;
-    transition: opacity 150ms ease, outline-color 150ms ease, background-color 150ms ease;
+    transition:
+      opacity 150ms ease,
+      outline-color 150ms ease,
+      background-color 150ms ease;
 
     &:hover:not(:disabled) {
       opacity: 0.9;

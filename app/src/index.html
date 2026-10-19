@@ -1,40 +1,41 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      (() => {
+        const storedScheme = localStorage.getItem("color-scheme");
+        if (storedScheme === "dark" || storedScheme === "light") {
+          document.querySelector('meta[name="color-scheme"]').content = storedScheme;
+          document.documentElement.style.colorScheme = storedScheme;
+        }
+        document.documentElement.setAttribute("data-theme", "newyork");
+      })();
+    </script>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="light dark" />
-  <script>
-    (() => {
-      const storedScheme = localStorage.getItem("color-scheme");
-      if (storedScheme === "dark" || storedScheme === "light") {
-        document.querySelector('meta[name="color-scheme"]').content = storedScheme;
-        document.documentElement.style.colorScheme = storedScheme;
-      }
-      document.documentElement.setAttribute("data-theme", "newyork");
-    })();
-  </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+    <title>Local First - Todo App</title>
+    <meta name="description" content="SupaApp - Your Todo Application" />
 
-  <title>Local First - Todo App</title>
-  <meta name="description" content="SupaApp - Your Todo Application" />
+    <link rel="stylesheet" href="/styles/index.css" />
+  </head>
 
-  <link rel="stylesheet" href="/styles/index.css" />
-</head>
+  <body>
+    <div class="app"></div>
 
-<body>
-  <div class="app"></div>
+    <script type="module">
+      import { AppRoot } from "/lib/AppRoot.ts";
 
-  <script type="module">
-    import { AppRoot } from "/lib/AppRoot.ts";
-
-    AppRoot(document.querySelector("body > .app"));
-  </script>
-</body>
-
+      AppRoot(document.querySelector("body > .app"));
+    </script>
+  </body>
 </html>
