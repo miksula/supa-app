@@ -17,6 +17,7 @@ export const NAV_ITEMS: NavItem[] = [
     items: [
       { title: "Introduction", url: "/docs/introduction" },
       { title: "Get Started", url: "/docs/get-started" },
+      { title: "Rendering Patterns", url: "/docs/rendering-patterns" },
       { title: "Tutorials", url: "/docs/tutorials" },
       { title: "Changelog", url: "/docs/changelog" },
     ],

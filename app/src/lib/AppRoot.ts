@@ -7,6 +7,7 @@ import { SidebarLayout } from "@/shell/SidebarLayout.ts";
 import { LoginLayout } from "@/shell/LoginLayout.ts";
 import { LoginPage } from "../pages/auth/index.ts";
 import { MyTodosPage } from "../pages/my-todos/index.ts";
+import { DocsPage } from "../pages/docs/index.ts";
 import type { LayoutFactory, LayoutInstance, MountFunction } from "@/types.ts";
 
 // Extensible registry: add new layouts here or pass custom factories directly
@@ -44,11 +45,13 @@ export function AppRoot(el: HTMLElement) {
     .get("/my-todos", () => {
       route = { page: MyTodosPage, layout: "app" };
     })
+    .get("/docs", () => {
+      redirect("/docs/introduction");
+    })
     .get("/docs/:id", (context) => {
-      const id = context.param("id") as string;
-      console.log(`Docs page for ID: ${id}`);
+      const id = (context.param("id") as string) || "introduction";
       route = {
-        page: (target) => render(html`<h1>Documentation Page - ${id}</h1>`, target),
+        page: (target) => DocsPage(target, id),
         layout: "app",
       };
     })
