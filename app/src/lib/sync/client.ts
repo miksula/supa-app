@@ -1,7 +1,7 @@
 import { PowerSyncDatabase, WASQLiteVFS } from "@powersync/web";
 import { wrapPowerSyncWithKysely } from "@powersync/kysely-driver";
 import { AppSchema, Database } from "./schema.ts";
-import { authService } from "./auth.ts";
+import { authService } from "../auth/auth.ts";
 import { SupabasePowerSyncConnector } from "./SupabasePowerSyncConnector.ts";
 
 export const isOfflineMode = import.meta.env.VITE_OFFLINE_MODE === "true";

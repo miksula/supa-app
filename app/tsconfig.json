@@ -5,7 +5,7 @@
     "lib": ["dom", "dom.iterable", "es2022"],
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/lib/*"]
     }
   }
 }

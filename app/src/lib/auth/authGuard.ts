@@ -19,12 +19,12 @@ export function createAuthGuard(
       return true;
     }
 
-    if (!auth.isAuthenticated && path !== "/login") {
-      nav.navigate("/login");
+    if (!auth.isAuthenticated && path !== "/auth") {
+      nav.navigate("/auth");
       return true;
     }
 
-    if (auth.isAuthenticated && path === "/login") {
+    if (auth.isAuthenticated && path === "/auth") {
       nav.navigate("/");
       return true;
     }

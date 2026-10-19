@@ -1,91 +1,134 @@
-@scope (.login) {
+@scope (.login, [data-component="login-page"]) {
   :scope {
     display: flex;
     flex-direction: column;
-    height: auto;
-    padding-block: calc(var(--spacing) * 6);
-    padding-inline: calc(var(--spacing) * 6);
+    align-items: center;
+    width: 100%;
+    max-width: var(--container-sm, 24rem);
+    padding: calc(var(--spacing) * 6);
     border-radius: calc(var(--radius) * 1.4);
+    color: var(--main-text);
   }
 
-  :scope > h1 {
+  .login-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
+    gap: calc(var(--spacing) * 2);
+  }
+
+  .login-title {
     font-size: var(--text-2xl);
     font-weight: var(--font-weight-bold);
+    line-height: 1.25;
+    margin: 0;
   }
 
-  :scope > h1 + p {
+  .login-description {
     color: var(--muted-foreground);
-    margin-top: calc(var(--spacing) * 2);
-    text-align: center;
-    line-height: var(--text-sm--line-height);
     font-size: var(--text-sm);
-    max-width: var(--container-sm);
+    line-height: var(--text-sm--line-height, 1.4);
+    margin: 0;
   }
 
-  :scope > form {
+  .login-form {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: var(--container-sm);
     margin-top: calc(var(--spacing) * 6);
+    gap: calc(var(--spacing) * 4);
   }
 
-  :scope > form > label {
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing) * 1.5);
+
+    &:has(.form-input:user-invalid) .form-label {
+      color: var(--error-text);
+    }
+  }
+
+  .form-label {
     user-select: none;
-    font-weight: var(--font-weight-medium);
     font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
     line-height: 1.375;
+    transition: color 150ms ease;
   }
 
-  :scope > form > label:has(+ input:user-invalid) {
-    color: var(--error-text);
-  }
-
-  :scope > form > input {
-    color: var(--main-text);
+  .form-input {
     width: 100%;
-    font-size: 15px;
-    line-height: calc(1.25 / 0.875);
-    outline: inherit;
+    color: var(--main-text);
+    background: transparent;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    border: 0;
     border-bottom: 1px solid var(--main-border-light);
-    transition: border-bottom-color 150ms ease;
+    border-radius: 0;
     padding-block: calc(var(--spacing) * 1);
     padding-inline: 0;
+    outline: 0;
+    transition:
+      border-bottom-color 150ms ease,
+      color 150ms ease;
+
+    &:focus-visible {
+      border-bottom-color: var(--main-border);
+    }
+
+    &:user-invalid,
+    &:user-invalid:focus-visible {
+      border-bottom-color: var(--error-text);
+      color: var(--error-text);
+    }
   }
 
-  :scope > form > input:focus-visible {
-    border-bottom-color: var(--main-border);
-  }
-
-  :scope > form > input:user-invalid,
-  :scope > form > input:user-invalid:focus-visible {
-    border-bottom-color: var(--error-text);
-    color: var(--error-text);
-  }
-
-  :scope > form > button[type="submit"] {
-    background-color: var(--button-active-bg);
-    border-radius: calc(var(--radius) * 0.8);
-    color: var(--button-active-text);
-    padding-block: calc(var(--spacing) * 1.25);
-    outline: 3px solid transparent;
-    outline-offset: 1px;
-    transition: outline-color 150ms ease;
-    width: 100%;
-  }
-
-  :scope > form > button[type="submit"]:focus-visible {
-    outline: 3px solid var(--outline-color);
-  }
-
-  :scope > #login-status {
+  .login-status {
+    min-height: 1.25rem;
     color: var(--error-text);
     font-size: var(--text-sm);
     text-align: center;
+    margin: 0;
+
+    &[aria-hidden="true"] {
+      visibility: hidden;
+    }
   }
 
-  :scope > #login-status[aria-hidden="true"] {
-    visibility: hidden;
+  .login-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: var(--button-active-bg);
+    color: var(--button-active-text);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    border: 0;
+    border-radius: calc(var(--radius) * 0.8);
+    padding-block: calc(var(--spacing) * 2);
+    cursor: pointer;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    transition:
+      opacity 150ms ease,
+      outline-color 150ms ease,
+      background-color 150ms ease;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--outline-color);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      color: var(--disabled-text);
+    }
   }
 }

@@ -197,8 +197,8 @@ Create a client-only provider component. The `disableSSRWarning: true` flag supp
 // components/providers/SystemProvider.tsx
 'use client';
 
-import { AppSchema } from '@/lib/powersync/AppSchema';
-import { BackendConnector } from '@/lib/powersync/BackendConnector';
+import { AppSchema } from '@/powersync/AppSchema';
+import { BackendConnector } from '@/powersync/BackendConnector';
 import { PowerSyncContext } from '@powersync/react';
 import { PowerSyncDatabase, WASQLiteOpenFactory, createBaseLogger, LogLevel } from '@powersync/web';
 import React, { Suspense } from 'react';

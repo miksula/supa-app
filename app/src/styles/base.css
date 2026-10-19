@@ -2,6 +2,7 @@ body {
   background-color: var(--main-bg);
   color: var(--main-text);
   font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
 }
 
 body > .app {
