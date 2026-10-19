@@ -1,0 +1,227 @@
+# TODO — Code-base maintainability review
+
+Findings from an SRP / IoC / OCP review. Items are ordered by payoff vs. effort:
+phases 1–4 are mostly deletions and one-liners; later phases are structural.
+
+Legend: **S** = small (< 30 min), **M** = medium (a few hours), **L** = large.
+Principles: **SRP** single responsibility · **IoC** inversion of control · **OCP** open/closed.
+
+---
+
+## Phase 1 — Remove dead code & placeholders (S)
+
+Goal: a reader should only see code that is actually in use.
+
+- [ ] **Delete unused TS modules**
+  - [app/src/pages/my-todos/Todos.ts](./app/src/pages/my-todos/Todos.ts) — `MyTodos` never imported
+  - [app/src/lib/ui/Accordion.ts](./app/src/lib/ui/Accordion.ts) — never imported, contains unrelated FAQ demo text
+  - [app/src/lib/ui/AppLink.ts](./app/src/lib/ui/AppLink.ts) — `<app-link>` never used
+  - Done when: `grep` finds no references and the app still builds.
+
+- [ ] **Resolve empty page files**
+  - [app/src/pages/docs/index.ts](./app/src/pages/docs/index.ts), [app/src/pages/docs/DocViewer.ts](./app/src/pages/docs/DocViewer.ts), [app/src/pages/not-found/index.ts](./app/src/pages/not-found/index.ts) are empty, while `AppRoot` inlines those pages.
+  - Either move the inline lambdas from [AppRoot.ts](./app/src/lib/AppRoot.ts) into these files, or delete them.
+  - Also remove the `console.log` in the `/docs/:id` route.
+
+- [ ] **Decide on `SidebarFooter` + `SyncController`**
+  - [SidebarFooter.ts](./app/src/lib/shell/SidebarFooter.ts) is never mounted, so [SyncController.ts](./app/src/lib/sync/SyncController.ts) has no consumer.
+  - Option A: mount it in [SidebarLayout.ts](./app/src/lib/shell/SidebarLayout.ts) (also gives a home for logout — see Phase 7).
+  - Option B: delete both plus [sidebar-footer.css](./app/src/styles/sidebar-footer.css).
+
+- [ ] **Remove unused members**
+  - [AuthService.ts](./app/src/lib/auth/AuthService.ts): `session$`, `sessionListeners`, `SessionObservable` (no subscribers)
+  - [AuthController.ts](./app/src/lib/auth/AuthController.ts): `isBootstrapping` (never read)
+  - [Sidebar.ts](./app/src/lib/shell/Sidebar.ts) / [SidebarLayout.ts](./app/src/lib/shell/SidebarLayout.ts): `disposeAppBar` legacy alias
+  - [router.ts](./packages/router/src/router.ts): `addAsync`, `asyncRoutes`, `matchAsyncRoute`, `removeAllRouteListeners` (unused by app)
+  - [client.ts](./app/src/lib/sync/client.ts): the commented-out PowerSync config block and its long comment
+
+- [ ] **Remove orphaned CSS** — classes not used by any markup. Remove the files and their imports from [index.css](./app/src/styles/index.css):
+  - `app-layout.css`, `app-bar.css`, `app-button.css`, `app-link.css`, `accordion.css`
+  - `todo-app.css`, `todo-item.css`, `todo-item-input.css`, `todo-list-card.css`
+  - (Keep the todo ones aside if you plan to reuse them in Phase 9.)
+
+- [ ] **Clean up assets** in [app/src/lib/assets/](./app/src/lib/assets/)
+  - Delete stray `color-scheme-icon copy.svg`
+  - Rename `commad-icon.svg` → `command-icon.svg` (update [AppIcon.ts](./app/src/lib/ui/AppIcon.ts))
+  - Drop unused icons from the `icons` map once features are settled
+
+---
+
+## Phase 2 — Fix outdated docs & scripts (S)
+
+- [ ] **Rewrite [app/README.md](./app/README.md) “Basic architecture”**
+  - References non-existent `AppLayout`/`AppBar`, `TodoStore.ts`, `TodoList`, `TodoListCard`, `src/lib/AuthService.ts`, `src/lib/client.ts`, `src/lib/schema.ts`.
+  - Describe the real folders: `lib/auth/`, `lib/sync/`, `lib/shell/`, `lib/nav/`, `lib/ui/`, `pages/`.
+
+- [ ] **Fix `schema:generate` output path** in [package.json](./package.json)
+  - Currently `app/src/lib/schema.ts`; actual file is `app/src/lib/sync/schema.ts`.
+
+- [ ] **Fix `type-check` script** in [package.json](./package.json)
+  - `bun check` doesn't appear to be a Bun command → use `tsc --noEmit -p app/tsconfig.json` (add `typescript` dev dep).
+
+- [ ] **Document `roles.sql`** (or delete it — see Phase 4).
+
+---
+
+## Phase 3 — Correctness & security fixes (S)
+
+- [ ] **Wrong redirect path on bootstrap failure**
+  - [AuthController.ts](./app/src/lib/auth/AuthController.ts) navigates to `/login`; the route is `/auth`.
+
+- [ ] **`route` is undefined when landing on `/`**
+  - In [AppRoot.ts](./app/src/lib/AppRoot.ts) the `/` handler only redirects; the route listener then destructures `undefined`.
+  - Fix: `return` early from the listener when `route` is unset, or make the redirect a route entry that the listener skips.
+  - Verify by loading `http://localhost:5173/` while signed in.
+
+- [ ] **Remove hardcoded credentials**
+  - [pages/auth/index.ts](./app/src/pages/auth/index.ts) defaults `email`/`password` to real-looking values.
+  - Use empty defaults, or `import.meta.env.DEV ? import.meta.env.VITE_DEV_EMAIL : ""`.
+
+- [ ] **Ignore env files**
+  - Add `.env*` (with `!.env*.template`) to [.gitignore](./.gitignore).
+  - Check whether `app/.env.local` is already tracked: `git ls-files app/.env.local` → if so, `git rm --cached` it and rotate any secrets.
+
+---
+
+## Phase 4 — Backend stack cleanup (S)
+
+- [ ] **Seed a dev user + sample data** in [seed.sql](./stack/supabase/seed.sql)
+  - Replaces the hardcoded login credentials (Phase 3) and gives `db reset` something to show.
+
+- [ ] **Disable anonymous sign-ins**
+  - [config.toml](./stack/supabase/config.toml): `enable_anonymous_sign_ins = false`
+  - Then remove the `is_anonymous` → `logout()` branch in [AuthController.ts](./app/src/lib/auth/AuthController.ts). (SRP: one less job for the controller.)
+
+- [ ] **Resolve [roles.sql](./stack/supabase/roles.sql)**
+  - Not applied by any migration or seed; PowerSync connects as `postgres`.
+  - Either convert it into a migration and use `powersync_role` in `PS_DATA_SOURCE_URI`, or delete it.
+
+- [ ] **Add missing FK indexes** (new migration)
+
+  ```sql
+  create index lists_owner_id_idx on public.lists (owner_id);
+  create index todos_list_id_idx  on public.todos (list_id);
+  ```
+  - Used by every RLS policy, both sync queries, and FK cascades.
+  - Also consider a client index in [schema.ts](./app/src/lib/sync/schema.ts): `todos: { indexes: { list: ["list_id"] } }`.
+
+- [ ] **Consolidate RLS policies** (new migration)
+  - [enable_todo_tables_rls.sql](./stack/supabase/migrations/20261010212054_enable_todo_tables_rls.sql) repeats the list-ownership subquery 5×.
+  - Replace with one `for all` policy per table (as recommended in [stack/README.md](./stack/README.md)).
+
+- [ ] **Enforce author fields**
+  - `todos.created_by` / `completed_by` accept any user id.
+  - Add `with check (created_by = (select auth.uid()))` or set via trigger.
+
+- [ ] **Use an explicit publication table list**
+  - `create publication powersync for all tables` replicates every future table.
+  - `alter publication powersync set table public.lists, public.todos;`
+
+- [ ] **Pin PowerSync image version** in [docker-compose.yaml](./stack/powersync/docker/docker-compose.yaml) (currently `:latest`).
+
+- [ ] **Move API tokens to env** in [service.yaml](./stack/powersync/service.yaml) (`api.tokens` are literals; use `!env` like the DB URIs).
+
+- [ ] **Add an “Adding a synced table” checklist** to [stack/README.md](./stack/README.md):
+  1. Migration: table + RLS + indexes + publication
+  2. [sync-config.yaml](./stack/powersync/sync-config.yaml) stream query
+  3. `npm run schema:generate` → [schema.ts](./app/src/lib/sync/schema.ts)
+  4. Allow-list in [process_powersync_crud](./stack/supabase/migrations/20260412100000_process_powersync_crud.sql)
+
+---
+
+## Phase 5 — Tooling guardrails (S)
+
+- [ ] **Enable `"strict": true`** in [app/tsconfig.json](./app/tsconfig.json) and fix the resulting errors.
+- [ ] **Add [knip](https://knip.dev)** to detect unused files/exports/dependencies (would have caught all of Phase 1).
+- [ ] **Strengthen [.oxlintrc.json](./.oxlintrc.json)** — e.g. `no-unused-vars: error`, `no-console: warn`.
+- [ ] **Add CI** (`.github/workflows/ci.yml`): `oxlint && oxfmt --check && tsc --noEmit && knip`.
+- [ ] **Add first unit tests** (Vitest) for already-pure, injectable modules:
+  - [authGuard.ts](./app/src/lib/auth/authGuard.ts) — redirect matrix (ready/auth/path)
+  - [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts) — connect once per user, reset on sign-out, retry after failure
+
+---
+
+## Phase 6 — Inversion of Control: one config & one composition root (M)
+
+- [ ] **Create `lib/config.ts`** with all `import.meta.env` reads
+  - Removes the duplicated `isOfflineMode` from [AuthService.ts](./app/src/lib/auth/AuthService.ts) and [client.ts](./app/src/lib/sync/client.ts).
+
+- [ ] **Inject config into `AuthService`** — `new AuthService(config)` instead of reading env in the constructor.
+
+- [ ] **Single composition root** (e.g. `lib/main.ts`, called from [index.html](./app/src/index.html))
+  - Constructs `authService`, `powersync`, connector, guard, sync lifecycle; passes them to `AppRoot` / `AuthController`.
+  - Removes module-level singletons in [auth.ts](./app/src/lib/auth/auth.ts), [routeGuard.ts](./app/src/lib/auth/routeGuard.ts), [client.ts](./app/src/lib/sync/client.ts).
+
+- [ ] **Pass dependencies to pages/components**
+  - e.g. `LoginPage(el, { login: auth.login })`; `Sidebar(el, { path, navItems })` instead of importing `router`.
+
+- [ ] **Narrow the connector's dependency**
+  - [SupabasePowerSyncConnector](./app/src/lib/sync/SupabasePowerSyncConnector.ts) depends on concrete `AuthService` and reaches into `.client`.
+  - Inject `{ getSession, rpc }` (or a `SupabaseClient`) instead.
+
+---
+
+## Phase 7 — Lifecycle & component consistency (M)
+
+- [ ] **Define one mount contract** in [types.ts](./app/src/lib/types.ts)
+  ```ts
+  export type Dispose = () => void;
+  export type Mount<P = void> = (el: HTMLElement, props: P) => Dispose | void;
+  ```
+- [ ] **Replace DOM expando disposers** (`disposeSidebar`, `disposeSidebarFooter`) with returned `Dispose` functions; `SidebarLayout` keeps the references.
+- [ ] **Let pages return `Dispose`** and have the router/layout manager call it on navigation.
+- [ ] **Update [app/README.md](./app/README.md) “Component patterns”** to match the chosen contract.
+- [ ] **Co-locate CSS with components** (`import "./sidebar.css"` from `Sidebar.ts`) instead of the manual global list in [index.css](./app/src/styles/index.css). (OCP: adding a component no longer edits a global file.)
+- [ ] **Simplify [AppIcon.ts](./app/src/lib/ui/AppIcon.ts)**: size the host only, use CSS for the inner `<svg>`, restore `aria-hidden="true"` for decorative icons.
+- [ ] **Add a sign-out UI** (e.g. in `SidebarFooter`) wired to `AuthService.logout()`, so the sync reset path is reachable.
+- [ ] **Pick one UI language** — [SidebarFooter.ts](./app/src/lib/shell/SidebarFooter.ts) mixes Finnish and English labels.
+
+---
+
+## Phase 8 — Single Responsibility splits (M)
+
+- [ ] **Split [AppRoot.ts](./app/src/lib/AppRoot.ts)**
+  - `routes.ts` — route table as data:
+    ```ts
+    export const routes: RouteDef[] = [
+      { path: "/my-todos", page: MyTodosPage, layout: "app" },
+      { path: "/docs/:id", page: DocsPage, layout: "app" },
+      { path: "/auth", page: LoginPage, layout: "login", transition: true },
+      { path: "/*", page: NotFoundPage, layout: "app" },
+    ];
+    ```
+  - `layoutManager.ts` — mount/dispose layouts + view transitions (driven by a `transition` flag, not hardcoded `"login"`/`"app"` names).
+  - Remove the shared mutable `let route` that route handlers set and the listener reads.
+
+- [ ] **Split [SidebarFooter.ts](./app/src/lib/shell/SidebarFooter.ts)**
+  - `lib/theme/theme.ts` (pure helpers; reuse from the inline script in [index.html](./app/src/index.html))
+  - `ThemeSwitcher.ts`, `SyncStatusIndicator.ts`
+
+- [ ] **Slim down [AuthService.ts](./app/src/lib/auth/AuthService.ts)** — client creation moves to the composition root; service only manages session state.
+
+- [ ] **Extract sidebar persistence** from [SidebarLayout.ts](./app/src/lib/shell/SidebarLayout.ts) (localStorage + cookie) into a small `sidebarState.ts`; consider dropping the cookie (no SSR).
+
+- [ ] **Fix nav active-state special case**
+  - [Sidebar.ts](./app/src/lib/shell/Sidebar.ts) `isItemActive` maps `/` → `/my-todos`. Point [navConfig.ts](./app/src/lib/nav/navConfig.ts) at `/my-todos` directly and drop the special case.
+
+- [ ] **Single upload path in connector**
+  - Route all uploads through the `process_powersync_crud` RPC (it is `security invoker`, so RLS applies).
+  - Removes the PostgREST `switch`; extract `isFatalError()`.
+
+---
+
+## Phase 9 — Rebuild the todo feature with clean boundaries (M–L)
+
+- [ ] **Create `lib/todos/TodoRepository.ts`** (SRP: data access only) taking the Kysely `db` via its argument (IoC).
+  - `watchLists()`, `watchTodos(listId)`, `addList()`, `addTodo()`, `toggleTodo()`, `deleteList()`.
+- [ ] **Inject the repository into [MyTodosPage](./app/src/pages/my-todos/index.ts)** and replace the placeholder boxes.
+- [ ] **Unit-test the repository** against an in-memory PowerSync / SQLite DB.
+
+---
+
+## Phase 10 — Router cleanup (M)
+
+- [ ] **Deduplicate matching** in [router.ts](./packages/router/src/router.ts) — the “build URL → exec → RouteContext → notify listeners” block appears 4×; extract a private `match(path)` + `notify()`.
+- [ ] **Fix `RouterType`** — currently `typeof Router` (constructor type); likely intended `Router` (instance type).
+- [ ] **Consider explicit construction** instead of a module-level singleton whose constructor registers a global `navigate` listener on import.
+- [ ] **Add router tests** (pattern matching, trailing slashes, params, search).
