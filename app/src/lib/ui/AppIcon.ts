@@ -13,6 +13,7 @@ import commandIcon from "@/assets/command-icon.svg?raw";
 import listTodoIcon from "@/assets/list-todo-icon.svg?raw";
 import bookOpenTextIcon from "@/assets/book-open-text.svg?raw";
 import cogIcon from "@/assets/cog-icon.svg?raw";
+import squarePenIcon from "@/assets/square-pen-icon.svg?raw";
 
 const icons = {
   addList: addListIcon,
@@ -28,6 +29,7 @@ const icons = {
   listTodo: listTodoIcon,
   bookOpenText: bookOpenTextIcon,
   cog: cogIcon,
+  squarePen: squarePenIcon,
 } as const;
 
 type AppIconName = keyof typeof icons;
