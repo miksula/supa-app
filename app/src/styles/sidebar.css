@@ -93,9 +93,13 @@
     border-radius: calc(var(--radius) * 0.8);
     color: var(--main-text);
     text-decoration: none;
-    transition: background-color 120ms ease, color 120ms ease;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease;
 
-    &:hover {
+    &:hover,
+    &.-is-active,
+    &[aria-current="page"] {
       background-color: var(--button-active-bg);
       color: var(--button-active-text);
     }
@@ -142,7 +146,7 @@
   }
 
   .sub-menu {
-    margin-left: 1.0rem;
+    margin-left: 1rem;
     margin-right: 1.75rem;
     margin-top: 0rem;
 
@@ -165,9 +169,13 @@
     border-radius: calc(var(--radius) * 0.8);
     color: var(--muted-foreground);
     text-decoration: none;
-    transition: background-color 120ms ease, color 120ms ease;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease;
 
-    &:hover {
+    &:hover,
+    &.-is-active,
+    &[aria-current="page"] {
       background-color: var(--button-active-bg);
       color: var(--button-active-text);
     }
@@ -178,4 +186,3 @@
     }
   }
 }
-

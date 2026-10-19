@@ -1,7 +1,6 @@
 import { html, render } from "lit";
 import type { LayoutFactory, LayoutInstance } from "../types.ts";
 import { Sidebar } from "./Sidebar.ts";
-// import { SidebarOld } from "./SidebarOld.ts";
 
 export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInstance => {
   render(
@@ -23,7 +22,12 @@ export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInst
     element: container.firstElementChild as HTMLElement,
     contentSlot: slot,
     dispose: () => {
-      (asideEl as HTMLElement & { disposeAppBar?: () => void }).disposeAppBar?.();
+      const el = asideEl as HTMLElement & {
+        disposeSidebar?: () => void;
+        disposeAppBar?: () => void;
+      };
+      el.disposeSidebar?.();
+      el.disposeAppBar?.();
     },
   };
 };
