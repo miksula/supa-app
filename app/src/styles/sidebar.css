@@ -160,6 +160,10 @@
       list-style: none;
       border-left: 1px solid var(--main-border);
     }
+
+    ul li:first-child {
+      margin-top: 0.25rem;
+    }
   }
 
   .sub-menu-link {

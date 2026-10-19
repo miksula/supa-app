@@ -82,8 +82,12 @@ export function AppRoot(el: HTMLElement) {
       page(activeLayoutInstance.contentSlot);
     }
 
-    // View Transitions API support
-    if (!document.startViewTransition || !el.hasChildNodes()) {
+    // View Transitions API support: trigger only on login/logout
+    const isLogin = currentLayoutKey === "login" && layout === "app";
+    const isLogout = currentLayoutKey === "app" && layout === "login";
+    const isAuthTransition = isLogin || isLogout;
+
+    if (!document.startViewTransition || !el.hasChildNodes() || !isAuthTransition) {
       updateDOM();
       return;
     }
