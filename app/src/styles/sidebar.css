@@ -10,6 +10,14 @@
     display: flex;
     align-items: center;
     gap: calc(var(--spacing) * 2.25);
+    padding: calc(var(--spacing) * 2);
+    cursor: pointer;
+    border-radius: calc(var(--radius) * 0.8);
+    transition: background-color 120ms ease;
+
+    &:hover {
+      background-color: var(--button-active-bg);
+    }
   }
 
   .sidebar-brand {
@@ -40,7 +48,7 @@
   }
 
   .sidebar-content {
-    margin-top: calc(var(--spacing) * 6);
+    margin-top: calc(var(--spacing) * 4);
     display: flex;
     flex-direction: column;
     gap: calc(var(--spacing) * 1.5);
@@ -59,6 +67,7 @@
     font-weight: 500;
     color: var(--muted-foreground);
     letter-spacing: 0.025em;
+    padding-inline: calc(var(--spacing) * 1.5);
   }
 
   .sidebar-menu {
@@ -133,8 +142,9 @@
   }
 
   .sub-menu {
-    margin-left: 1.25rem;
-    margin-top: 0.25rem;
+    margin-left: 1.0rem;
+    margin-right: 1.75rem;
+    margin-top: 0rem;
 
     ul {
       display: flex;

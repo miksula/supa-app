@@ -1,6 +1,6 @@
 import type { SyncStatus } from "@powersync/web";
-import { isOfflineMode, powersync } from "@/lib/client.ts";
-import { dispatchData, onAction, type SyncStatusData } from "@/lib/events.ts";
+import { isOfflineMode, powersync } from "@/sync/client.ts";
+import { dispatchData, onAction, type SyncStatusData } from "@/events.ts";
 
 function toSyncStatusData(status: SyncStatus): SyncStatusData {
   return {

@@ -1,12 +1,13 @@
 import { html, render } from "lit";
 import { router } from "@packages/router";
-import { AuthController } from "@/lib/auth/AuthController.ts";
-import { enforceAuthRoute } from "@/lib/auth/routeGuard.ts";
-import { SyncController } from "@/lib/sync/SyncController.ts";
-import { SidebarLayout } from "@/lib/shell/SidebarLayout.ts";
-import { LoginLayout } from "@/lib/shell/LoginLayout.ts";
-import { LoginPage } from "@/pages/auth/index.ts";
-import type { LayoutFactory, LayoutInstance, MountFunction } from "@/lib/types.ts";
+import { AuthController } from "@/auth/AuthController.ts";
+import { enforceAuthRoute } from "@/auth/routeGuard.ts";
+import { SyncController } from "@/sync/SyncController.ts";
+import { SidebarLayout } from "@/shell/SidebarLayout.ts";
+import { LoginLayout } from "@/shell/LoginLayout.ts";
+import { LoginPage } from "../pages/auth/index.ts";
+import { MyTodosPage } from "../pages/my-todos/index.ts";
+import type { LayoutFactory, LayoutInstance, MountFunction } from "@/types.ts";
 
 // Extensible registry: add new layouts here or pass custom factories directly
 const layouts = {
@@ -19,6 +20,10 @@ type LayoutName = keyof typeof layouts;
 type RouteConfig = {
   page: MountFunction;
   layout: LayoutName | LayoutFactory;
+};
+
+const redirect = (to: string) => {
+  router.navigate(to);
 };
 
 export function AppRoot(el: HTMLElement) {
@@ -34,10 +39,21 @@ export function AppRoot(el: HTMLElement) {
 
   router
     .get("/", () => {
-      route = { page: Home, layout: "app" };
+      redirect("/my-todos");
     })
-    .get("/login", () => {
-      route = { page: Login, layout: "login" };
+    .get("/my-todos", () => {
+      route = { page: MyTodosPage, layout: "app" };
+    })
+    .get("/docs/:id", (context) => {
+      const id = context.param("id") as string;
+      console.log(`Docs page for ID: ${id}`);
+      route = {
+        page: (target) => render(html`<h1>Documentation Page - ${id}</h1>`, target),
+        layout: "app",
+      };
+    })
+    .get("/auth", () => {
+      route = { page: LoginPage, layout: "login" };
     })
     .get("/*", () => {
       route = {

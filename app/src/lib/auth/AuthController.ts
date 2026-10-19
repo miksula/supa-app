@@ -1,8 +1,9 @@
 import { router } from "@packages/router";
-import { connectPowersync, isOfflineMode, resetPowersyncForSessionChange } from "@/lib/client.ts";
-import { authService } from "@/lib/auth.ts";
-import { enforceAuthRoute } from "@/lib/routeGuard.ts";
-import { createSyncLifecycle } from "@/lib/syncLifecycle.ts";
+import { connectPowersync, isOfflineMode, resetPowersyncForSessionChange } from "@/sync/client.ts";
+import { createSyncLifecycle } from "@/sync/syncLifecycle.ts";
+import { authService } from "@/auth/auth.ts";
+import { enforceAuthRoute } from "@/auth/routeGuard.ts";
+
 
 export class AuthController {
   isBootstrapping = true;

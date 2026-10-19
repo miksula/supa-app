@@ -1,5 +1,5 @@
 import { html, render, nothing } from "lit";
-import "../../tmp/AppIcon.ts";
+import "@/ui/AppIcon.ts";
 
 type NavItem = {
   title: string;
@@ -47,7 +47,7 @@ export function Sidebar(target: HTMLElement) {
             </a>
             <div class="sidebar-brand-text">
               <span class="truncate text-sm font-medium">Local First</span>
-              <span class="p-2 truncate text-xs text-(--muted-foreground)">Supabase</span>
+              <span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
             </div>
           </div>
 

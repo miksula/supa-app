@@ -7,6 +7,17 @@ import { fileURLToPath } from "node:url";
  * @param {string} className The class name to generate.
  * @param {string} utilities The Tailwind utility classes to apply.
  * @returns {Promise<string>} The generated CSS without the leading license comment.
+ * 
+ * @example
+ * const css = await toCSS("btn", "bg-blue-500 text-white p-2");
+ * console.log(css);
+ * 
+ * // output
+ * .btn {
+ *   background-color: var(--color-blue-500, oklch(62.3% 0.214 259.815));
+ *   padding: calc(var(--spacing, 0.25rem) * 2);
+ *   color: var(--color-white, #fff);
+ * }
  */
 export async function toCSS(className, utilities) {
   const input = `

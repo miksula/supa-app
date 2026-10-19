@@ -6,7 +6,7 @@ import { Sidebar } from "./Sidebar.ts";
 export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInstance => {
   render(
     html`
-      <div class="sidebar-layout">
+      <div class="sidebar-layout" data-component="sidebar-layout">
         <aside></aside>
         <main data-slot="page"></main>
       </div>

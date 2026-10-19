@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import { authService } from "@/lib/auth/auth.ts";
+import { authService } from "@/auth/auth.ts";
 
 export function LoginPage(el: HTMLElement) {
   let isSubmitting = false;

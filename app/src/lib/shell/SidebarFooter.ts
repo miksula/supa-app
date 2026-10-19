@@ -1,5 +1,5 @@
 import { html, nothing, render } from "lit";
-import { dispatchAction, onData, type SyncStatusData } from "@/lib/events.ts";
+import { dispatchAction, onData, type SyncStatusData } from "@/events.ts";
 
 type SidebarFooterElement = HTMLElement & { disposeSidebarFooter?: () => void };
 type ThemeScheme = "light" | "dark";
