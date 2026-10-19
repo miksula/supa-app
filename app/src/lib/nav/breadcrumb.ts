@@ -14,6 +14,11 @@ function formatSegment(segment: string): string {
     .join(" ");
 }
 
+/**
+ * Resolves the breadcrumb trail for a given path.
+ * @param path The current URL path.
+ * @returns An array of breadcrumb items.
+ */
 export function resolveBreadcrumbs(path: string): BreadcrumbItem[] {
   const normalized = path.replace(/\/+$/, "") || "/";
 

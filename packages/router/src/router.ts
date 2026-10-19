@@ -88,6 +88,7 @@ export class Router {
   private asyncRoutes: AsyncRouteItem[] = [];
   private root = "/";
   private routeCheckHandlers: ((path: string) => void)[] = [];
+  private navigationRevision = 0;
 
   constructor(options: RouterOptions = {}) {
     if (options.root) {
@@ -240,6 +241,16 @@ export class Router {
     return this.add(path, handler);
   }
 
+  private notifyRouteListeners(revision: number) {
+    if (revision !== this.navigationRevision) {
+      return;
+    }
+
+    for (const handler of this.routeCheckHandlers) {
+      handler(this.path);
+    }
+  }
+
   check(f?: string) {
     const fragment = f || this.getPath();
 
@@ -251,12 +262,11 @@ export class Router {
       if (result) {
         const params = result.pathname.groups;
         const context = new RouteContext(fragment, params);
+        const revision = this.navigationRevision;
         const promise = route.handler(context);
 
         promise.then(() => {
-          for (const handler of this.routeCheckHandlers) {
-            handler(this.path);
-          }
+          this.notifyRouteListeners(revision);
         });
 
         return promise;
@@ -271,11 +281,10 @@ export class Router {
       if (result) {
         const params = result.pathname.groups;
         const context = new RouteContext(fragment, params);
+        const revision = this.navigationRevision;
         const handlerResult = route.handler(context);
 
-        for (const handler of this.routeCheckHandlers) {
-          handler(this.path);
-        }
+        this.notifyRouteListeners(revision);
 
         return handlerResult;
       }
@@ -306,6 +315,8 @@ export class Router {
   }
 
   navigate(path: string = "", options?: { state?: unknown }) {
+    this.navigationRevision++;
+
     const page = this.root + this.clearSlashes(path);
     const nav = getNavigation();
     if (!nav) {

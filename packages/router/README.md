@@ -203,6 +203,11 @@ Programmatically navigates to a path and triggers the route handler.
   - Retrieve with `navigation.currentEntry.getState()` after navigation
   - Useful for preserving UI state when returning to a route
 
+Calling `navigate()` from inside a route handler increments the router's
+navigation revision. If the handler was executed through `router.check()`, the
+route listener notification for the original route is skipped. The destination
+route is still handled and notifies listeners normally.
+
 #### `addAsync(path: string, handler: AsyncRouteHandler): Router`
 
 Adds an async route handler using URLPattern syntax. Best for routes that need
@@ -227,6 +232,11 @@ router.addAsync("/users/:id", async (context) => {
 
 Manually checks and executes the matching route handler. Required for initial
 page load since the route change event doesn't fire on app startup.
+
+If the route handler redirects by calling `navigate()`, the router skips
+notifying route listeners for the original route check. This prevents a
+redirecting route from rendering with incomplete route state before the
+destination route is processed.
 
 #### `addRouteListener(callback: (path: string) => void): Router`
 
