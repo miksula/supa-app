@@ -1,6 +1,85 @@
 @scope ([data-component="page-header"]) {
   :scope {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: calc(var(--spacing) * 16);
+    min-height: calc(var(--spacing) * 14);
+    padding: 0 calc(var(--spacing) * 4);
+    box-sizing: border-box;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing) * 0);
+    min-width: 0;
+    margin-left: -0.25rem;
+    margin-top: 0rem;
+  }
+
+  .header-separator {
+    width: 1px;
+    height: calc(var(--spacing) * 3.5);
+    background-color: var(--main-border-light);
+    margin: 0 0.85rem 0 0.5rem;
+    visibility: visible;
+  }
+
+  .breadcrumbs {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: calc(var(--spacing) * 2);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .breadcrumb-link {
+    color: var(--muted-foreground);
+    text-decoration: none;
+    transition: color 120ms ease;
+
+    &:hover {
+      color: var(--main-text);
+    }
+  }
+
+  .breadcrumb-page {
+    color: var(--muted-foreground);
+
+    &.-is-current {
+      color: var(--main-text);
+      font-weight: 400;
+    }
+  }
+
+  .breadcrumb-separator {
+    display: inline-flex;
+    align-items: center;
+    color: var(--muted-foreground);
+    user-select: none;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing) * 2);
   }
 
   .sidebar-trigger,
@@ -14,8 +93,10 @@
     border: 0;
     border-radius: calc(var(--radius) * 0.6);
     background: transparent;
-    color: var(--muted-foreground);
+    /* color: var(--muted-foreground); */
+    color: var(--button-active-text);
     cursor: pointer;
+    flex-shrink: 0;
     transition:
       transform 150ms ease,
       color 120ms ease,

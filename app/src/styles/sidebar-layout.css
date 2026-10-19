@@ -1,6 +1,6 @@
 @scope (.sidebar-layout, [data-component="sidebar-layout"]) {
   :scope {
-    --sidebar-width: 15.5rem;
+    --sidebar-width: 16rem;
     --sidebar-width-icon: 3rem;
     display: flex;
     min-height: 100dvh;
@@ -70,12 +70,22 @@
     flex-direction: column;
     background-color: var(--surface-card);
     border-radius: calc(var(--radius) * 1.4);
+    overflow: hidden;
     margin: calc(var(--spacing) * 2);
     margin-left: 0;
     box-shadow:
       0 1px 3px 0 rgb(0 0 0 / 0.1),
       0 1px 2px -1px rgb(0 0 0 / 0.1);
     transition: margin-left 200ms linear;
+  }
+
+  [data-slot="content"] {
+    position: relative;
+    display: flex;
+    flex: 1 1 0%;
+    min-height: 0;
+    flex-direction: column;
+    overflow-y: auto;
   }
 
   &:has([data-slot="sidebar"][data-state="collapsed"]) > main,

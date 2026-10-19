@@ -1,6 +1,7 @@
 import { html, render } from "lit";
 import type { LayoutFactory, LayoutInstance } from "../types.ts";
 import { Sidebar } from "./Sidebar.ts";
+import { PageHeader, type PageHeaderElement } from "./PageHeader.ts";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -57,7 +58,10 @@ export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInst
             <aside data-slot="sidebar-inner"></aside>
           </div>
         </div>
-        <main data-slot="page"></main>
+        <main data-slot="page">
+          <div data-slot="header"></div>
+          <div data-slot="content"></div>
+        </main>
       </div>
     `,
     container,
@@ -66,9 +70,11 @@ export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInst
   const wrapperEl = container.querySelector<HTMLElement>(".sidebar-layout")!;
   const sidebarEl = container.querySelector<HTMLElement>('[data-slot="sidebar"]')!;
   const asideEl = container.querySelector<HTMLElement>("aside")!;
-  const slot = container.querySelector<HTMLElement>('[data-slot="page"]')!;
+  const headerEl = container.querySelector<HTMLElement>('[data-slot="header"]')!;
+  const slot = container.querySelector<HTMLElement>('[data-slot="content"]')!;
 
   Sidebar(asideEl);
+  PageHeader(headerEl);
 
   const updateState = (open: boolean) => {
     isOpen = open;
@@ -109,6 +115,8 @@ export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInst
     dispose: () => {
       container.removeEventListener("click", handleClick);
       window.removeEventListener("keydown", handleKeyDown);
+
+      (headerEl as PageHeaderElement).disposePageHeader?.();
 
       const el = asideEl as HTMLElement & {
         disposeSidebar?: () => void;
