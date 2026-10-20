@@ -24,9 +24,8 @@
     width: 100%;
     height: 100%;
 
-    /* 2. Coloring: Use currentColor so it follows the 'color' property */
-    stroke: currentColor;
-    /* fill: none; Change to 'currentColor' for solid icons */
+    /* 2. Coloring: icons draw with currentColor via SVG attributes (see lib/ui/icons.ts).
+       Don't set stroke/fill here: CSS would override per-icon attributes such as stroke="none". */
 
     /* 3. Display: Remove the default 'inline' behavior which adds whitespace */
     display: block;

@@ -1,90 +1,62 @@
 import { html, LitElement, nothing, type PropertyValues } from "lit";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
-import addListIcon from "@/assets/add-list-icon.svg?raw";
-import checkIcon from "@/assets/check-icon.svg?raw";
-import colorSchemeIcon from "@/assets/color-scheme-icon.svg?raw";
-import logoIcon from "@/assets/logo.svg?raw";
-import logoutIcon from "@/assets/logout-icon.svg?raw";
-import nextIcon from "@/assets/next-icon.svg?raw";
-import plusIcon from "@/assets/plus-icon.svg?raw";
-import previousIcon from "@/assets/previous-icon.svg?raw";
-import trashIcon from "@/assets/trash-icon.svg?raw";
-import commandIcon from "@/assets/command-icon.svg?raw";
-import listTodoIcon from "@/assets/list-todo-icon.svg?raw";
-import bookOpenTextIcon from "@/assets/book-open-text.svg?raw";
-import cogIcon from "@/assets/cog-icon.svg?raw";
-import squarePenIcon from "@/assets/square-pen-icon.svg?raw";
-import chessRookIcon from "@/assets/chess-rook.svg?raw";
+import { createElement } from "lucide";
+import { appIcons, isAppIconName, resolveIcon, type AppIconName } from "./icons.ts";
 
-const icons = {
-  addList: addListIcon,
-  check: checkIcon,
-  colorScheme: colorSchemeIcon,
-  logo: logoIcon,
-  logout: logoutIcon,
-  next: nextIcon,
-  plus: plusIcon,
-  previous: previousIcon,
-  trash: trashIcon,
-  command: commandIcon,
-  listTodo: listTodoIcon,
-  bookOpenText: bookOpenTextIcon,
-  cog: cogIcon,
-  squarePen: squarePenIcon,
-  chessRook: chessRookIcon,
-} as const;
+export type { AppIconName };
 
-type AppIconName = keyof typeof icons;
-
+/**
+ * Renders an icon from the registry in `./icons.ts` (see that file for adding icons).
+ *
+ * Usage: `<app-icon name="next" size="16"></app-icon>`
+ * - `size`: width/height in px. Defaults to 1em, so the icon scales with the font size.
+ * - `stroke-width`: stroke width in px (default 1.75).
+ *
+ * Icons are decorative (`aria-hidden`). Put an accessible label on the surrounding control.
+ */
 class AppIcon extends LitElement {
   static override properties = {
     name: { type: String },
     size: { type: Number },
+    strokeWidth: { type: Number, attribute: "stroke-width" },
   };
 
   public name: AppIconName | undefined;
   public size: number | undefined;
+  public strokeWidth: number;
 
   constructor() {
     super();
     this.name = undefined;
     this.size = undefined;
-  }
-
-  override connectedCallback() {
-    super.connectedCallback();
-    // this.setAttribute("aria-hidden", "true");
+    this.strokeWidth = 1.75;
   }
 
   protected override createRenderRoot() {
     return this;
   }
 
-  protected override updated(_changedProperties: PropertyValues<this>) {
-    if (this.size === undefined) {
-      this.style.removeProperty("width");
-      this.style.removeProperty("height");
-    } else {
-      const size = `${this.size}px`;
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("size")) {
+      const size = this.size === undefined ? "" : `${this.size}px`;
       this.style.width = size;
       this.style.height = size;
-    }
-
-    for (const svg of this.querySelectorAll("svg")) {
-      if (this.size === undefined) {
-        svg.style.removeProperty("width");
-        svg.style.removeProperty("height");
-      } else {
-        const size = `${this.size}px`;
-        svg.style.width = size;
-        svg.style.height = size;
-      }
     }
   }
 
   override render() {
-    const icon = this.name ? icons[this.name] : undefined;
-    return icon ? html`${unsafeSVG(icon)}` : nothing;
+    if (!this.name) return nothing;
+    if (!isAppIconName(this.name)) {
+      if (import.meta.env.DEV) console.warn(`<app-icon>: unknown icon name "${this.name}"`);
+      return nothing;
+    }
+
+    const { node, attrs } = resolveIcon(appIcons[this.name]);
+    return html`${createElement(node, {
+      ...attrs,
+      "stroke-width": this.strokeWidth,
+      "aria-hidden": "true",
+      focusable: "false",
+    })}`;
   }
 }
 

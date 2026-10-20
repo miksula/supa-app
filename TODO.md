@@ -40,10 +40,8 @@ Goal: a reader should only see code that is actually in use.
   - `todo-app.css`, `todo-item.css`, `todo-item-input.css`, `todo-list-card.css`
   - (Keep the todo ones aside if you plan to reuse them in Phase 9.)
 
-- [ ] **Clean up assets** in [app/src/lib/assets/](./app/src/lib/assets/)
-  - Delete stray `color-scheme-icon copy.svg`
-  - Rename `commad-icon.svg` → `command-icon.svg` (update [AppIcon.ts](./app/src/lib/ui/AppIcon.ts))
-  - Drop unused icons from the `icons` map once features are settled
+- [x] **Clean up assets** — replaced hand-copied SVGs in `app/src/lib/assets/` with the `lucide` package; icons are registered in [icons.ts](./app/src/lib/ui/icons.ts)
+  - Drop unused icons from the `appIcons` map once features are settled
 
 ---
 

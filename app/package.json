@@ -17,6 +17,7 @@
     "@powersync/web": "2.4.2",
     "@supabase/supabase-js": "2.117.2",
     "lit": "^3.3.3",
+    "lucide": "^1.60.0",
     "marked": "^18.1.1",
     "tailwindcss": "^4.2.2"
   },

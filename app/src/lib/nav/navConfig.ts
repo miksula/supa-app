@@ -1,6 +1,8 @@
+import type { AppIconName } from "@/ui/icons.ts";
+
 export type NavItem = {
   title: string;
-  icon?: string;
+  icon?: AppIconName;
   url?: string;
   items?: { title: string; url: string }[];
 };
