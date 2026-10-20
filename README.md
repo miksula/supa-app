@@ -23,6 +23,17 @@ npm run stack:up
 npm run app:start
 ```
 
+> [!INFO]
+> **Missing seed data after starting the stack?** If Supabase reports
+> `Starting database from backup...`, it is reusing a saved local database.
+> `stack:up` does not apply pending migrations or rerun the seed in this case.
+> To rebuild the local database with all migrations and seed data, run
+> `npx --no-install supabase db reset --local --workdir=stack`.
+> **This deletes existing local data, including auth users.** To preserve data,
+> apply pending migrations and import the seed separately instead of resetting.
+> View the local database in Studio at <http://127.0.0.1:54323>, not the hosted
+> Supabase dashboard.
+
 To work on the UI without a running backend, use
 `npm run dev:offline --workspace=app`. See [app/README.md](app/README.md) and
 [stack/README.md](stack/README.md) for more details.
