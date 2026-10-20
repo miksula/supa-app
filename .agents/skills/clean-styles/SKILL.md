@@ -46,7 +46,7 @@ Divide component elements into three strict tiers of responsibility:
   - **Strict Rule:** Leaf utilities must never dictate external layout, margins, or positioning relative to siblings.
 
 ### 3. Consume Semantic Tokens, Not Palette Tokens
-In this project's design system (`app/src/styles/vars.css`):
+In this project's design system (`app/src/css/vars.css`):
 - **Never hardcode dark or light palette tokens directly** in component stylesheets (e.g., avoid `var(--nd-800)` or `var(--nl-200)`).
 - **Always use semantic bridge tokens** that automatically adapt to light and dark modes:
   - Text: `var(--main-text)`, `var(--muted-foreground)`, `var(--disabled-text)`
@@ -114,9 +114,9 @@ Review the component template for elements meeting any of these criteria:
 - Serves as a structural container (header, menu list, submenu, card body).
 
 ### Step 2: Establish the Scoped Stylesheet
-Ensure the component has a stylesheet in `app/src/styles/<component>.css`:
+Ensure the component has a stylesheet in `app/src/css/<component>.css`:
 1. Use `@scope (.<component>, [data-component="<component>"])`.
-2. Ensure it is imported in `app/src/styles/index.css`.
+2. Ensure it is imported in `app/src/css/index.css`.
 3. Check `index.css` to confirm there are no duplicate imports.
 
 ### Step 3: Extract Containers to Semantic Classes with `toCSS.js`
@@ -136,7 +136,7 @@ For each identified container element:
      padding: calc(var(--spacing, 0.25rem) * 2);
    }
    ```
-3. Paste the generated CSS into the scoped block in `app/src/styles/<component>.css`.
+3. Paste the generated CSS into the scoped block in `app/src/**/<component>.css`.
 4. Replace hardcoded colors with semantic design tokens (`var(--main-text)`, `var(--button-active-bg)`, `var(--main-border)`).
 5. Nest state modifiers (`&.-is-open`) and pseudo-classes (`&:hover`, `&:focus-visible`) following the **2+1 nesting rule**.
 

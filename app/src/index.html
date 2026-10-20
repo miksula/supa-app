@@ -1,35 +1,34 @@
 <!doctype html>
 <html lang="fi">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
-    <script type="module" blocking="render">
-      import { initializeTheme } from "/lib/theme/theme.ts";
-      initializeTheme();
-    </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
-      rel="stylesheet"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <script type="module" blocking="render">
+    import { initializeTheme } from "/lib/theme/theme.ts";
+    initializeTheme();
+  </script>
 
-    <title>Local First - My Todos</title>
-    <meta name="description" content="SupaApp - your todo list" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="/styles/index.css" />
-  </head>
+  <title>Local First - My Todos</title>
+  <meta name="description" content="SupaApp - your todo list" />
 
-  <body>
-    <div class="app"></div>
+  <link rel="stylesheet" href="/css/index.css" />
+</head>
 
-    <script type="module">
-      import { startApp } from "/lib/main.ts";
+<body>
+  <div class="app"></div>
 
-      startApp(document.querySelector("body > .app"));
-    </script>
-  </body>
+  <script type="module">
+    import { startApp } from "/lib/main.ts";
+
+    startApp(document.querySelector("body > .app"));
+  </script>
+</body>
+
 </html>

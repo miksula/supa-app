@@ -80,7 +80,7 @@ supa-app/
 │       ├── index.html   Entry point
 │       ├── lib/         Shared code: composition root, auth, sync, shell, UI
 │       ├── pages/       Route-level screens: auth, my-todos, docs, not-found
-│       └── styles/      Tailwind, design tokens and base styles
+│       └── css/         Tailwind, design tokens and base styles
 ├── packages/
 │   ├── router/          Client-side router (workspace package)
 │   └── docs/            These Markdown docs (workspace package)
@@ -1014,7 +1014,7 @@ a list and presses Enter.
   parent Lit `render()` may recreate.
 - **Keep CSS next to its component**, for example `import "./sidebar.css"` in
   `Sidebar.ts`. Component styles use `@scope` and semantic design tokens. Only
-  Tailwind, tokens and base styles belong in `app/src/styles/index.css`.
+  Tailwind, tokens and base styles belong in `app/src/css/index.css`.
 - **Write UI text in Finnish.** This covers buttons, labels, `aria-label`s and
   status messages. Documentation and user-entered content keep their original
   language.

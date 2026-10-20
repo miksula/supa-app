@@ -18,11 +18,11 @@ Every code snippet in this guide is taken directly from the real source files in
 
 The styling system rests on three pillars:
 
-| Pillar                     | Technology / Pattern                              | Role in this project                                                                                                   |
-| :------------------------- | :------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------- |
-| **Foundations & Tokens**   | CSS Custom Properties (`app/src/styles/vars.css`) | Centralizes theme colors, radii, spacing, and semantic light/dark mode pairs using native `light-dark()`.              |
-| **Component Stylesheets**  | Native CSS `@scope` (`*.css` next to components)  | Encapsulates component layout, structural nodes, interactive states, and transitions without selector leakage.         |
-| **Leaf Content Utilities** | Tailwind CSS v4 (`@import "tailwindcss"`)         | Applies concise, inline typography and icon adjustments on terminal leaf nodes (e.g., `truncate text-sm font-medium`). |
+| Pillar                     | Technology / Pattern                             | Role in this project                                                                                                   |
+| :------------------------- | :----------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| **Foundations & Tokens**   | CSS Custom Properties (`app/src/css/vars.css`)   | Centralizes theme colors, radii, spacing, and semantic light/dark mode pairs using native `light-dark()`.              |
+| **Component Stylesheets**  | Native CSS `@scope` (`*.css` next to components) | Encapsulates component layout, structural nodes, interactive states, and transitions without selector leakage.         |
+| **Leaf Content Utilities** | Tailwind CSS v4 (`@import "tailwindcss"`)        | Applies concise, inline typography and icon adjustments on terminal leaf nodes (e.g., `truncate text-sm font-medium`). |
 
 Component stylesheets are co-located with their TypeScript files (for example,
 `app/src/lib/shell/sidebar.css` beside `Sidebar.ts`, or `app/src/pages/my-todos/todo-list-card.css`
@@ -33,7 +33,7 @@ import "./sidebar.css";
 ```
 
 Only global foundations (`vars.css`, `base.css`, and `tailwind.css`) are loaded in the
-top-level entry point `app/src/styles/index.css`.
+top-level entry point `app/src/css/index.css`.
 
 ---
 
@@ -186,7 +186,7 @@ Keep selectors flat inside the scope block following the **2+1 rule**:
 A core strength of the styling architecture is its separation of **raw palettes** from
 **semantic intent**.
 
-Tokens are defined in `app/src/styles/vars.css` and use native CSS variables.
+Tokens are defined in `app/src/css/vars.css` and use native CSS variables.
 
 ### The 3-tier token architecture
 
@@ -216,7 +216,7 @@ requires zero changes to component CSS files.
 
 ## Comprehensive Semantic Token Reference
 
-Below is the complete catalog of semantic design tokens defined in `app/src/styles/vars.css`:
+Below is the complete catalog of semantic design tokens defined in `app/src/css/vars.css`:
 
 ### 1. Text and foreground tokens
 
@@ -293,7 +293,7 @@ document's `color-scheme` before the first paint:
 <meta name="color-scheme" content="light dark" />
 ```
 
-In `app/src/styles/vars.css`:
+In `app/src/css/vars.css`:
 
 ```css
 :root {

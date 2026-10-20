@@ -67,7 +67,7 @@ authentication and remote sync while keeping the local database available.
     `icons.ts`; `AppLink.ts` defines `<app-link>`, kept for future use).
   - `events.ts` and `types.ts`: shared event and mount-function types.
 - UI is rendered with Lit. Component CSS lives beside its component module;
-  `src/styles/` contains shared tokens, Tailwind and base styles.
+  `src/css/` contains shared tokens, Tailwind and base styles.
 - `@packages/router` and `@packages/docs` are workspace packages in
   `../packages/`; the root `package.json` defines the workspaces and
   convenience scripts (`lint`, `fmt`, `type-check`, `test`, `knip`, `check`, `schema:generate`,
@@ -90,10 +90,7 @@ same component.
 
 ```ts
 export type Dispose = () => void;
-export type Mount<Props = void> = (
-  el: HTMLElement,
-  props: Props,
-) => Dispose | void;
+export type Mount<Props = void> = (el: HTMLElement, props: Props) => Dispose | void;
 ```
 
 Mounts that own listeners, subscriptions, observers or asynchronous work return
@@ -205,7 +202,7 @@ Import scoped CSS from the component that owns it, for example
 and semantic design tokens. Shared style consumers import the shared stylesheet
 directly, as `DocsPage` does for `app-link.css`.
 
-Only Tailwind, tokens and base styles belong in `src/styles/index.css`. Adding
+Only Tailwind, tokens and base styles belong in `src/css/index.css`. Adding
 a component must not require adding its CSS to that global list.
 
 Controls, status messages, accessibility labels and page metadata are Finnish.
