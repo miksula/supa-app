@@ -9,21 +9,21 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   {
-    title: "Omat tehtävät",
+    title: "My Todos",
     icon: "listTodo",
     url: "/my-todos",
   },
   {
-    title: "Dokumentaatio",
+    title: "Documentation",
     icon: "bookOpenText",
     items: [
-      { title: "Esittely", url: "/docs/introduction" },
-      { title: "Renderöintimallit", url: "/docs/rendering-patterns" },
-      { title: "Tyylit ja CSS", url: "/docs/styling" },
+      { title: "Introduction", url: "/docs/introduction" },
+      { title: "Rendering Patterns", url: "/docs/rendering-patterns" },
+      { title: "Styling & CSS", url: "/docs/styling" },
     ],
   },
   {
-    title: "Asetukset",
+    title: "Settings",
     icon: "cog",
     url: "/settings",
   },

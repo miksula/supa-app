@@ -335,9 +335,9 @@ describe("shell disposal", () => {
     );
     disposers.push(SidebarFooter(target));
     const themeButton = target.querySelector(".theme-btn");
-    expect(target.querySelector('[role="status"]')?.textContent).toContain("Synkronoitu");
+    expect(target.querySelector('[role="status"]')?.textContent).toContain("Synced");
     dispatchData(requester, "syncStatus", { ...status, uploading: true });
-    expect(target.querySelector('[role="status"]')?.textContent).toContain("Synkronoidaan...");
+    expect(target.querySelector('[role="status"]')?.textContent).toContain("Syncing...");
     expect(target.querySelector(".theme-btn")).toBe(themeButton);
   });
 

@@ -999,8 +999,8 @@ a list and presses Enter.
 6. The `user_data` stream matches the row to its owner. PowerSync sends it to
    every device where that user is signed in, and their watch queries fire.
 7. On the original device the server's copy confirms the local one, and the
-   sync indicator in the sidebar returns from "Synkronoidaan..." to
-   "Synkronoitu".
+   sync indicator in the sidebar returns from "Syncing..." to
+   "Synced".
 
 ## Conventions to follow
 

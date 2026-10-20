@@ -21,7 +21,7 @@ const isGroupActive = (path: string, item: NavItem) =>
   item.items?.some((sub) => path.startsWith(sub.url)) ?? false;
 
 function getAvatarName(session: Session | null) {
-  return session?.user.email ?? session?.user.id ?? "Käyttäjä";
+  return session?.user.email ?? session?.user.id ?? "User";
 }
 
 function getUserInitials(session: Session | null) {
@@ -30,7 +30,7 @@ function getUserInitials(session: Session | null) {
     .filter(Boolean);
   return parts.length > 1
     ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
-    : (parts[0] ?? "K").slice(0, 2).toUpperCase();
+    : (parts[0] ?? "U").slice(0, 2).toUpperCase();
 }
 
 export function Sidebar(
@@ -110,7 +110,7 @@ export function Sidebar(
 
   const renderAccount = () => {
     if (disposed) return;
-    const userLabel = currentSession?.user.email ?? "Käyttäjä";
+    const userLabel = currentSession?.user.email ?? "User";
     disposeAccountFooter?.();
     disposeAccountFooter = null;
 
@@ -119,7 +119,7 @@ export function Sidebar(
         <button
           type="button"
           class="account-trigger"
-          aria-label="Avaa käyttäjävalikko"
+          aria-label="Open user menu"
           aria-expanded="${isMenuOpen}"
           aria-controls="sidebar-account-menu"
           @click=${toggleAccountMenu}
@@ -127,7 +127,7 @@ export function Sidebar(
           <span class="account-avatar" aria-hidden="true">${getUserInitials(currentSession)}</span>
           <span class="account-details">
             <span class="account-name">${userLabel}</span>
-            <span class="account-caption">Tili</span>
+            <span class="account-caption">Account</span>
           </span>
           <app-icon name="upDown" size="16"></app-icon>
         </button>
@@ -140,7 +140,7 @@ export function Sidebar(
           aria-hidden="${!isMenuOpen}"
         >
           <div class="account-menu-info">
-            <strong>Kirjautuneena</strong>
+            <strong>Signed in</strong>
             <span>${userLabel}</span>
           </div>
           <button
@@ -151,7 +151,7 @@ export function Sidebar(
             @click=${logout}
           >
             <app-icon name="logout" size="16"></app-icon>
-            ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
+            ${isLoggingOut ? "Signing out..." : "Sign out"}
           </button>
           <div class="account-menu-footer"></div>
         </div>
@@ -305,7 +305,7 @@ function MenuButton(title: string, isOpen: boolean, toggleItem: (title: string) 
     <button
       class="menu-toggle ${isOpen ? "-is-open" : ""}"
       type="button"
-      aria-label="Avaa tai sulje alavalikko"
+      aria-label="Toggle submenu"
       aria-expanded="${isOpen}"
       @click=${() => toggleItem(title)}
     >

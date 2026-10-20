@@ -43,9 +43,9 @@ export function DocsPage(
           html`
             <div class="docs-page not-found" data-component="docs-page">
               <div class="p-6 max-w-4xl mx-auto">
-                <h1 class="text-2xl font-bold mb-2">Dokumenttia ei löytynyt</h1>
+                <h1 class="text-2xl font-bold mb-2">Documentation not found</h1>
                 <p class="text-sm text-(--muted-foreground) mb-4">
-                  Dokumenttia ei löytynyt tunnisteella:
+                  No documentation was found for:
                   <code class="px-1.5 py-0.5 rounded bg-(--surface-raised)">${docId}</code>
                 </p>
                 <p class="text-sm">
@@ -57,7 +57,7 @@ export function DocsPage(
                       navigate("/docs/introduction");
                     }}
                   >
-                    Palaa esittelyyn
+                    Return to introduction
                   </a>
                 </p>
               </div>
@@ -87,7 +87,7 @@ export function DocsPage(
     .catch((error: unknown) => {
       if (disposed) return;
       console.error("Failed to load documentation", error);
-      render(html`<p role="alert">Dokumentin lataaminen epäonnistui. Yritä uudelleen.</p>`, target);
+      render(html`<p role="alert">Failed to load documentation. Try again.</p>`, target);
     });
 
   return () => {

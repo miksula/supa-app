@@ -123,15 +123,15 @@ function TodoInput(listId: string, onSubmit: TodoListOptions["onSubmit"]) {
         type="text"
         name="description"
         class="todo-input-field"
-        placeholder="Lisää tehtävä"
-        aria-label="Uusi tehtävä"
+        placeholder="Add a task"
+        aria-label="New task"
         autocomplete="off"
       />
       <button
         type="submit"
         class="todo-input-submit"
-        title="Lisää tehtävä"
-        aria-label="Lisää tehtävä"
+        title="Add a task"
+        aria-label="Add a task"
         tabindex="-1"
       >
         <app-icon name="plus" size="16"></app-icon>
@@ -193,7 +193,7 @@ export function SyncStatusIndicator(el: HTMLElement): Dispose {
 
     render(
       html`
-        <div class="sync-status ${statusClass}" role="status" aria-label="Synkronoinnin tila">
+        <div class="sync-status ${statusClass}" role="status" aria-label="Sync status">
           ${
             status
               ? html`
@@ -314,9 +314,9 @@ export function TodoListCard(
     html`
       <header class="card-header">
         <h2 class="card-title">
-          <button type="button" class="card-title-button" title="Muokkaa listan nimeä"></button>
+          <button type="button" class="card-title-button" title="Edit list name"></button>
         </h2>
-        <input name="edit-title" type="text" class="card-title-input" aria-label="Listan nimi" />
+        <input name="edit-title" type="text" class="card-title-input" aria-label="List name" />
         <button
           type="button"
           class="card-delete-button"

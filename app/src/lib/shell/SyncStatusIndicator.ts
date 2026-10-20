@@ -4,10 +4,10 @@ import type { Dispose } from "@/types.ts";
 import "./sync-status-indicator.css";
 
 function getSyncLabel(status: SyncStatusData) {
-  if (status.error) return "Synkronointivirhe";
-  if (status.connecting) return "Yhdistetään...";
-  if (!status.connected) return "Ei yhteyttä";
-  return status.downloading || status.uploading ? "Synkronoidaan..." : "Synkronoitu";
+  if (status.error) return "Sync error";
+  if (status.connecting) return "Connecting...";
+  if (!status.connected) return "Offline";
+  return status.downloading || status.uploading ? "Syncing..." : "Synced";
 }
 
 export function SyncStatusIndicator(el: HTMLElement): Dispose {
@@ -21,7 +21,7 @@ export function SyncStatusIndicator(el: HTMLElement): Dispose {
       : "";
     render(
       html`
-        <div class="sync-status ${statusClass}" role="status" aria-label="Synkronoinnin tila">
+        <div class="sync-status ${statusClass}" role="status" aria-label="Sync status">
           ${
             status
               ? html`

@@ -22,8 +22,8 @@ export function LoginPage(
       html`
         <div class="login" data-component="login-page">
           <header class="login-header">
-            <h1 id="login-heading" class="login-title">Kirjaudu sisään</h1>
-            <p class="login-description">Käytä tilisi sähköpostiosoitetta ja salasanaa.</p>
+            <h1 id="login-heading" class="login-title">Sign in</h1>
+            <p class="login-description">Use your account email address and password.</p>
           </header>
 
           <form
@@ -32,7 +32,7 @@ export function LoginPage(
             @submit="${(e: SubmitEvent) => handleSubmit(e)}"
           >
             <div class="form-field">
-              <label class="form-label" for="email">Sähköposti</label>
+              <label class="form-label" for="email">Email</label>
               <input
                 class="form-input"
                 type="email"
@@ -45,7 +45,7 @@ export function LoginPage(
             </div>
 
             <div class="form-field">
-              <label class="form-label" for="current-password">Salasana</label>
+              <label class="form-label" for="current-password">Password</label>
               <input
                 class="form-input"
                 type="password"
@@ -73,7 +73,7 @@ export function LoginPage(
               ?disabled="${isSubmitting}"
               aria-busy="${isSubmitting}"
             >
-              ${isSubmitting ? "Kirjaudutaan..." : "Kirjaudu"}
+              ${isSubmitting ? "Signing in..." : "Sign in"}
             </button>
           </form>
         </div>
@@ -101,7 +101,7 @@ export function LoginPage(
     } catch (error) {
       if (disposed) return;
       console.error("Failed to sign in", error);
-      statusMessage = "Kirjautuminen epäonnistui. Tarkista tunnukset ja yritä uudelleen.";
+      statusMessage = "Sign-in failed. Check your credentials and try again.";
     } finally {
       isSubmitting = false;
       renderComponent();

@@ -35,15 +35,15 @@ function TodoInput(listId: string, onSubmit: TodoListOptions["onSubmit"]) {
         type="text"
         name="description"
         class="todo-input-field"
-        placeholder="Lisää tehtävä"
-        aria-label="Uusi tehtävä"
+        placeholder="Add a task"
+        aria-label="New task"
         autocomplete="off"
       />
       <button
         type="submit"
         class="todo-input-submit"
-        title="Lisää tehtävä"
-        aria-label="Lisää tehtävä"
+        title="Add a task"
+        aria-label="Add a task"
         tabindex="-1"
       >
         <app-icon name="plus" size="16"></app-icon>

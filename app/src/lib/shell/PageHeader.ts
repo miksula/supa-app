@@ -19,7 +19,7 @@ export function PageHeader(el: HTMLElement, router: RouteSource): Dispose {
               class="sidebar-trigger"
               data-slot="sidebar-trigger"
               data-sidebar="trigger"
-              aria-label="Avaa tai sulje sivupalkki"
+              aria-label="Toggle sidebar"
               type="button"
             >
               <svg
@@ -37,12 +37,12 @@ export function PageHeader(el: HTMLElement, router: RouteSource): Dispose {
                 <rect width="18" height="18" x="3" y="3" rx="2"></rect>
                 <path d="M9 3v18"></path>
               </svg>
-              <span class="sr-only">Avaa tai sulje sivupalkki</span>
+              <span class="sr-only">Toggle sidebar</span>
             </button>
 
             <div class="header-separator" role="separator" aria-orientation="vertical"></div>
 
-            <nav aria-label="Sijaintipolku" class="breadcrumbs">
+            <nav aria-label="Breadcrumb" class="breadcrumbs">
               <ol class="breadcrumb-list">
                 ${breadcrumbs.map((item, idx) => {
                   const isLast = idx === breadcrumbs.length - 1;

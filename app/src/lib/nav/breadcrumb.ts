@@ -24,7 +24,7 @@ export function resolveBreadcrumbs(path: string): BreadcrumbItem[] {
 
   // Root or /my-todos route
   if (normalized === "/" || normalized === "/my-todos") {
-    return [{ label: "Omat tehtävät", isCurrent: true }];
+    return [{ label: "My Todos", isCurrent: true }];
   }
 
   // Lookup in NAV_ITEMS hierarchy

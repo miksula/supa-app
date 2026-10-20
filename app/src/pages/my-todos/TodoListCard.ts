@@ -34,14 +34,14 @@ export function TodoListCard(
     html`
       <header class="card-header">
         <h2 class="card-title">
-          <button type="button" class="card-title-button" title="Muokkaa listan nimeä"></button>
+          <button type="button" class="card-title-button" title="Edit list name"></button>
         </h2>
-        <input name="edit-title" type="text" class="card-title-input" aria-label="Listan nimi" />
+        <input name="edit-title" type="text" class="card-title-input" aria-label="List name" />
         <button
           type="button"
           class="card-delete-button"
-          title="Poista lista"
-          aria-label="Poista lista"
+          title="Delete list"
+          aria-label="Delete list"
         >
           <app-icon name="trash" size="16"></app-icon>
         </button>
@@ -132,7 +132,7 @@ export function TodoListCard(
     skipBlurSave = false;
     if (
       list.items.length > 0 &&
-      !window.confirm("Listan poistaminen poistaa myös sen tehtävät. Haluatko jatkaa?")
+      !window.confirm("Deleting this list will also delete its tasks. Do you want to continue?")
     ) {
       return;
     }

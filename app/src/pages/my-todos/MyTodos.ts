@@ -84,8 +84,8 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
             <button
               class="action-button"
               type="button"
-              aria-label="Luo uusi lista"
-              title="Luo uusi lista"
+              aria-label="Create a new list"
+              title="Create a new list"
             >
               <app-icon name="squarePen" size="16"></app-icon>
             </button>
@@ -102,7 +102,7 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
   previousButton = root?.querySelector<HTMLButtonElement>('[aria-label="Edellinen sivu"]') ?? null;
   nextButton = root?.querySelector<HTMLButtonElement>('[aria-label="Seuraava sivu"]') ?? null;
 
-  const addListButton = root?.querySelector<HTMLButtonElement>('[aria-label="Luo uusi lista"]');
+  const addListButton = root?.querySelector<HTMLButtonElement>('[aria-label="Create a new list"]');
 
   if (!container || !previousButton || !nextButton || !addListButton) {
     throw new Error("Unable to mount my todos: required element is missing");
