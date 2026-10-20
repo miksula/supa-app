@@ -90,6 +90,7 @@ Goal: a reader should only see code that is actually in use.
   create index lists_owner_id_idx on public.lists (owner_id);
   create index todos_list_id_idx  on public.todos (list_id);
   ```
+
   - Used by every RLS policy, both sync queries, and FK cascades.
   - Also consider a client index in [schema.ts](./app/src/lib/sync/schema.ts): `todos: { indexes: { list: ["list_id"] } }`.
 
@@ -162,6 +163,7 @@ Goal: a reader should only see code that is actually in use.
   export type Dispose = () => void;
   export type Mount<P = void> = (el: HTMLElement, props: P) => Dispose | void;
   ```
+
   - `types.ts` currently has `MountFunction = (el) => void | (() => void)`; the `void` arm causes the `AppRoot.ts` type error noted in Phase 5.
 - [ ] **Replace DOM expando disposers** (`disposeSidebar`, `disposeSidebarFooter`, `disposePageHeader`) with returned `Dispose` functions; `SidebarLayout` / `Sidebar` keep the references.
 - [ ] **Let pages return `Dispose`** and have the router/layout manager call it on navigation.
