@@ -1,4 +1,4 @@
-export type MountFunction = (el: HTMLElement) => void;
+export type MountFunction = (el: HTMLElement) => void | (() => void);
 
 export interface LayoutInstance {
   /** Root DOM element of the layout */

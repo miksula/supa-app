@@ -13,9 +13,6 @@
 @import "./app-icon.css";
 @import "./accordion.css";
 @import "./todo-list-card.css";
-@import "./todo-app.css";
-@import "./todo-item-input.css";
-@import "./todo-item.css";
-@import "./my-todos-page.css";
+@import "./my-todos.css";
 @import "./page-header.css";
 @import "./doc-viewer.css";

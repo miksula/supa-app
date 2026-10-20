@@ -33,6 +33,7 @@ export function AppRoot(el: HTMLElement) {
   // Track active layout instance to prevent unnecessary re-rendering
   let currentLayoutKey: unknown = null;
   let activeLayoutInstance: LayoutInstance | null = null;
+  let disposeActivePage: (() => void) | null = null;
 
   // Navigation helper
   const redirect = (to: string) => {
@@ -61,7 +62,9 @@ export function AppRoot(el: HTMLElement) {
     })
     .get("/*", () => {
       route = {
-        page: (target) => render(html`<h1>Page not found</h1>`, target),
+        page: (target) => {
+          render(html`<h1>Page not found</h1>`, target);
+        },
         layout: "app",
       };
     });
@@ -75,6 +78,9 @@ export function AppRoot(el: HTMLElement) {
     const layoutFactory = typeof layout === "function" ? layout : layouts[layout];
 
     function updateDOM() {
+      disposeActivePage?.();
+      disposeActivePage = null;
+
       // Layout persistence: only rebuild layout if it actually changed
       if (currentLayoutKey !== layout || !activeLayoutInstance) {
         activeLayoutInstance?.dispose?.();
@@ -83,7 +89,7 @@ export function AppRoot(el: HTMLElement) {
       }
 
       // Render page into the layout's declared outlet slot
-      page(activeLayoutInstance.contentSlot);
+      disposeActivePage = page(activeLayoutInstance.contentSlot) ?? null;
     }
 
     // View Transitions API support: trigger only on login/logout

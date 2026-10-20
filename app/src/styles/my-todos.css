@@ -1,0 +1,91 @@
+@scope (.my-todos, [data-component="my-todos"]) {
+  :scope {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: calc(var(--spacing) * 4);
+    padding: calc(var(--spacing) * 4);
+    padding-top: 0;
+  }
+
+  .toolbar {
+    display: flex;
+    height: calc(var(--spacing) * 12);
+    align-items: center;
+    justify-content: space-between;
+    border-radius: var(--radius-xl);
+    background-color: color-mix(in oklab, var(--surface-raised) 50%, transparent);
+    padding-inline: calc(var(--spacing) * 4);
+  }
+
+  .navigation-controls {
+    display: flex;
+    gap: calc(var(--spacing) * 4);
+  }
+
+  .navigation-button,
+  .action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    cursor: pointer;
+    transition:
+      transform 150ms ease,
+      color 120ms ease,
+      background-color 120ms ease;
+
+    &:focus-visible {
+      outline: 2px solid var(--outline-color);
+      outline-offset: 2px;
+    }
+  }
+
+  .navigation-button {
+    padding: calc(var(--spacing) * 0.5);
+    border-radius: calc(var(--radius) * 0.6);
+    background: transparent;
+    color: var(--muted-foreground);
+
+    &:hover {
+      background-color: var(--button-active-bg);
+      color: var(--button-active-text);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+      pointer-events: none;
+    }
+  }
+
+  .action-button {
+    padding: calc(var(--spacing) * 1.5);
+    border: 1px solid transparent;
+    border-radius: 1rem;
+    background-color: var(--button-active-bg);
+    color: var(--button-active-text);
+
+    &:hover {
+      border-color: color-mix(in oklab, var(--main-border-light) 50%, transparent);
+      background-color: color-mix(in oklab, var(--button-active-bg) 95%, white);
+    }
+  }
+
+  .toolbar-action {
+    display: flex;
+    align-items: center;
+  }
+
+  .todo-list-container {
+    display: grid;
+    flex: 1;
+    grid-auto-rows: min-content;
+    gap: calc(var(--spacing) * 4);
+
+    /* Keep this breakpoint in sync with desktopQuery in MyTodos.ts. */
+    @media (width >= 48rem) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}
