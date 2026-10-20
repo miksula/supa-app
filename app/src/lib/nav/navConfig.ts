@@ -18,10 +18,8 @@ export const NAV_ITEMS: NavItem[] = [
     icon: "bookOpenText",
     items: [
       { title: "Esittely", url: "/docs/introduction" },
-      { title: "Aloittaminen", url: "/docs/get-started" },
       { title: "Renderöintimallit", url: "/docs/rendering-patterns" },
-      { title: "Oppaat", url: "/docs/tutorials" },
-      { title: "Muutosloki", url: "/docs/changelog" },
+      { title: "Tyylit ja CSS", url: "/docs/styling" },
     ],
   },
   {

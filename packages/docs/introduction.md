@@ -1101,7 +1101,9 @@ The full checklist is in `stack/README.md`. In short:
 ## Where to go next
 
 - [Rendering patterns](./rendering-patterns.md) explains the three component
-  styles in depth, with the same example written in each.
+  styles in depth, with real code examples from the app.
+- [Styling and CSS](./styling.md) covers the design token system, native
+  `@scope` encapsulation, and the 3-level component styling hierarchy.
 - `README.md`, `app/README.md` and `stack/README.md` in the repository cover
   setup, architecture notes and backend workflows in more detail.
 - `TODO.md` describes the ongoing maintainability work and the reasoning
