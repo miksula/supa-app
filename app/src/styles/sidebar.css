@@ -4,7 +4,7 @@
     flex-direction: column;
     height: 100%;
     color: var(--main-text);
-    padding: calc(var(--spacing) * 2)
+    padding: calc(var(--spacing) * 2);
   }
 
   .sidebar-header {
@@ -53,6 +53,173 @@
     display: flex;
     flex-direction: column;
     gap: calc(var(--spacing) * 1.5);
+  }
+
+  .sidebar-footer-slot {
+    margin-top: auto;
+    padding: calc(var(--spacing) * 2);
+  }
+
+  .sidebar-account {
+    position: relative;
+    padding: calc(var(--spacing) * 2);
+  }
+
+  .account-trigger {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: calc(var(--spacing) * 2);
+    padding: calc(var(--spacing) * 1.5);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease;
+
+    &:hover {
+      background-color: var(--button-active-bg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--outline-color);
+      outline-offset: 2px;
+    }
+  }
+
+  .account-avatar {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: calc(infinity * 1px);
+    background-color: var(--avatar-bg);
+    color: var(--white);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .account-details {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .account-name,
+  .account-caption {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .account-name {
+    color: var(--main-text);
+    font-size: var(--text-sm);
+  }
+
+  .account-caption {
+    color: var(--muted-foreground);
+    font-size: var(--text-xs);
+  }
+
+  .account-menu {
+    position: absolute;
+    right: calc(var(--spacing) * 2);
+    bottom: calc(100% - var(--spacing));
+    z-index: 10;
+    width: max(12rem, calc(100% - var(--spacing) * 4));
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid var(--main-border-light);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    box-shadow: 0 6px 12px color-mix(in srgb, var(--black) 12%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(0.5rem) scale(0.95);
+    transform-origin: bottom left;
+    visibility: hidden;
+    transition:
+      opacity 150ms ease,
+      transform 150ms ease,
+      visibility 150ms allow-discrete;
+
+    &.-is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+      visibility: visible;
+    }
+  }
+
+  .account-menu-info {
+    display: grid;
+    gap: 0.125rem;
+    padding: calc(var(--spacing) * 3);
+    border-bottom: 1px solid var(--main-border-light);
+
+    strong {
+      color: var(--main-text);
+      font-size: var(--text-sm);
+      font-weight: var(--font-weight-medium);
+    }
+
+    span {
+      overflow-wrap: anywhere;
+      color: var(--muted-foreground);
+      font-size: var(--text-xs);
+    }
+  }
+
+  .account-menu-item {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: flex-start;
+    gap: calc(var(--spacing) * 2);
+    padding: calc(var(--spacing) * 3);
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--main-text);
+    cursor: pointer;
+    font: inherit;
+    font-size: var(--text-sm);
+    text-align: left;
+
+    &:hover {
+      background-color: var(--button-active-bg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--outline-color);
+      outline-offset: -3px;
+    }
+
+    &:disabled {
+      color: var(--disabled-text);
+      cursor: default;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .account-menu {
+      transform: none;
+      transition-duration: 0.01ms;
+
+      &.-is-open {
+        transform: none;
+      }
+    }
   }
 
   .sidebar-group {

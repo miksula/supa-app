@@ -2,6 +2,9 @@ import { html, render, nothing } from "lit";
 import { router } from "@packages/router";
 import { NAV_ITEMS, type NavItem } from "@/nav/navConfig.ts";
 import "@/ui/AppIcon.ts";
+import { authService } from "@/auth/auth.ts";
+import { SidebarFooter } from "./SidebarFooter.ts";
+import type { Session } from "@supabase/supabase-js";
 
 type SidebarTarget = HTMLElement & {
   disposeSidebar?: () => void;
@@ -25,6 +28,19 @@ const isItemActive = (url?: string): boolean => {
 const isGroupActive = (item: NavItem) =>
   item.items?.some((sub) => router.path.startsWith(sub.url)) ?? false;
 
+function getAvatarName(session: Session | null) {
+  return session?.user.email ?? session?.user.id ?? "Käyttäjä";
+}
+
+function getUserInitials(session: Session | null) {
+  const parts = getAvatarName(session)
+    .split(/[\s@._-]+/)
+    .filter(Boolean);
+  return parts.length > 1
+    ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+    : (parts[0] ?? "K").slice(0, 2).toUpperCase();
+}
+
 export function Sidebar(target: HTMLElement) {
   const disposableTarget = target as SidebarTarget;
   disposableTarget.disposeSidebar?.();
@@ -46,41 +62,160 @@ export function Sidebar(target: HTMLElement) {
     } else {
       openItems.add(title);
     }
-    renderComponent();
+    renderNavigation();
   };
 
-  const renderComponent = () => {
+  render(
+    html`
+      <div class="sidebar" data-component="sidebar">
+        <div class="sidebar-header">
+          <a href="/" class="sidebar-brand">
+            <div class="sidebar-brand-icon">
+              <app-icon name="listTodo" size="16"></app-icon>
+            </div>
+          </a>
+          <div class="sidebar-brand-text">
+            <span class="truncate text-sm font-medium">Local First</span>
+            <span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-content"></nav>
+        <div class="sidebar-account"></div>
+        <div class="sidebar-footer-slot"></div>
+      </div>
+    `,
+    target,
+  );
+
+  const sidebar = target.querySelector<HTMLElement>('[data-component="sidebar"]');
+  const navigation = sidebar?.querySelector<HTMLElement>(".sidebar-content");
+  const account = sidebar?.querySelector<HTMLElement>(".sidebar-account");
+  const footer = sidebar?.querySelector<HTMLElement>(".sidebar-footer-slot");
+
+  if (!sidebar || !navigation || !account || !footer) {
+    throw new Error("Unable to mount sidebar: required element is missing");
+  }
+
+  const renderNavigation = () => {
+    render(NavMain(openItems, toggleMenu), navigation);
+  };
+
+  let currentSession = authService.session;
+  let isMenuOpen = false;
+  let isLoggingOut = false;
+
+  const renderAccount = () => {
+    const userLabel = currentSession?.user.email ?? "Käyttäjä";
+
     render(
       html`
-        <div class="sidebar" data-component="sidebar">
-          <div class="sidebar-header">
-            <a href="/" class="sidebar-brand">
-              <div class="sidebar-brand-icon">
-                <app-icon name="listTodo" size="16"></app-icon>
-              </div>
-            </a>
-            <div class="sidebar-brand-text">
-              <span class="truncate text-sm font-medium">Local First</span>
-              <span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
-            </div>
-          </div>
+        <button
+          type="button"
+          class="account-trigger"
+          aria-label="Avaa käyttäjävalikko"
+          aria-expanded="${isMenuOpen}"
+          aria-controls="sidebar-account-menu"
+          @click=${toggleAccountMenu}
+        >
+          <span class="account-avatar" aria-hidden="true">${getUserInitials(currentSession)}</span>
+          <span class="account-details">
+            <span class="account-name">${userLabel}</span>
+            <span class="account-caption">Tili</span>
+          </span>
+          <app-icon name="next" size="16"></app-icon>
+        </button>
 
-          <nav class="sidebar-content">${NavMain(openItems, toggleMenu)}</nav>
+        <div
+          id="sidebar-account-menu"
+          class="account-menu ${isMenuOpen ? "-is-open" : ""}"
+          role="menu"
+          aria-hidden="${!isMenuOpen}"
+        >
+          <div class="account-menu-info">
+            <strong>Signed in as</strong>
+            <span>${userLabel}</span>
+          </div>
+          <button
+            class="account-menu-item"
+            type="button"
+            role="menuitem"
+            ?disabled=${isLoggingOut}
+            @click=${logout}
+          >
+            <app-icon name="logout" size="16"></app-icon>
+            ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
+          </button>
         </div>
       `,
-      target,
+      account,
     );
   };
 
+  const toggleAccountMenu = () => {
+    isMenuOpen = !isMenuOpen;
+    renderAccount();
+  };
+
+  const closeAccountMenu = (restoreFocus = false) => {
+    if (!isMenuOpen) return;
+    isMenuOpen = false;
+    renderAccount();
+    if (restoreFocus) {
+      account.querySelector<HTMLButtonElement>(".account-trigger")?.focus();
+    }
+  };
+
+  const logout = async () => {
+    if (isLoggingOut) return;
+
+    isLoggingOut = true;
+    closeAccountMenu();
+    renderAccount();
+
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Failed to log out", error);
+      isLoggingOut = false;
+      renderAccount();
+    }
+  };
+
+  const onDocumentClick = (event: MouseEvent) => {
+    if (!(event.target instanceof Element) || !event.target.closest(".sidebar-account")) {
+      closeAccountMenu();
+    }
+  };
+
+  const onDocumentKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Escape" && isMenuOpen) {
+      closeAccountMenu(true);
+    }
+  };
+
+  const disposeSessionListener = authService.session$.subscribe((session) => {
+    currentSession = session;
+    closeAccountMenu();
+    renderAccount();
+  });
+
   const handleRouteChange = () => {
     syncOpenItems();
-    renderComponent();
+    renderNavigation();
   };
 
   router.addRouteListener(handleRouteChange);
+  SidebarFooter(footer);
+  document.addEventListener("click", onDocumentClick);
+  document.addEventListener("keydown", onDocumentKeydown);
 
   const cleanup = () => {
+    disposeSessionListener();
     router.removeRouteListener(handleRouteChange);
+    document.removeEventListener("click", onDocumentClick);
+    document.removeEventListener("keydown", onDocumentKeydown);
+    (footer as HTMLElement & { disposeSidebarFooter?: () => void }).disposeSidebarFooter?.();
     delete disposableTarget.disposeSidebar;
     delete disposableTarget.disposeAppBar;
   };
@@ -88,7 +223,8 @@ export function Sidebar(target: HTMLElement) {
   disposableTarget.disposeSidebar = cleanup;
   disposableTarget.disposeAppBar = cleanup;
 
-  renderComponent();
+  renderNavigation();
+  renderAccount();
 }
 
 function NavMain(openItems: Set<string>, toggleItem: (title: string) => void) {
