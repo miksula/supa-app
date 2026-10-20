@@ -9,8 +9,8 @@ type ThemeOption = {
   scheme: ThemeScheme;
 };
 
-const lightThemes: ThemeOption[] = [{ id: "newyork", label: "New York Light", scheme: "light" }];
-const darkThemes: ThemeOption[] = [{ id: "newyork", label: "New York Dark", scheme: "dark" }];
+const lightThemes: ThemeOption[] = [{ id: "newyork", label: "Light", scheme: "light" }];
+const darkThemes: ThemeOption[] = [{ id: "newyork", label: "Dark", scheme: "dark" }];
 
 function getSyncLabel(status: SyncStatusData | null) {
   if (!status) return "";

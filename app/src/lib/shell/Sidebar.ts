@@ -82,7 +82,6 @@ export function Sidebar(target: HTMLElement) {
 
         <nav class="sidebar-content"></nav>
         <div class="sidebar-account"></div>
-        <div class="sidebar-footer-slot"></div>
       </div>
     `,
     target,
@@ -91,9 +90,8 @@ export function Sidebar(target: HTMLElement) {
   const sidebar = target.querySelector<HTMLElement>('[data-component="sidebar"]');
   const navigation = sidebar?.querySelector<HTMLElement>(".sidebar-content");
   const account = sidebar?.querySelector<HTMLElement>(".sidebar-account");
-  const footer = sidebar?.querySelector<HTMLElement>(".sidebar-footer-slot");
 
-  if (!sidebar || !navigation || !account || !footer) {
+  if (!sidebar || !navigation || !account) {
     throw new Error("Unable to mount sidebar: required element is missing");
   }
 
@@ -104,9 +102,12 @@ export function Sidebar(target: HTMLElement) {
   let currentSession = authService.session;
   let isMenuOpen = false;
   let isLoggingOut = false;
+  let disposeAccountFooter: (() => void) | null = null;
 
   const renderAccount = () => {
     const userLabel = currentSession?.user.email ?? "Käyttäjä";
+    disposeAccountFooter?.();
+    disposeAccountFooter = null;
 
     render(
       html`
@@ -146,10 +147,23 @@ export function Sidebar(target: HTMLElement) {
             <app-icon name="logout" size="16"></app-icon>
             ${isLoggingOut ? "Kirjaudutaan ulos..." : "Kirjaudu ulos"}
           </button>
+          <div class="account-menu-footer"></div>
         </div>
       `,
       account,
     );
+
+    const accountFooter = account.querySelector<HTMLElement>(".account-menu-footer");
+    if (!accountFooter) {
+      throw new Error("Unable to mount sidebar account menu: footer container is missing");
+    }
+
+    SidebarFooter(accountFooter);
+    disposeAccountFooter = () => {
+      (
+        accountFooter as HTMLElement & { disposeSidebarFooter?: () => void }
+      ).disposeSidebarFooter?.();
+    };
   };
 
   const toggleAccountMenu = () => {
@@ -206,16 +220,16 @@ export function Sidebar(target: HTMLElement) {
   };
 
   router.addRouteListener(handleRouteChange);
-  SidebarFooter(footer);
   document.addEventListener("click", onDocumentClick);
   document.addEventListener("keydown", onDocumentKeydown);
 
   const cleanup = () => {
+    disposeAccountFooter?.();
+    disposeAccountFooter = null;
     disposeSessionListener();
     router.removeRouteListener(handleRouteChange);
     document.removeEventListener("click", onDocumentClick);
     document.removeEventListener("keydown", onDocumentKeydown);
-    (footer as HTMLElement & { disposeSidebarFooter?: () => void }).disposeSidebarFooter?.();
     delete disposableTarget.disposeSidebar;
     delete disposableTarget.disposeAppBar;
   };
