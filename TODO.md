@@ -14,29 +14,21 @@ _Last re-checked against the code base: 2026-10-20._
 
 Goal: a reader should only see code that is actually in use.
 
-- [ ] **Delete unused TS modules**
-  - ~~`pages/my-todos/Todos.ts`~~ — gone; the page is now [MyTodos.ts](./app/src/pages/my-todos/MyTodos.ts) (used)
-  - [app/src/lib/ui/Accordion.ts](./app/src/lib/ui/Accordion.ts) — still never imported, contains unrelated FAQ demo text
-  - Done when: `grep` finds no references and the app still builds.
+- [x] **Delete unused TS modules**
+  - `pages/my-todos/Todos.ts` was already gone; `lib/ui/Accordion.ts` deleted.
 
-- [ ] **Resolve empty page files**
-  - [x] Docs: [pages/docs/index.ts](./app/src/pages/docs/index.ts) (`DocsPage`) and [DocViewer.ts](./app/src/pages/docs/DocViewer.ts) are implemented and routed.
-  - [x] `console.log` in the `/docs/:id` route removed.
-  - [ ] [pages/not-found/index.ts](./app/src/pages/not-found/index.ts) is still empty while [AppRoot.ts](./app/src/lib/AppRoot.ts) inlines the "Page not found" lambda — move it into the file.
+- [x] **Resolve empty page files**
+  - Docs pages are implemented; the `/docs/:id` `console.log` is gone.
+  - [pages/not-found/index.ts](./app/src/pages/not-found/index.ts) now exports `NotFoundPage`, used by [AppRoot.ts](./app/src/lib/AppRoot.ts).
 
 - [x] **Decide on `SidebarFooter` + `SyncController`** — Option A taken
   - [SidebarFooter.ts](./app/src/lib/shell/SidebarFooter.ts) is mounted inside the account menu in [Sidebar.ts](./app/src/lib/shell/Sidebar.ts); [SyncController.ts](./app/src/lib/sync/SyncController.ts) is mounted in `AppRoot`.
 
-- [ ] **Remove unused members**
-  - ~~[AuthService.ts](./app/src/lib/auth/AuthService.ts): `session$`~~ — now used by `Sidebar.ts` for the account label; keep
-  - [AuthController.ts](./app/src/lib/auth/AuthController.ts): `isBootstrapping` (still written, never read)
-  - [Sidebar.ts](./app/src/lib/shell/Sidebar.ts) / [SidebarLayout.ts](./app/src/lib/shell/SidebarLayout.ts): `disposeAppBar` legacy alias
-  - [client.ts](./app/src/lib/sync/client.ts): the commented-out PowerSync c
+- [x] **Remove unused members**
+  - `AuthController.isBootstrapping`, the `disposeAppBar` alias, and the commented-out PowerSync config in [client.ts](./app/src/lib/sync/client.ts) removed.
+  - `AuthService.session$` kept (used by `Sidebar.ts`).
 
-- [ ] **Remove orphaned CSS** — classes not used by any markup. Remove the files and their imports from [index.css](./app/src/styles/index.css):
-  - `app-layout.css`, `app-bar.css`, `app-button.css`, `accordion.css`
-  - ~~`todo-app.css`, `todo-item.css`, `todo-item-input.css`~~ — already deleted
-  - Now in use, keep: `app-link.css` (docs page), `todo-list-card.css` (`TodoListCard.ts`)
+- [x] **Remove orphaned CSS** — `app-layout.css`, `app-bar.css`, `app-button.css`, `accordion.css` deleted and dropped from [index.css](./app/src/styles/index.css).
 
 - [x] **Clean up assets** — replaced hand-copied SVGs in `app/src/lib/assets/` with the `lucide` package; icons are registered in [icons.ts](./app/src/lib/ui/icons.ts)
   - Drop unused icons from the `appIcons` map once features are settled. Currently unused: `addList`, `check`, `chessRook`, `colorScheme`, `command`, `logo`

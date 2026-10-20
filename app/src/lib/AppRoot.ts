@@ -1,4 +1,3 @@
-import { html, render } from "lit";
 import { router } from "@packages/router";
 import { AuthController } from "@/auth/AuthController.ts";
 import { enforceAuthRoute } from "@/auth/routeGuard.ts";
@@ -8,6 +7,7 @@ import { LoginLayout } from "@/shell/LoginLayout.ts";
 import { LoginPage } from "../pages/auth/index.ts";
 import { MyTodosPage } from "../pages/my-todos/index.ts";
 import { DocsPage } from "../pages/docs/index.ts";
+import { NotFoundPage } from "../pages/not-found/index.ts";
 import type { LayoutFactory, LayoutInstance, MountFunction } from "@/types.ts";
 
 // Extensible registry: add new layouts here or pass custom factories directly
@@ -61,12 +61,7 @@ export function AppRoot(el: HTMLElement) {
       route = { page: LoginPage, layout: "login" };
     })
     .get("/*", () => {
-      route = {
-        page: (target) => {
-          render(html`<h1>Page not found</h1>`, target);
-        },
-        layout: "app",
-      };
+      route = { page: NotFoundPage, layout: "app" };
     });
 
   router.addRouteListener(function renderRoute(path) {

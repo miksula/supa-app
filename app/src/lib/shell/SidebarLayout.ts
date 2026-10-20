@@ -118,12 +118,7 @@ export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInst
 
       (headerEl as PageHeaderElement).disposePageHeader?.();
 
-      const el = asideEl as HTMLElement & {
-        disposeSidebar?: () => void;
-        disposeAppBar?: () => void;
-      };
-      el.disposeSidebar?.();
-      el.disposeAppBar?.();
+      (asideEl as HTMLElement & { disposeSidebar?: () => void }).disposeSidebar?.();
     },
   };
 };

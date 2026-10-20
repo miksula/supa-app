@@ -8,7 +8,6 @@ import type { Session } from "@supabase/supabase-js";
 
 type SidebarTarget = HTMLElement & {
   disposeSidebar?: () => void;
-  disposeAppBar?: () => void;
 };
 
 const normalizePath = (path: string): string => path.replace(/\/+$/, "") || "/";
@@ -44,7 +43,6 @@ function getUserInitials(session: Session | null) {
 export function Sidebar(target: HTMLElement) {
   const disposableTarget = target as SidebarTarget;
   disposableTarget.disposeSidebar?.();
-  disposableTarget.disposeAppBar?.();
 
   const openItems = new Set<string>(NAV_ITEMS.filter(isGroupActive).map((item) => item.title));
 
@@ -231,11 +229,9 @@ export function Sidebar(target: HTMLElement) {
     document.removeEventListener("click", onDocumentClick);
     document.removeEventListener("keydown", onDocumentKeydown);
     delete disposableTarget.disposeSidebar;
-    delete disposableTarget.disposeAppBar;
   };
 
   disposableTarget.disposeSidebar = cleanup;
-  disposableTarget.disposeAppBar = cleanup;
 
   renderNavigation();
   renderAccount();
