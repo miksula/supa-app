@@ -13,8 +13,8 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "schema:generate": "powersync generate schema --output=ts --output-path=app/src/lib/schema.ts --directory=stack/powersync",
-    "type-check": "bun check -p app/tsconfig.json",
+    "schema:generate": "powersync generate schema --output=ts --output-path=app/src/lib/sync/schema.ts --directory=stack/powersync",
+    "type-check": "tsc --noEmit -p app/tsconfig.json",
     "stack:up": "supabase start --workdir stack && powersync docker start --directory=stack/powersync",
     "stack:down": "supabase stop --workdir stack && powersync docker stop --directory=stack/powersync",
     "supabase:status": "supabase status --workdir stack"
@@ -24,6 +24,7 @@
     "oxfmt": "^0.72.0",
     "oxlint": "^1.87.0",
     "powersync": "^0.10.2",
-    "supabase": "^2.120.0"
+    "supabase": "^2.120.0",
+    "typescript": "^7.0.2"
   }
 }

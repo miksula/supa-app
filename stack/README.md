@@ -50,6 +50,20 @@ The PowerSync sync configuration is in `powersync/sync-config.yaml`. It defines
 user-scoped streams for lists and their todos. Update it when changing which
 rows are synchronized.
 
+### PowerSync database role
+
+`supabase/roles.sql` defines `powersync_role`, a least-privilege role for
+PowerSync replication: `REPLICATION` for logical replication, `BYPASSRLS` so it
+can read every row it replicates, and read-only `SELECT` on current and future
+`public` tables.
+
+The file is **not** applied automatically: it is not a migration and is not
+listed in `[db.seed]` in `supabase/config.toml`. The local PowerSync service
+currently connects as `postgres` (see `PS_DATA_SOURCE_URI` in
+`powersync/docker/.env`). To use the role, run the file once against the
+database, give the role `LOGIN` and a password, and point `PS_DATA_SOURCE_URI`
+at it.
+
 ## Migration workflow
 
 Keep migration history focused and readable:

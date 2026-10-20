@@ -37,15 +37,17 @@ Goal: a reader should only see code that is actually in use.
 
 ## Phase 2 — Fix outdated docs & scripts (S)
 
-- [ ] **Rewrite [app/README.md](./app/README.md) “Basic architecture”**
+- [x] **Rewrite [app/README.md](./app/README.md) “Basic architecture”** — now describes `lib/auth`, `lib/sync`, `lib/shell`, `lib/nav`, `lib/ui` and `pages/`.
   - Still references non-existent `AppLayout`/`AppBar`, `src/lib/AuthService.ts`, `src/lib/client.ts`, `src/lib/schema.ts`.
   - (`TodoStore.ts`, `TodoList`, `TodoListCard` now exist in `pages/my-todos/`, so the “Component patterns” examples are valid again.)
   - Describe the real folders: `lib/auth/`, `lib/sync/`, `lib/shell/`, `lib/nav/`, `lib/ui/`, `pages/`.
 
-- [ ] **Fix `schema:generate` output path** in [package.json](./package.json)
+- [x] **Fix `schema:generate` output path** in [package.json](./package.json)
   - Currently `app/src/lib/schema.ts`; actual file is `app/src/lib/sync/schema.ts`.
 
-- [ ] **Document `roles.sql`**
+- [x] **Document `roles.sql`** — “PowerSync database role” section in [stack/README.md](./stack/README.md).
+
+- [x] **Fix `type-check` script** — `bun check` did not exist; now `tsc --noEmit -p app/tsconfig.json` with `typescript` as a dev dependency, and [app/tsconfig.json](./app/tsconfig.json) sets `target`/`module`/`moduleResolution: bundler`/`allowImportingTsExtensions`/`noEmit`.
 
 ---
 

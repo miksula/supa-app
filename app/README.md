@@ -28,21 +28,33 @@ authentication and remote sync while keeping the local database available.
 
 - `src/index.html` is the browser entry point. It loads styles and calls
   `AppRoot`.
-- `src/lib/AppRoot.ts` registers routes, chooses a layout and page, and starts
-  auth and sync-status controllers. Shared navigation lives in
-  `AppLayout`/`AppBar`; login has its own layout.
-- `src/pages/` contains route-level screens. `src/lib/` contains UI mount
-  functions, auth and routing guards, and data/sync services. UI is rendered
-  with Lit; styles are in `src/styles/`.
-- `src/lib/AuthService.ts` wraps Supabase Auth. `AuthController` bootstraps the
-  session, while `syncLifecycle.ts` connects PowerSync for a signed-in user and
-  clears local sync data on sign-out.
-- `src/lib/client.ts` configures the PowerSync database and Kysely adapter. The
-  schema is in `src/lib/schema.ts`; `TodoStore.ts` reads and writes local todo
-  data, and `SupabasePowerSyncConnector.ts` supplies credentials and uploads
-  local changes to Supabase.
-- `@packages/router` is a workspace package in `../packages/`; the root
-  `package.json` defines the npm workspaces and convenience scripts.
+- `src/lib/AppRoot.ts` registers routes, picks a layout (`SidebarLayout` or
+  `LoginLayout`) for each route, mounts the page, and starts the auth and
+  sync-status controllers.
+- `src/pages/` contains route-level screens (`auth/`, `docs/`, `my-todos/`,
+  `not-found/`). Feature-specific modules live next to their page, e.g.
+  `pages/my-todos/TodoStore.ts` reads and writes the local todo data.
+- `src/lib/` contains shared code, grouped by concern:
+  - `auth/`: `AuthService.ts` wraps Supabase Auth (`auth.ts` exports the
+    shared instance), `AuthController.ts` bootstraps the session, and
+    `authGuard.ts`/`routeGuard.ts` redirect unauthenticated routes.
+  - `sync/`: `client.ts` configures the PowerSync database and Kysely
+    adapter, `schema.ts` is the client schema (generated with
+    `npm run schema:generate`), `SupabasePowerSyncConnector.ts` supplies
+    credentials and uploads local changes, `syncLifecycle.ts` connects
+    PowerSync for a signed-in user and clears local data on sign-out, and
+    `SyncController.ts` publishes sync status to the UI.
+  - `shell/`: layouts and app chrome (`SidebarLayout`, `Sidebar`,
+    `SidebarFooter`, `PageHeader`, `LoginLayout`).
+  - `nav/`: navigation items (`navConfig.ts`) and breadcrumbs.
+  - `ui/`: small reusable elements (`<app-icon>` with the Lucide registry in
+    `icons.ts`; `AppLink.ts` defines `<app-link>`, kept for future use).
+  - `events.ts` and `types.ts`: shared event and mount-function types.
+- UI is rendered with Lit; styles are in `src/styles/`.
+- `@packages/router` and `@packages/docs` are workspace packages in
+  `../packages/`; the root `package.json` defines the workspaces and
+  convenience scripts (`lint`, `fmt`, `type-check`, `schema:generate`,
+  `stack:up`/`stack:down`).
 
 ## Component patterns
 
