@@ -58,7 +58,7 @@ Goal: a reader should only see code that is actually in use.
 
 - [x] **`route` is undefined when landing on `/`**
   - Fixed by the router's `navigationRevision` guard: the `/` handler's `navigate()` bumps the revision, so `check()` skips the stale listener call.
-  - Remaining edge: the Navigation-API intercept path (`matchSyncRoute`/`matchAsyncRoute`) has no revision guard, so a link to `/` briefly re-renders the previous route before redirecting — see Phase 10.
+  - The remaining intercept-path edge was resolved in Phase 10: initial checks and intercepted routes share revision-guarded notifications.
 
 - [x] **Remove hardcoded credentials** — fields start empty; the dev server prefills from `VITE_DEV_EMAIL`/`VITE_DEV_PASSWORD` (see [.env.local.template](./app/.env.local.template)).
   - [pages/auth/index.ts](./app/src/pages/auth/index.ts) still defaults `email`/`password` to real-looking values.
@@ -184,37 +184,34 @@ Goal: a reader should only see code that is actually in use.
 
 ## Phase 8 — Single Responsibility splits (M)
 
-- [ ] **Split [AppRoot.ts](./app/src/lib/AppRoot.ts)**
-  - `routes.ts` — route table as data:
-    ```ts
-    export const routes: RouteDef[] = [
-      { path: "/my-todos", page: MyTodosPage, layout: "app" },
-      { path: "/docs/:id", page: DocsPage, layout: "app" },
-      { path: "/auth", page: LoginPage, layout: "login", transition: true },
-      { path: "/*", page: NotFoundPage, layout: "app" },
-    ];
-    ```
+- [x] **Split [AppRoot.ts](./app/src/lib/AppRoot.ts)**
+  - `routes.ts` exports `createRoutes(pages)`: route data and resolvers with injected page mounts, including redirects and captured document IDs.
   - `layoutManager.ts` — mount/dispose layouts + view transitions (driven by a `transition` flag, not hardcoded `"login"`/`"app"` names).
   - Remove the shared mutable `let route` that route handlers set and the listener reads.
 
-- [ ] **Split [SidebarFooter.ts](./app/src/lib/shell/SidebarFooter.ts)**
-  - `lib/theme/theme.ts` (pure helpers; reuse from the inline script in [index.html](./app/src/index.html))
-  - `ThemeSwitcher.ts`, `SyncStatusIndicator.ts`
+- [x] **Split [SidebarFooter.ts](./app/src/lib/shell/SidebarFooter.ts)**
+  - `lib/theme/theme.ts` shares a pure color-scheme resolver and browser persistence helpers with the initialization script in [index.html](./app/src/index.html).
+  - `ThemeSwitcher.ts` and `SyncStatusIndicator.ts` own their styles, subscriptions and cleanup; the footer only composes them.
 
-- [ ] **Slim down [AuthService.ts](./app/src/lib/auth/AuthService.ts)** — client creation moves to the composition root; service only manages session state.
+- [x] **Slim down [AuthService.ts](./app/src/lib/auth/AuthService.ts)** — client creation moves to the composition root; service receives the client and manages session state.
 
-- [ ] **Extract sidebar persistence** from [SidebarLayout.ts](./app/src/lib/shell/SidebarLayout.ts) (localStorage + cookie) into a small `sidebarState.ts`; consider dropping the cookie (no SSR).
+- [x] **Extract sidebar persistence** from [SidebarLayout.ts](./app/src/lib/shell/SidebarLayout.ts) into `sidebarState.ts`; retain localStorage and drop the unused cookie (no SSR).
 
-- [ ] **Fix nav active-state special case**
+- [x] **Fix nav active-state special case**
   - [Sidebar.ts](./app/src/lib/shell/Sidebar.ts) `isItemActive` maps `/` → `/my-todos`. Point [navConfig.ts](./app/src/lib/nav/navConfig.ts) at `/my-todos` directly and drop the special case.
 
-- [ ] **Single upload path in connector**
+- [x] **Single upload path in connector**
   - Route all uploads through the `process_powersync_crud` RPC (it is `security invoker`, so RLS applies).
   - Removes the PostgREST `switch`; extract `isFatalError()`.
+
+- Verification: 60 tests cover lifecycle, injected auth and RPC upload paths, including fatal/retryable errors. Browser checks cover theme persistence, navigation, sign-out/in and successful PUT/PATCH/DELETE RPC requests; the temporary test list was removed.
+- The router redirect `AbortError`, account-menu sign-out focus warning and mobile account-menu clipping follow-ups were resolved in Phase 10.
 
 ---
 
 ## Phase 9 — Rebuild the todo feature with clean boundaries (M–L)
+
+Skipped in this iteration at the user's request; existing completed items are retained.
 
 - [x] **Create a todo repository** (SRP: data access only, IoC: DB passed in)
   - Implemented as [TodoStore.ts](./app/src/pages/my-todos/TodoStore.ts) taking a `PowerSyncDatabase`: `watchUserLists()`, `createList()`, `createTodo()`, `updateListName()`, `setTodoCompleted()`, `deleteList()`, plus pure `mapTodoLists()`.
@@ -228,8 +225,11 @@ Goal: a reader should only see code that is actually in use.
 
 ## Phase 10 — Router cleanup (M)
 
-- [ ] **Deduplicate matching** in [router.ts](./packages/router/src/router.ts) — the “build URL → exec → RouteContext → notify listeners” block appears 4×; extract a private `match(path)` + `notify()`.
-  - While doing so, route the intercept path through `notifyRouteListeners(revision)` too, so in-handler redirects don't notify listeners with a stale route (see Phase 3).
-- [ ] **Fix `RouterType`** — currently `typeof Router` (constructor type); likely intended `Router` (instance type).
-- [ ] **Consider explicit construction** instead of a module-level singleton whose constructor registers a global `navigate` listener on import.
-- [ ] **Add router tests** (pattern matching, trailing slashes, params, search).
+- [x] **Deduplicate matching** in [router.ts](./packages/router/src/router.ts) — `match()`, `runMatch()` and revision-guarded `notifyRouteListeners()` serve both `check()` and native interception. Route registration and root handling are shared too.
+  - In-handler redirects, newer browser navigations, aborted events and disposal suppress stale callbacks and notifications. Both navigation promises are handled; expected `AbortError` cancellations do not log an application error.
+- [x] **Fix `RouterType`** — now the `Router` instance type.
+- [x] **Use explicit construction** — `main.ts` creates and injects `new Router()`. Imports have no navigation-listener side effects; `dispose()` removes listeners and invalidates pending callbacks.
+- [x] **Add router tests** — 34 tests cover matching, trailing slashes, params/search, root boundaries, sync/async redirects, cancellation, errors and disposal. CI selects Node 24 for native `URLPattern` support.
+- [x] **Fix account-menu focus on sign-out** — focus leaves the menu before it becomes hidden/inert; five lifecycle tests also cover Escape, outside clicks and session changes.
+- [x] **Fix mobile account-menu clipping** — menu opens above the account trigger below the existing 48rem breakpoint, with viewport-constrained width and height.
+- Verification: 99 tests, typecheck, lint, Knip and production build pass. Browser checks cover root/docs redirects, sign-out/in without redirect errors or focus warnings, Escape focus restoration, and menu visibility at desktop, 390px and 320px widths.

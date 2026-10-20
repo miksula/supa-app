@@ -2,6 +2,7 @@
 
 type AppNavigation = {
   addEventListener(event: string, handler: (event: Event) => void): void;
+  removeEventListener(event: string, handler: (event: Event) => void): void;
   navigate(
     url: string,
     options?: { state?: unknown },
@@ -15,6 +16,7 @@ type AppNavigation = {
 };
 
 type NavigateEvent = Event & {
+  signal?: AbortSignal;
   canIntercept: boolean;
   hashChange: boolean;
   downloadRequest: { filename: string } | null;
@@ -30,18 +32,18 @@ type NavigateEvent = Event & {
 const getNavigation = () =>
   (globalThis as typeof globalThis & { navigation?: AppNavigation }).navigation;
 
-class RouteContext {
+export class RouteContext {
   public params: Record<string, string>;
   public path: string;
   private searchParams: URLSearchParams;
 
-  constructor(path: string, params: Record<string, string | undefined> = {}) {
+  constructor(path: string, params: Record<string, string | undefined> = {}, search = "") {
     this.path = path;
     // Filter out undefined values and convert to Record<string, string>
     this.params = Object.fromEntries(
       Object.entries(params).filter(([_, v]) => v !== undefined),
     ) as Record<string, string>;
-    this.searchParams = new URLSearchParams(location.search);
+    this.searchParams = new URLSearchParams(search);
   }
 
   param(key?: string): string | Record<string, string> | undefined {
@@ -76,29 +78,29 @@ type RouteItem = {
   handler: RouteHandler;
 };
 
-type AsyncRouteItem = {
-  pattern: URLPattern;
-  handler: AsyncRouteHandler;
-};
-
 const SPA_NAVIGATION_TYPES = new Set(["push", "replace", "traverse"]);
 
-class Router {
+export class Router {
   private routes: RouteItem[] = [];
-  private asyncRoutes: AsyncRouteItem[] = [];
+  private asyncRoutes: RouteItem[] = [];
   private root = "/";
   private routeCheckHandlers: ((path: string) => void)[] = [];
   private navigationRevision = 0;
+  private navigation = getNavigation();
+  private navListener: (event: Event) => void;
+  private disposed = false;
 
   constructor(options: RouterOptions = {}) {
     if (options.root) {
-      this.root = this.clearSlashes(options.root);
+      const root = this.clearSlashes(options.root);
+      this.root = root ? `/${root}/` : "/";
     }
 
     // Listen for all navigation events
-    const navListener = (event: Event) => {
+    this.navListener = (event: Event) => {
       const navEvent = event as NavigateEvent;
       const url = new URL(navEvent.destination.url);
+      const revision = ++this.navigationRevision;
 
       // Skip non-interception cases
       if (
@@ -112,119 +114,96 @@ class Router {
         return;
       }
 
-      const pathname = url.pathname + url.search;
+      const pathname = this.relativePath(url.pathname);
+      if (pathname === null) return;
+      const match = this.match(pathname + url.search);
+      if (!match) return;
 
-      // Check async routes first, then sync routes
-      if (this.matchAsyncRoute(pathname, navEvent) || this.matchSyncRoute(pathname, navEvent)) {
-        // Route matched and handled
-      }
+      navEvent.intercept({
+        handler: async () => {
+          if (revision !== this.navigationRevision || navEvent.signal?.aborted) return;
+          await this.runMatch(match, revision, navEvent.signal);
+        },
+      });
     };
 
-    getNavigation()?.addEventListener("navigate", navListener);
+    this.navigation?.addEventListener("navigate", this.navListener);
+  }
+
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.navigationRevision++;
+    this.navigation?.removeEventListener("navigate", this.navListener);
+    this.routes = [];
+    this.asyncRoutes = [];
+    this.routeCheckHandlers = [];
   }
 
   clearSlashes(path: string) {
-    return path.replace(/\/$/, "").replace(/^\//, "");
+    return path.replace(/^\/+|\/+$/g, "");
+  }
+
+  private currentURL() {
+    return new URL(this.navigation?.currentEntry?.url ?? globalThis.location.href);
+  }
+
+  private relativePath(pathname: string) {
+    if (this.root === "/") return pathname;
+    if (pathname === this.root.slice(0, -1)) return "/";
+    return pathname.startsWith(this.root) ? "/" + pathname.slice(this.root.length) : null;
   }
 
   getPath() {
-    // Use Navigation API's current entry as source of truth
-    const nav = getNavigation();
-    if (nav && nav.currentEntry) {
-      const url = new URL(nav.currentEntry.url ?? globalThis.location.href);
-      let pathname = url.pathname + url.search;
-
-      // Remove query string for return value
-      pathname = pathname.replace(/\?(.*)$/, "");
-
-      // Handle root path
-      if (this.root && this.root !== "/") {
-        const rootPattern = new RegExp(`^\\/${this.clearSlashes(this.root)}`);
-        if (rootPattern.test(pathname)) {
-          pathname = pathname.replace(rootPattern, "");
-        }
-      }
-
-      return (pathname || "/").replace(/\/$/, "") || "/";
-    }
-
-    // Fallback for initial load
-    const pathname = decodeURI(globalThis.location?.pathname || "/");
-    const search = globalThis.location?.search || "";
-    let fragment = this.clearSlashes(pathname + search);
-    fragment = fragment.replace(/\?(.*)$/, "");
-    return this.root + this.clearSlashes(fragment);
+    const pathname = this.currentURL().pathname;
+    return (this.relativePath(pathname) ?? pathname).replace(/\/+$/, "") || "/";
   }
 
   get path() {
     return this.getPath();
   }
 
-  private matchAsyncRoute(pathname: string, event: NavigateEvent): boolean {
+  private match(pathname: string) {
     const pathWithRoot = pathname.startsWith("/") ? pathname : "/" + pathname;
+    const url = new URL(pathWithRoot, globalThis.location.origin);
 
-    for (const route of this.asyncRoutes) {
-      const testUrl = `${location.protocol}//${location.host}${pathWithRoot}`;
-      const result = route.pattern.exec(testUrl);
+    for (const route of [...this.asyncRoutes, ...this.routes]) {
+      const result = route.pattern.exec(url.href);
 
       if (result) {
-        const params = result.pathname.groups;
-        const context = new RouteContext(pathWithRoot, params);
-
-        event.intercept({
-          handler: async () => {
-            await route.handler(context);
-
-            for (const handler of this.routeCheckHandlers) {
-              handler(this.path);
-            }
-          },
-        });
-        return true;
+        return {
+          handler: route.handler,
+          context: new RouteContext(url.pathname + url.search, result.pathname.groups, url.search),
+        };
       }
     }
-    return false;
+    return null;
   }
 
-  private matchSyncRoute(pathname: string, event: NavigateEvent): boolean {
-    const pathWithRoot = pathname.startsWith("/") ? pathname : "/" + pathname;
-
-    for (const route of this.routes) {
-      const testUrl = `${location.protocol}//${location.host}${pathWithRoot}`;
-      const result = route.pattern.exec(testUrl);
-
-      if (result) {
-        const params = result.pathname.groups;
-        const context = new RouteContext(pathWithRoot, params);
-
-        event.intercept({
-          handler: () => {
-            return Promise.resolve(route.handler(context)).then(() => {
-              for (const handler of this.routeCheckHandlers) {
-                handler(this.path);
-              }
-            });
-          },
-        });
-
-        return true;
-      }
+  private runMatch(
+    match: NonNullable<ReturnType<Router["match"]>>,
+    revision: number,
+    signal?: AbortSignal,
+  ) {
+    const result = match.handler(match.context);
+    if (result) {
+      return Promise.resolve(result).then(() => this.notifyRouteListeners(revision, signal));
     }
-    return false;
+    this.notifyRouteListeners(revision, signal);
   }
 
-  add(path: string, handler: RouteHandler) {
+  private createRoute(path: string, handler: RouteHandler): RouteItem {
     if (!handler) {
       throw new Error("Handler is required");
     }
 
-    // Append automatic trailing slash handling
-    const patternPath = path.endsWith("/") ? path : `${path}{/}?`;
+    const normalizedPath = path.replace(/\/+$/, "") || "/";
+    const patternPath = normalizedPath === "/" ? "/" : `${normalizedPath}{/}?`;
 
     try {
       // Create URLPattern with pathname only
       const pattern = new URLPattern({ pathname: patternPath });
-      this.routes.push({ pattern, handler });
+      return { pattern, handler };
     } catch (error) {
       throw new Error(
         `Invalid URLPattern syntax for path "${path}": ${
@@ -232,7 +211,10 @@ class Router {
         }`,
       );
     }
+  }
 
+  add(path: string, handler: RouteHandler) {
+    this.routes.push(this.createRoute(path, handler));
     return this;
   }
 
@@ -241,56 +223,21 @@ class Router {
     return this.add(path, handler);
   }
 
-  private notifyRouteListeners(revision: number) {
-    if (revision !== this.navigationRevision) {
-      return;
-    }
-
+  private notifyRouteListeners(revision: number, signal?: AbortSignal) {
     for (const handler of this.routeCheckHandlers) {
+      if (revision !== this.navigationRevision || signal?.aborted) return;
       handler(this.path);
     }
   }
 
-  check(f?: string) {
-    const fragment = f || this.getPath();
-
-    // Try async routes first
-    for (const route of this.asyncRoutes) {
-      const testUrl = `${location.protocol}//${location.host}${fragment}`;
-      const result = route.pattern.exec(testUrl);
-
-      if (result) {
-        const params = result.pathname.groups;
-        const context = new RouteContext(fragment, params);
-        const revision = this.navigationRevision;
-        const promise = route.handler(context);
-
-        promise.then(() => {
-          this.notifyRouteListeners(revision);
-        });
-
-        return promise;
-      }
-    }
-
-    // Fall back to sync routes
-    for (const route of this.routes) {
-      const testUrl = `${location.protocol}//${location.host}${fragment}`;
-      const result = route.pattern.exec(testUrl);
-
-      if (result) {
-        const params = result.pathname.groups;
-        const context = new RouteContext(fragment, params);
-        const revision = this.navigationRevision;
-        const handlerResult = route.handler(context);
-
-        this.notifyRouteListeners(revision);
-
-        return handlerResult;
-      }
-    }
-
-    return null;
+  check(path?: string) {
+    if (this.disposed) return null;
+    const url = this.currentURL();
+    const revision = ++this.navigationRevision;
+    const pathname = this.relativePath(url.pathname);
+    const fragment = path ?? (pathname === null ? null : pathname + url.search);
+    const match = fragment === null ? null : this.match(fragment);
+    return match ? this.runMatch(match, revision) : null;
   }
 
   addRouteListener(callback: (path: string) => void) {
@@ -315,49 +262,28 @@ class Router {
   }
 
   navigate(path: string = "", options?: { state?: unknown }) {
+    if (this.disposed) return this;
     this.navigationRevision++;
 
-    const page = this.root + this.clearSlashes(path);
-    const nav = getNavigation();
+    const page = this.root + path.replace(/^\/+/, "");
+    const nav = this.navigation;
     if (!nav) {
       console.error("Navigation API is unavailable");
       return this;
     }
 
-    nav
-      .navigate(page, options)
-      .finished.then(() => {
-        // Navigation completed
-      })
-      .catch((err: unknown) => {
-        console.error("Navigation failed:", err);
-      });
+    const { committed, finished } = nav.navigate(page, options);
+    void Promise.all([committed, finished]).catch((error: unknown) => {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      console.error("Navigation failed:", error);
+    });
     return this;
   }
 
   addAsync(path: string, handler: AsyncRouteHandler) {
-    if (!handler) {
-      throw new Error("Handler is required");
-    }
-
-    const patternPath = path.endsWith("/") ? path : `${path}{/}?`;
-
-    try {
-      const pattern = new URLPattern({ pathname: patternPath });
-      this.asyncRoutes.push({ pattern, handler });
-    } catch (error) {
-      throw new Error(
-        `Invalid URLPattern syntax for path "${path}": ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
-    }
-
+    this.asyncRoutes.push(this.createRoute(path, handler));
     return this;
   }
 }
 
-export type RouterType = typeof Router;
-
-const router = new Router();
-export default router;
+export type RouterType = Router;

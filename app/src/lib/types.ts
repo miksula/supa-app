@@ -1,7 +1,7 @@
 export type Dispose = () => void;
 export type Mount<Props = void> = (el: HTMLElement, props: Props) => Dispose | void;
 
-export type AppRouter = typeof import("@packages/router").router;
+export type AppRouter = import("@packages/router").RouterType;
 export type RouteSource = Pick<AppRouter, "path" | "addRouteListener" | "removeRouteListener">;
 
 export interface LayoutInstance {

@@ -31,8 +31,12 @@ navigation and state management.
 Since this is a standalone module, you can import it directly into your project.
 
 ```typescript
-import Router, { RouteContext } from "@packages/router";
+import { Router, type RouteContext, type RouterType } from "@packages/router";
 ```
+
+Importing the package has no side effects. Construct one router in the app's
+composition root and pass it to its consumers. `RouterType` describes a router
+instance, not the constructor; the package no longer exports a shared singleton.
 
 ## Basic Usage
 
@@ -48,7 +52,8 @@ const routerWithRoot = new Router({ root: "/my-app" });
 
 ### 2. Adding Routes
 
-Routes are matched in the order they are added. The first match wins.
+Routes registered with `addAsync()` are matched before routes registered with
+`add()` or `get()`. Within each group, registration order decides the first match.
 
 ```typescript
 // Simple string-based route
@@ -162,7 +167,9 @@ Access URL search/query parameters (e.g., `?tab=profile&sort=asc`).
 
 #### `path: string`
 
-The matched path fragment (without search parameters).
+The matched application-relative path, including its search parameters.
+`param()` and `search()` both read from that matched destination, not from the
+previous page's `location`.
 
 #### `params: Record<string, string>`
 
@@ -174,7 +181,9 @@ Direct access to the parameters object.
 
 Creates a new router instance.
 
-- `options.root`: Base path for the application (defaults to `/`)
+- `options.root`: Base path for the application (defaults to `/`). Routes and
+  `navigate()` paths are relative to this root. Native navigation outside the
+  root is left to the browser.
 
 #### `add(path: string, handler: RouteHandler): Router`
 
@@ -203,10 +212,14 @@ Programmatically navigates to a path and triggers the route handler.
   - Retrieve with `navigation.currentEntry.getState()` after navigation
   - Useful for preserving UI state when returning to a route
 
-Calling `navigate()` from inside a route handler increments the router's
-navigation revision. If the handler was executed through `router.check()`, the
-route listener notification for the original route is skipped. The destination
-route is still handled and notifies listeners normally.
+Calling `navigate()` from inside a route handler invalidates notification for
+the original route, both through `check()` and through intercepted navigations.
+Browser link clicks and history traversal also invalidate stale callbacks.
+The destination route still runs and notifies listeners normally. Listeners
+that redirect stop the remaining notifications for the old route.
+
+Both Navigation API promises (`committed` and `finished`) are observed.
+Expected `AbortError` cancellations are ignored; other failures are reported.
 
 #### `addAsync(path: string, handler: AsyncRouteHandler): Router`
 
@@ -228,7 +241,7 @@ router.addAsync("/users/:id", async (context) => {
 });
 ```
 
-#### `check(fragment?: string): any`
+#### `check(fragment?: string): void | Promise<void> | null`
 
 Manually checks and executes the matching route handler. Required for initial
 page load since the route change event doesn't fire on app startup.
@@ -237,6 +250,12 @@ If the route handler redirects by calling `navigate()`, the router skips
 notifying route listeners for the original route check. This prevents a
 redirecting route from rendering with incomplete route state before the
 destination route is processed.
+
+Without a fragment, the current URL supplies the path and query. A supplied
+fragment is application-relative and does not change the browser URL. Async
+handlers are awaited before notifying listeners, including promises returned
+through `get()`; their failures propagate to the caller without an extra
+unhandled promise. An unmatched route returns `null`.
 
 #### `addRouteListener(callback: (path: string) => void): Router`
 
@@ -252,7 +271,17 @@ Removes a previously registered route listener callback.
 
 #### `path: string` (getter)
 
-Returns the current full path including the root.
+Returns the current application-relative pathname, without query or trailing
+slashes (except `/`). Falls back to `location` when no Navigation API entry is
+available.
+
+#### `dispose(): void`
+
+Removes the global navigation listener, clears registered routes and route
+listeners, and invalidates queued callbacks. Repeated calls are safe. Dispose
+the router when its owner is removed; create a new instance to mount it again.
+Disposal and newer navigations do not cancel work already started inside a
+handler: handlers remain responsible for their own late asynchronous side effects.
 
 ## Advanced Pattern Examples
 
@@ -328,7 +357,7 @@ Here's a simple example showing how to use the router in a Lit component:
 
 ```typescript
 import { html, LitElement } from "lit";
-import Router, { RouteContext } from "./router";
+import { Router, type RouteContext } from "@packages/router";
 
 export class MyApp extends LitElement {
   private router = new Router();
@@ -365,22 +394,6 @@ export class MyApp extends LitElement {
     this.router.check();
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-
-    // Handle link clicks
-    this.addEventListener("click", (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === "A") {
-        const href = target.getAttribute("href");
-        if (href?.startsWith("/")) {
-          e.preventDefault();
-          this.router.navigate(href);
-        }
-      }
-    });
-  }
-
   render() {
     return html`
       <nav>
@@ -401,6 +414,13 @@ customElements.define("my-app", MyApp);
 - Store a `currentView` property that gets updated by route handlers
 - Call `this.requestUpdate()` in the `addRouteListener()` callback to trigger
   re-renders
-- Intercept link clicks to use `router.navigate()` instead of page reloads
+- Let the router intercept eligible native navigations; no link click listener is needed
 - Use `addAsync()` for routes that need to load data before rendering
 - Always call `router.check()` on app startup to handle the initial route
+
+## Tests
+
+Run `npm test -- packages/router/src/router.test.ts` from the repository root
+with Node 24 or newer for native `URLPattern` support. CI explicitly selects
+Node 24. Tests cover matching, params/search, trailing slashes, root paths,
+redirects, async supersession, browser cancellation and listener disposal.

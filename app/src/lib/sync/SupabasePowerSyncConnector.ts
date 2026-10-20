@@ -1,9 +1,14 @@
-import { UpdateType } from "@powersync/web";
-import type { CommonPowerSyncDatabase, CrudEntry, PowerSyncBackendConnector } from "@powersync/web";
-import type { PostgrestSingleResponse, SupabaseClient } from "@supabase/supabase-js";
+import type { CommonPowerSyncDatabase, PowerSyncBackendConnector } from "@powersync/web";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /// Postgres Response codes that we cannot recover from by retrying.
 const FATAL_RESPONSE_CODES = [new RegExp("^22...$"), new RegExp("^23...$"), new RegExp("^42501$")];
+
+function isFatalError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null || !("code" in error)) return false;
+  const code = error.code;
+  return typeof code === "string" && FATAL_RESPONSE_CODES.some((pattern) => pattern.test(code));
+}
 
 export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
   constructor(
@@ -39,79 +44,23 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
       return;
     }
 
-    let lastOp: CrudEntry | null = null;
     try {
-      if (transaction.crud.length > 1) {
-        /*
-         * PowerSync can return several related local writes in one transaction,
-         * such as deleting a list and its todos. Send those operations through
-         * the PostgreSQL RPC so they are processed as one server-side batch.
-         * Single operations use PostgREST below because no batch RPC is needed.
-         *
-         * The SDK serializes the table name as `type`, while the RPC expects
-         * `table`, so add the field explicitly before sending the payload.
-         *
-         * The `process_powersync_crud` RPC is created separately by the
-         * `*_process_powersync_crud.sql` migration in the infra `stack/`.
-         */
-        lastOp = transaction.crud.at(-1) ?? null;
-        const { error } = await this.client.rpc("process_powersync_crud", {
-          ops: transaction.crud.map((op) => ({
-            ...op,
-            table: op.table,
-          })),
-        });
-
-        if (error) {
-          error.message = `Could not update Supabase. Received error: ${error.message}`;
-          throw error;
-        }
-      } else {
-        for (const op of transaction.crud) {
-          lastOp = op;
-          const table = this.client.from(op.table);
-          let result: PostgrestSingleResponse<null>;
-          const opData = op.opData;
-          switch (op.op) {
-            case UpdateType.PUT:
-              if (!opData) {
-                throw new Error(`PUT operation for ${op.table} is missing operation data`);
-              }
-              result = await table.upsert({ ...opData, id: op.id });
-              break;
-            case UpdateType.PATCH:
-              if (!opData) {
-                throw new Error(`PATCH operation for ${op.table} is missing operation data`);
-              }
-              result = await table.update(opData).eq("id", op.id);
-              break;
-            case UpdateType.DELETE:
-              result = await table.delete().eq("id", op.id);
-              break;
-            default:
-              throw new Error(`Unsupported PowerSync operation: ${op.op}`);
-          }
-
-          if (result.error) {
-            result.error.message = `Could not update Supabase. Received error: ${result.error.message}`;
-            throw result.error;
-          }
-        }
+      const { error } = await this.client.rpc("process_powersync_crud", {
+        ops: transaction.crud.map((entry) => ({
+          op: entry.op,
+          table: entry.table,
+          id: entry.id,
+          opData: entry.opData,
+        })),
+      });
+      if (error) {
+        error.message = `Could not update Supabase. Received error: ${error.message}`;
+        throw error;
       }
-
-      await transaction.complete();
-    } catch (ex: unknown) {
-      const error = ex as { code?: string };
-      const errorCode = error.code;
-      if (
-        typeof errorCode === "string" &&
-        FATAL_RESPONSE_CODES.some((regex) => regex.test(errorCode))
-      ) {
-        console.error("Data upload error - discarding:", lastOp, ex);
-        await transaction.complete();
-      } else {
-        throw ex;
-      }
+    } catch (error: unknown) {
+      if (!isFatalError(error)) throw error;
+      console.error("Data upload error - discarding:", transaction.crud, error);
     }
+    await transaction.complete();
   }
 }

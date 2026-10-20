@@ -5,15 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <script>
-      (() => {
-        const storedScheme = localStorage.getItem("color-scheme");
-        if (storedScheme === "dark" || storedScheme === "light") {
-          document.querySelector('meta[name="color-scheme"]').content = storedScheme;
-          document.documentElement.style.colorScheme = storedScheme;
-        }
-        document.documentElement.setAttribute("data-theme", "newyork");
-      })();
+    <script type="module" blocking="render">
+      import { initializeTheme } from "/lib/theme/theme.ts";
+      initializeTheme();
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

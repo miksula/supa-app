@@ -1,4 +1,5 @@
-import { router } from "@packages/router";
+import { Router } from "@packages/router";
+import { createClient } from "@supabase/supabase-js";
 import { config } from "./config.ts";
 import { AppRoot } from "./AppRoot.ts";
 import { AuthService } from "./auth/AuthService.ts";
@@ -18,9 +19,17 @@ import { DocsPage } from "../pages/docs/index.ts";
 import { NotFoundPage } from "../pages/not-found/index.ts";
 
 export function startApp(el: HTMLElement) {
-  const authService = new AuthService(config);
+  const router = new Router();
+  const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
+    auth: {
+      persistSession: !config.isOfflineMode,
+      autoRefreshToken: !config.isOfflineMode,
+      detectSessionInUrl: !config.isOfflineMode,
+    },
+  });
+  const authService = new AuthService(supabase);
   const { powersync } = createPowerSync();
-  const connector = new SupabasePowerSyncConnector(authService.client, config.powersyncUrl);
+  const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
   const enforceAuthRoute = createAuthGuard(authService, router, { disabled: config.isOfflineMode });
   const syncLifecycle = createSyncLifecycle({
     connect: async () => {

@@ -11,7 +11,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     title: "Omat tehtävät",
     icon: "listTodo",
-    url: "/",
+    url: "/my-todos",
   },
   {
     title: "Dokumentaatio",

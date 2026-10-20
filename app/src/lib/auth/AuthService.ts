@@ -1,15 +1,4 @@
-import {
-  type AuthChangeEvent,
-  createClient,
-  type Session,
-  type SupabaseClient,
-} from "@supabase/supabase-js";
-
-export type SupabaseConfig = {
-  supabaseUrl: string;
-  supabaseKey: string;
-  isOfflineMode: boolean;
-};
+import type { AuthChangeEvent, Session, SupabaseClient } from "@supabase/supabase-js";
 
 export type SessionObservable = {
   subscribe: (listener: (session: Session | null) => void) => () => void;
@@ -17,23 +6,14 @@ export type SessionObservable = {
 
 export class AuthService {
   readonly client: SupabaseClient;
-  readonly config: SupabaseConfig;
   readonly session$: SessionObservable;
 
   ready = false;
   private currentSession: Session | null = null;
   private readonly sessionListeners = new Set<(session: Session | null) => void>();
 
-  constructor(config: SupabaseConfig) {
-    this.config = config;
-
-    this.client = createClient(this.config.supabaseUrl, this.config.supabaseKey, {
-      auth: {
-        persistSession: !config.isOfflineMode,
-        autoRefreshToken: !config.isOfflineMode,
-        detectSessionInUrl: !config.isOfflineMode,
-      },
-    });
+  constructor(client: SupabaseClient) {
+    this.client = client;
 
     this.session$ = {
       subscribe: (listener) => {

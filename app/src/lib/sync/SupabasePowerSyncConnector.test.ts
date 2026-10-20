@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CommonPowerSyncDatabase } from "@powersync/web";
 import { SupabasePowerSyncConnector } from "./SupabasePowerSyncConnector.ts";
@@ -15,6 +15,67 @@ function setup(session: { access_token: string; expires_at?: number } | null = n
 }
 
 describe("SupabasePowerSyncConnector", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("does not call the backend with an empty upload queue", async () => {
+    const { connector, rpc } = setup();
+    const database = {
+      getNextCrudTransaction: vi.fn().mockResolvedValue(null),
+    } as unknown as CommonPowerSyncDatabase;
+    await connector.uploadData(database);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { op: "PUT", table: "todos", id: "todo-id", opData: { description: "New", completed: 0 } },
+    { op: "PATCH", table: "todos", id: "todo-id", opData: { completed: 1 } },
+    { op: "DELETE", table: "todos", id: "todo-id" },
+  ])("uploads a single $op through RPC", async (entry) => {
+    const { connector, rpc } = setup();
+    const complete = vi.fn();
+    const database = {
+      getNextCrudTransaction: vi.fn().mockResolvedValue({ crud: [entry], complete }),
+    } as unknown as CommonPowerSyncDatabase;
+    await connector.uploadData(database);
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("process_powersync_crud", { ops: [entry] });
+    expect(complete).toHaveBeenCalledOnce();
+  });
+
+  it.each(["22P02", "23503", "42501"])(
+    "discards rejected transactions for fatal code %s",
+    async (code) => {
+      const { connector, rpc } = setup();
+      const error = { code, message: "Rejected" };
+      rpc.mockResolvedValue({ error });
+      const log = vi.spyOn(console, "error").mockImplementation(() => {});
+      const complete = vi.fn();
+      const crud = [{ op: "DELETE", table: "todos", id: "todo-id" }];
+      const database = {
+        getNextCrudTransaction: vi.fn().mockResolvedValue({ crud, complete }),
+      } as unknown as CommonPowerSyncDatabase;
+      await connector.uploadData(database);
+      expect(complete).toHaveBeenCalledOnce();
+      expect(log).toHaveBeenCalledWith("Data upload error - discarding:", crud, error);
+    },
+  );
+
+  it.each([{ code: "40001" }, { code: "PGRST301" }, new Error("Network"), null])(
+    "retains the transaction for retry on %j",
+    async (error) => {
+      const { connector, rpc } = setup();
+      rpc.mockRejectedValue(error);
+      const complete = vi.fn();
+      const database = {
+        getNextCrudTransaction: vi.fn().mockResolvedValue({
+          crud: [{ op: "DELETE", table: "todos", id: "todo-id" }],
+          complete,
+        }),
+      } as unknown as CommonPowerSyncDatabase;
+      await expect(connector.uploadData(database)).rejects.toBe(error);
+      expect(complete).not.toHaveBeenCalled();
+    },
+  );
+
   it("reads credentials from the injected client", async () => {
     const { connector } = setup({ access_token: "test-token", expires_at: 1234 });
     await expect(connector.fetchCredentials()).resolves.toEqual({

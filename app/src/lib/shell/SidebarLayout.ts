@@ -3,35 +3,7 @@ import "./sidebar-layout.css";
 import type { LayoutInstance } from "../types.ts";
 import { Sidebar } from "./Sidebar.ts";
 import { PageHeader } from "./PageHeader.ts";
-
-const SIDEBAR_STORAGE_KEY = "sidebar_state";
-const SIDEBAR_COOKIE_NAME = "sidebar_state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-
-function getInitialOpenState(): boolean {
-  try {
-    const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
-    if (stored !== null) {
-      return stored === "true";
-    }
-    const match = document.cookie.match(new RegExp(`(^|;\\s*)${SIDEBAR_COOKIE_NAME}=([^;]*)`));
-    if (match) {
-      return match[2] === "true";
-    }
-  } catch {
-    // ignore
-  }
-  return true;
-}
-
-function saveOpenState(open: boolean) {
-  try {
-    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(open));
-    document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
-  } catch {
-    // ignore
-  }
-}
+import { getInitialOpenState, saveOpenState } from "./sidebarState.ts";
 
 export const SidebarLayout = (
   container: HTMLElement,

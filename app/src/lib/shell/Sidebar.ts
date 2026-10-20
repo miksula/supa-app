@@ -14,10 +14,6 @@ const isItemActive = (path: string, url?: string): boolean => {
   const currentPath = normalizePath(path);
   const targetPath = normalizePath(url);
 
-  if (targetPath === "/") {
-    return currentPath === "/" || currentPath === "/my-todos";
-  }
-
   return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
 };
 
@@ -140,6 +136,7 @@ export function Sidebar(
           id="sidebar-account-menu"
           class="account-menu ${isMenuOpen ? "-is-open" : ""}"
           role="menu"
+          ?inert=${!isMenuOpen}
           aria-hidden="${!isMenuOpen}"
         >
           <div class="account-menu-info">
@@ -171,17 +168,22 @@ export function Sidebar(
   };
 
   const toggleAccountMenu = () => {
-    isMenuOpen = !isMenuOpen;
+    if (isMenuOpen) {
+      closeAccountMenu(true);
+      return;
+    }
+    isMenuOpen = true;
     renderAccount();
   };
 
   const closeAccountMenu = (restoreFocus = false) => {
     if (!isMenuOpen) return;
-    isMenuOpen = false;
-    renderAccount();
-    if (restoreFocus) {
+    const menu = account.querySelector<HTMLElement>(".account-menu");
+    if (restoreFocus || menu?.contains(document.activeElement)) {
       account.querySelector<HTMLButtonElement>(".account-trigger")?.focus();
     }
+    isMenuOpen = false;
+    renderAccount();
   };
 
   const logout = async () => {
