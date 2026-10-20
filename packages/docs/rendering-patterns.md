@@ -13,6 +13,32 @@ recreate DOM that a child imperative component is also managing.
 
 The examples below implement the same counter in each style.
 
+## Mount and cleanup contract
+
+The app shares these types from `app/src/lib/types.ts`:
+
+```ts
+export type Dispose = () => void;
+export type Mount<Props = void> = (
+  el: HTMLElement,
+  props: Props,
+) => Dispose | void;
+```
+
+Every page returns a disposer. Its caller retains and invokes it before
+replacing the page; shell components follow the same rule for their children.
+Do not store cleanup functions on DOM elements. A render-only fragment with no
+external resources may return `void`. An imperative controller uses `Dispose`
+as the type of its `destroy` method while retaining its `update` API.
+
+Async pages must ignore results after their own disposal, rather than relying
+on a module-global request counter. `LoginPage` and `DocsPage` use per-mount
+disposal state; `MyTodos` aborts its query watch. Dispose children before
+clearing their parent host.
+
+Import component CSS beside the component, for example `import "./sidebar.css"`.
+Only shared foundations remain in the global stylesheet entry.
+
 ## Shared example: `MyCounter`
 
 The counter has:
@@ -33,9 +59,10 @@ A mounted Lit template function receives an existing element and renders a Lit
 template into it:
 
 ```ts
-import { html, render } from "lit";
+import { html, nothing, render } from "lit";
+import type { Dispose } from "@/types.ts";
 
-export function MyCounter(el: HTMLElement) {
+export function MyCounter(el: HTMLElement): Dispose {
   let value = 0;
 
   function emitCounter(nextValue: number) {
@@ -61,11 +88,19 @@ export function MyCounter(el: HTMLElement) {
       html`
         <span class="value">${value}</span>
 
-        <button type="button" class="increment" @click=${() => emitCounter(value + 1)}>
+        <button
+          type="button"
+          class="increment"
+          @click=${() => emitCounter(value + 1)}
+        >
           Increment
         </button>
 
-        <button type="button" class="decrement" @click=${() => emitCounter(value - 1)}>
+        <button
+          type="button"
+          class="decrement"
+          @click=${() => emitCounter(value - 1)}
+        >
           Decrement
         </button>
       `,
@@ -78,7 +113,7 @@ export function MyCounter(el: HTMLElement) {
 
   return () => {
     el.removeEventListener("counter", onCounter);
-    render(undefined, el);
+    render(nothing, el);
   };
 }
 ```
@@ -86,7 +121,16 @@ export function MyCounter(el: HTMLElement) {
 Mounting:
 
 ```ts
-document.querySelectorAll<HTMLElement>(".my-counter").forEach((el) => MyCounter(el));
+const disposers = Array.from(
+  document.querySelectorAll<HTMLElement>(".my-counter"),
+  MyCounter,
+);
+```
+
+Before the parent replaces or removes these hosts:
+
+```ts
+for (const dispose of disposers) dispose();
 ```
 
 Markup:
@@ -151,12 +195,17 @@ An imperative functional component creates its rigid base DOM once and then
 manages interaction with DOM APIs:
 
 ```ts
+import type { Dispose } from "@/types.ts";
+
 export type CounterController = {
   update: (value: number) => void;
-  destroy: () => void;
+  destroy: Dispose;
 };
 
-export function MyCounter(el: HTMLElement, initialValue = 0): CounterController {
+export function MyCounter(
+  el: HTMLElement,
+  initialValue = 0,
+): CounterController {
   let value = initialValue;
 
   el.innerHTML = `
@@ -326,11 +375,19 @@ export class MyCounter extends LitElement {
     return html`
       <span class="value">${this.value}</span>
 
-      <button type="button" class="increment" @click=${() => this.emitCounter(this.value + 1)}>
+      <button
+        type="button"
+        class="increment"
+        @click=${() => this.emitCounter(this.value + 1)}
+      >
         Increment
       </button>
 
-      <button type="button" class="decrement" @click=${() => this.emitCounter(this.value - 1)}>
+      <button
+        type="button"
+        class="decrement"
+        @click=${() => this.emitCounter(this.value - 1)}
+      >
         Decrement
       </button>
     `;

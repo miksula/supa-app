@@ -1,4 +1,6 @@
-import { html, render } from "lit";
+import { html, nothing, render } from "lit";
+import "./login.css";
+import type { Dispose } from "@/types.ts";
 
 export function LoginPage(
   el: HTMLElement,
@@ -7,21 +9,21 @@ export function LoginPage(
     initialEmail?: string;
     initialPassword?: string;
   },
-) {
+): Dispose {
+  let disposed = false;
   let isSubmitting = false;
   let email = props.initialEmail ?? "";
   let password = props.initialPassword ?? "";
   let statusMessage: string | null = null;
 
   const renderComponent = () => {
+    if (disposed) return;
     render(
       html`
         <div class="login" data-component="login-page">
           <header class="login-header">
-            <h1 id="login-heading" class="login-title">Login to your account</h1>
-            <p class="login-description">
-              Enter your email and password below to login to your account
-            </p>
+            <h1 id="login-heading" class="login-title">Kirjaudu sisään</h1>
+            <p class="login-description">Käytä tilisi sähköpostiosoitetta ja salasanaa.</p>
           </header>
 
           <form
@@ -30,7 +32,7 @@ export function LoginPage(
             @submit="${(e: SubmitEvent) => handleSubmit(e)}"
           >
             <div class="form-field">
-              <label class="form-label" for="email">Email</label>
+              <label class="form-label" for="email">Sähköposti</label>
               <input
                 class="form-input"
                 type="email"
@@ -43,7 +45,7 @@ export function LoginPage(
             </div>
 
             <div class="form-field">
-              <label class="form-label" for="current-password">Password</label>
+              <label class="form-label" for="current-password">Salasana</label>
               <input
                 class="form-input"
                 type="password"
@@ -71,7 +73,7 @@ export function LoginPage(
               ?disabled="${isSubmitting}"
               aria-busy="${isSubmitting}"
             >
-              ${isSubmitting ? "Logging in..." : "Login"}
+              ${isSubmitting ? "Kirjaudutaan..." : "Kirjaudu"}
             </button>
           </form>
         </div>
@@ -82,7 +84,7 @@ export function LoginPage(
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-    if (isSubmitting || !(event.currentTarget instanceof HTMLFormElement)) {
+    if (disposed || isSubmitting || !(event.currentTarget instanceof HTMLFormElement)) {
       return;
     }
 
@@ -97,8 +99,9 @@ export function LoginPage(
     try {
       await props.login(email, password);
     } catch (error) {
-      statusMessage =
-        error instanceof Error ? error.message : "Unable to sign in. Please try again.";
+      if (disposed) return;
+      console.error("Failed to sign in", error);
+      statusMessage = "Kirjautuminen epäonnistui. Tarkista tunnukset ja yritä uudelleen.";
     } finally {
       isSubmitting = false;
       renderComponent();
@@ -106,4 +109,10 @@ export function LoginPage(
   }
 
   renderComponent();
+
+  return () => {
+    if (disposed) return;
+    disposed = true;
+    render(nothing, el);
+  };
 }

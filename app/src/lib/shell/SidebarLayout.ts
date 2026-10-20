@@ -1,7 +1,8 @@
-import { html, render } from "lit";
+import { html, nothing, render } from "lit";
+import "./sidebar-layout.css";
 import type { LayoutInstance } from "../types.ts";
 import { Sidebar } from "./Sidebar.ts";
-import { PageHeader, type PageHeaderElement } from "./PageHeader.ts";
+import { PageHeader } from "./PageHeader.ts";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -76,8 +77,8 @@ export const SidebarLayout = (
   const headerEl = container.querySelector<HTMLElement>('[data-slot="header"]')!;
   const slot = container.querySelector<HTMLElement>('[data-slot="content"]')!;
 
-  Sidebar(asideEl, dependencies);
-  PageHeader(headerEl, dependencies.router);
+  const disposeSidebar = Sidebar(asideEl, dependencies);
+  const disposePageHeader = PageHeader(headerEl, dependencies.router);
 
   const updateState = (open: boolean) => {
     isOpen = open;
@@ -119,9 +120,9 @@ export const SidebarLayout = (
       container.removeEventListener("click", handleClick);
       window.removeEventListener("keydown", handleKeyDown);
 
-      (headerEl as PageHeaderElement).disposePageHeader?.();
-
-      (asideEl as HTMLElement & { disposeSidebar?: () => void }).disposeSidebar?.();
+      disposePageHeader();
+      disposeSidebar();
+      render(nothing, container);
     },
   };
 };

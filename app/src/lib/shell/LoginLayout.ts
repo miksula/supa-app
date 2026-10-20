@@ -1,4 +1,5 @@
-import { html, render } from "lit";
+import { html, nothing, render } from "lit";
+import "./login-layout.css";
 import type { LayoutFactory, LayoutInstance } from "../types.ts";
 
 export const LoginLayout: LayoutFactory = (container: HTMLElement): LayoutInstance => {
@@ -15,5 +16,6 @@ export const LoginLayout: LayoutFactory = (container: HTMLElement): LayoutInstan
   return {
     element: container.firstElementChild as HTMLElement,
     contentSlot: slot,
+    dispose: () => render(nothing, container),
   };
 };

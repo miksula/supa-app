@@ -1,19 +1,16 @@
-import { html, render } from "lit";
-import type { RouteSource } from "@/types.ts";
+import { html, nothing, render } from "lit";
+import "./page-header.css";
+import type { Dispose, RouteSource } from "@/types.ts";
 import { resolveBreadcrumbs, type BreadcrumbItem } from "@/nav/breadcrumb.ts";
 import "@/ui/AppIcon.ts";
 
-export type PageHeaderElement = HTMLElement & {
-  disposePageHeader?: () => void;
-  setBreadcrumbs?: (items: BreadcrumbItem[]) => void;
-};
-
-export function PageHeader(el: PageHeaderElement, router: RouteSource) {
-  el.disposePageHeader?.();
+export function PageHeader(el: HTMLElement, router: RouteSource): Dispose {
+  let disposed = false;
 
   let breadcrumbs: BreadcrumbItem[] = resolveBreadcrumbs(router.path);
 
   const renderComponent = () => {
+    if (disposed) return;
     render(
       html`
         <header data-component="page-header" class="page-header">
@@ -22,7 +19,7 @@ export function PageHeader(el: PageHeaderElement, router: RouteSource) {
               class="sidebar-trigger"
               data-slot="sidebar-trigger"
               data-sidebar="trigger"
-              aria-label="Toggle Sidebar"
+              aria-label="Avaa tai sulje sivupalkki"
               type="button"
             >
               <svg
@@ -40,12 +37,12 @@ export function PageHeader(el: PageHeaderElement, router: RouteSource) {
                 <rect width="18" height="18" x="3" y="3" rx="2"></rect>
                 <path d="M9 3v18"></path>
               </svg>
-              <span class="sr-only">Toggle Sidebar</span>
+              <span class="sr-only">Avaa tai sulje sivupalkki</span>
             </button>
 
             <div class="header-separator" role="separator" aria-orientation="vertical"></div>
 
-            <nav aria-label="Breadcrumb" class="breadcrumbs">
+            <nav aria-label="Sijaintipolku" class="breadcrumbs">
               <ol class="breadcrumb-list">
                 ${breadcrumbs.map((item, idx) => {
                   const isLast = idx === breadcrumbs.length - 1;
@@ -90,16 +87,12 @@ export function PageHeader(el: PageHeaderElement, router: RouteSource) {
 
   router.addRouteListener(handleRouteChange);
 
-  el.setBreadcrumbs = (items: BreadcrumbItem[]) => {
-    breadcrumbs = items;
-    renderComponent();
-  };
-
-  el.disposePageHeader = () => {
-    router.removeRouteListener(handleRouteChange);
-    delete el.disposePageHeader;
-    delete el.setBreadcrumbs;
-  };
-
   renderComponent();
+
+  return () => {
+    if (disposed) return;
+    disposed = true;
+    router.removeRouteListener(handleRouteChange);
+    render(nothing, el);
+  };
 }

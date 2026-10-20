@@ -56,7 +56,8 @@ authentication and remote sync while keeping the local database available.
   - `ui/`: small reusable elements (`<app-icon>` with the Lucide registry in
     `icons.ts`; `AppLink.ts` defines `<app-link>`, kept for future use).
   - `events.ts` and `types.ts`: shared event and mount-function types.
-- UI is rendered with Lit; styles are in `src/styles/`.
+- UI is rendered with Lit. Component CSS lives beside its component module;
+  `src/styles/` contains shared tokens, Tailwind and base styles.
 - `@packages/router` and `@packages/docs` are workspace packages in
   `../packages/`; the root `package.json` defines the workspaces and
   convenience scripts (`lint`, `fmt`, `type-check`, `test`, `knip`, `check`, `schema:generate`,
@@ -67,6 +68,43 @@ authentication and remote sync while keeping the local database available.
 The UI uses three component patterns. Choose one pattern per component
 responsibility rather than mixing multiple state and lifecycle models in the
 same component.
+
+### Shared mount contract
+
+[src/lib/types.ts](src/lib/types.ts) defines the common contract:
+
+```ts
+export type Dispose = () => void;
+export type Mount<Props = void> = (
+  el: HTMLElement,
+  props: Props,
+) => Dispose | void;
+```
+
+Mounts that own listeners, subscriptions, observers or asynchronous work return
+`Dispose`. All route pages return it. A stateless render-only fragment such as
+`TodoList` may return `void` because its parent owns the lifecycle.
+
+The caller retains the cleanup function and calls it before replacing the mount
+or removing its host. Do not attach disposer properties to DOM elements or mount
+a second instance into a live host without disposing the first.
+
+```ts
+const disposeSidebar = Sidebar(element, dependencies);
+disposeSidebar();
+```
+
+`AppRoot` disposes the active page before mounting the next page and disposes a
+layout only when changing layouts. `SidebarLayout` owns the `Sidebar` and
+`PageHeader` disposers; `Sidebar` owns its current `SidebarFooter` disposer.
+Cleanup removes external listeners and subscriptions before clearing owned Lit
+content with `render(nothing, element)`. Children are disposed before parents.
+
+Async mounts keep per-instance disposal state. `LoginPage` and `DocsPage` ignore
+responses received after disposal, including rejected requests. Disposing does
+not cancel an already-sent login request or dynamic import; it prevents the old
+page from writing into a host now owned by another page. `DocsPage` also disposes
+its `DocViewer`. `MyTodos` aborts its query watch and destroys its card controllers.
 
 ### Mounted Lit template function
 
@@ -92,12 +130,13 @@ A function creates and manages DOM behavior directly:
 
 ```ts
 const card = TodoListCard(element, list, options);
-card.update(nextList, index);
+card.update(nextList);
 card.destroy();
 ```
 
 The component owns local interaction state, event listeners, focus behavior,
-and cleanup. Use this for interaction-heavy UI such as list editing,
+and cleanup. Its `destroy` method has type `Dispose`; the controller API is kept
+for components that also need `update`. Use this for interaction-heavy UI such as list editing,
 keyboard navigation, and confirmation flows.
 
 Advantages:
@@ -134,6 +173,26 @@ The current todo UI uses mounted Lit templates for data-driven content and
 imperative functional components for focus-sensitive card interactions. Keep
 DOM state owned by one model: do not manually mutate DOM state that a parent
 Lit render may recreate.
+
+### Component styles and language
+
+Import scoped CSS from the component that owns it, for example
+`import "./sidebar.css"` in `Sidebar.ts`. Keep the existing `@scope` boundaries
+and semantic design tokens. Shared style consumers import the shared stylesheet
+directly, as `DocsPage` does for `app-link.css`.
+
+Only Tailwind, tokens and base styles belong in `src/styles/index.css`. Adding
+a component must not require adding its CSS to that global list.
+
+Controls, status messages, accessibility labels and page metadata are Finnish.
+Documentation content and user-entered list items retain their original language.
+
+### Lifecycle tests
+
+Run `npm test -- app/src/lib/lifecycle.test.ts` from the repository root. These
+tests use Happy DOM for late async responses, page replacement order, independent
+document mounts and repeated shell listener cleanup. Other unit tests continue
+to run in Node. Verify responsive layouts and CSS in a real browser as well.
 
 ## Adding pages
 

@@ -1,8 +1,8 @@
-import { html, render } from "lit";
+import { html, nothing, render } from "lit";
+import "@/ui/app-link.css";
+import type { Dispose } from "@/types.ts";
 import { getDocContent } from "@packages/docs";
 import { DocViewer } from "./DocViewer.ts";
-
-let activeDocRequestId = 0;
 
 export function DocsPage(
   target: HTMLElement,
@@ -13,8 +13,9 @@ export function DocsPage(
     docId?: string;
     navigate: (path: string) => void;
   },
-) {
-  const currentRequestId = ++activeDocRequestId;
+): Dispose {
+  let disposed = false;
+  let disposeViewer: Dispose | undefined;
 
   // Render initial loading skeleton
   render(
@@ -31,56 +32,68 @@ export function DocsPage(
     target,
   );
 
-  void getDocContent(docId).then((content) => {
-    // Prevent stale responses if the user quickly navigated between docs
-    if (currentRequestId !== activeDocRequestId) {
-      return;
-    }
+  void getDocContent(docId)
+    .then((content) => {
+      if (disposed) {
+        return;
+      }
 
-    if (content === null) {
+      if (content === null) {
+        render(
+          html`
+            <div class="docs-page not-found" data-component="docs-page">
+              <div class="p-6 max-w-4xl mx-auto">
+                <h1 class="text-2xl font-bold mb-2">Dokumenttia ei löytynyt</h1>
+                <p class="text-sm text-(--muted-foreground) mb-4">
+                  Dokumenttia ei löytynyt tunnisteella:
+                  <code class="px-1.5 py-0.5 rounded bg-(--surface-raised)">${docId}</code>
+                </p>
+                <p class="text-sm">
+                  <a
+                    href="/docs/introduction"
+                    class="app-link"
+                    @click=${(e: Event) => {
+                      e.preventDefault();
+                      navigate("/docs/introduction");
+                    }}
+                  >
+                    Palaa esittelyyn
+                  </a>
+                </p>
+              </div>
+            </div>
+          `,
+          target,
+        );
+        return;
+      }
+
       render(
         html`
-          <div class="docs-page not-found" data-component="docs-page">
-            <div class="p-6 max-w-4xl mx-auto">
-              <h1 class="text-2xl font-bold mb-2">Document Not Found</h1>
-              <p class="text-sm text-(--muted-foreground) mb-4">
-                No documentation file was found matching:
-                <code class="px-1.5 py-0.5 rounded bg-(--surface-raised)">${docId}</code>
-              </p>
-              <p class="text-sm">
-                <a
-                  href="/docs/introduction"
-                  class="app-link"
-                  @click=${(e: Event) => {
-                    e.preventDefault();
-                    navigate("/docs/introduction");
-                  }}
-                >
-                  Return to Introduction
-                </a>
-              </p>
+          <div class="docs-page" data-component="docs-page">
+            <div class="docs-container w-full max-w-4xl mx-auto p-6">
+              <div data-slot="doc-viewer-outlet"></div>
             </div>
           </div>
         `,
         target,
       );
-      return;
-    }
 
-    render(
-      html`
-        <div class="docs-page" data-component="docs-page">
-          <div class="docs-container max-w-4xl mx-auto p-6">
-            <div data-slot="doc-viewer-outlet"></div>
-          </div>
-        </div>
-      `,
-      target,
-    );
+      const docViewerOutlet = target.querySelector<HTMLElement>('[data-slot="doc-viewer-outlet"]');
+      if (docViewerOutlet) {
+        disposeViewer = DocViewer(docViewerOutlet, { content, navigate });
+      }
+    })
+    .catch((error: unknown) => {
+      if (disposed) return;
+      console.error("Failed to load documentation", error);
+      render(html`<p role="alert">Dokumentin lataaminen epäonnistui. Yritä uudelleen.</p>`, target);
+    });
 
-    const docViewerOutlet = target.querySelector<HTMLElement>('[data-slot="doc-viewer-outlet"]');
-    if (docViewerOutlet) {
-      DocViewer(docViewerOutlet, { content, navigate });
-    }
-  });
+  return () => {
+    if (disposed) return;
+    disposed = true;
+    disposeViewer?.();
+    render(nothing, target);
+  };
 }

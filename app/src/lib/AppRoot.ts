@@ -1,4 +1,4 @@
-import type { AppRouter, LayoutFactory, LayoutInstance, MountFunction } from "@/types.ts";
+import type { AppRouter, Dispose, LayoutFactory, LayoutInstance, Mount } from "@/types.ts";
 
 type LayoutName = "app" | "login";
 
@@ -6,18 +6,18 @@ type AppDependencies = {
   router: Pick<AppRouter, "get" | "navigate" | "addRouteListener">;
   auth: { bootstrap: () => Promise<void> };
   enforceAuthRoute: (path: string) => boolean;
-  mountSync: MountFunction;
+  mountSync: Mount;
   layouts: Record<LayoutName, LayoutFactory>;
   pages: {
-    login: MountFunction;
-    todos: MountFunction;
-    docs: (target: HTMLElement, id: string) => ReturnType<MountFunction>;
-    notFound: MountFunction;
+    login: Mount;
+    todos: Mount;
+    docs: Mount<string>;
+    notFound: Mount;
   };
 };
 
 type RouteConfig = {
-  page: MountFunction;
+  page: Mount;
   layout: LayoutName | LayoutFactory;
 };
 
@@ -31,7 +31,7 @@ export function AppRoot(el: HTMLElement, dependencies: AppDependencies) {
   // Track active layout instance to prevent unnecessary re-rendering
   let currentLayoutKey: unknown = null;
   let activeLayoutInstance: LayoutInstance | null = null;
-  let disposeActivePage: (() => void) | null = null;
+  let disposeActivePage: Dispose | null = null;
 
   // Navigation helper
   const redirect = (to: string) => {

@@ -24,7 +24,7 @@ export function resolveBreadcrumbs(path: string): BreadcrumbItem[] {
 
   // Root or /my-todos route
   if (normalized === "/" || normalized === "/my-todos") {
-    return [{ label: "My todos", isCurrent: true }];
+    return [{ label: "Omat tehtävät", isCurrent: true }];
   }
 
   // Lookup in NAV_ITEMS hierarchy
@@ -80,7 +80,7 @@ export function resolveBreadcrumbs(path: string): BreadcrumbItem[] {
   // Fallback: parse URL segments
   const segments = normalized.split("/").filter(Boolean);
   if (segments.length === 0) {
-    return [{ label: "Home", isCurrent: true }];
+    return [{ label: "Etusivu", isCurrent: true }];
   }
 
   let accumulated = "";

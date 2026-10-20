@@ -1,4 +1,5 @@
-export type MountFunction = (el: HTMLElement) => void | (() => void);
+export type Dispose = () => void;
+export type Mount<Props = void> = (el: HTMLElement, props: Props) => Dispose | void;
 
 export type AppRouter = typeof import("@packages/router").router;
 export type RouteSource = Pick<AppRouter, "path" | "addRouteListener" | "removeRouteListener">;
@@ -11,7 +12,7 @@ export interface LayoutInstance {
   contentSlot: HTMLElement;
 
   /** Optional cleanup when transitioning away from this layout */
-  dispose?: () => void;
+  dispose?: Dispose;
 }
 
 export type LayoutFactory = (container: HTMLElement) => LayoutInstance;

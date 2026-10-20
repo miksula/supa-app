@@ -1,4 +1,6 @@
-import { html, render } from "lit";
+import { html, nothing, render } from "lit";
+import type { Dispose } from "@/types.ts";
+import "./todo-list-card.css";
 import "@/ui/AppIcon.ts";
 import { TodoList, type TodoListOptions } from "./TodoList.ts";
 import type { TodoListData } from "./TodoStore.ts";
@@ -11,7 +13,7 @@ export type TodoListCardOptions = TodoListOptions & {
 export type TodoListCardController = {
   element: HTMLElement;
   update: (list: TodoListData) => void;
-  destroy: () => void;
+  destroy: Dispose;
 };
 
 export function TodoListCard(
@@ -22,6 +24,7 @@ export function TodoListCard(
   let list = initialList;
   let editing = false;
   let skipBlurSave = false;
+  let disposed = false;
 
   el.className = "todo-list-card";
   el.dataset.component = "todo-list-card";
@@ -31,14 +34,14 @@ export function TodoListCard(
     html`
       <header class="card-header">
         <h2 class="card-title">
-          <button type="button" class="card-title-button" title="Edit list name"></button>
+          <button type="button" class="card-title-button" title="Muokkaa listan nimeä"></button>
         </h2>
-        <input name="edit-title" type="text" class="card-title-input" aria-label="List name" />
+        <input name="edit-title" type="text" class="card-title-input" aria-label="Listan nimi" />
         <button
           type="button"
           class="card-delete-button"
-          title="Delete list"
-          aria-label="Delete list"
+          title="Poista lista"
+          aria-label="Poista lista"
         >
           <app-icon name="trash" size="16"></app-icon>
         </button>
@@ -99,6 +102,7 @@ export function TodoListCard(
     try {
       await options.onRename(list.id, name);
     } catch (error) {
+      if (disposed) return;
       mountedTitleInput.value = currentName();
       console.error("Failed to update list name", error);
     }
@@ -128,7 +132,7 @@ export function TodoListCard(
     skipBlurSave = false;
     if (
       list.items.length > 0 &&
-      !window.confirm("Deleting this list will delete its items as well. Are you sure?")
+      !window.confirm("Listan poistaminen poistaa myös sen tehtävät. Haluatko jatkaa?")
     ) {
       return;
     }
@@ -150,6 +154,7 @@ export function TodoListCard(
   mountedDeleteButton.addEventListener("click", onDelete);
 
   function update(nextList: TodoListData) {
+    if (disposed) return;
     list = nextList;
     mountedTitleButton.textContent = list.name || "...";
     if (!editing) mountedTitleInput.value = currentName();
@@ -165,6 +170,8 @@ export function TodoListCard(
     element: el,
     update,
     destroy: () => {
+      if (disposed) return;
+      disposed = true;
       mountedTitleButton.removeEventListener("click", startEditing);
       mountedTitleInput.removeEventListener("blur", onTitleBlur);
       mountedTitleInput.removeEventListener("keydown", onTitleKeydown);
@@ -172,7 +179,8 @@ export function TodoListCard(
       mountedDeleteButton.removeEventListener("touchstart", preserveEditOnDeletePointerDown);
       mountedDeleteButton.removeEventListener("blur", onDeleteBlur);
       mountedDeleteButton.removeEventListener("click", onDelete);
-      render(undefined, el);
+      render(nothing, mountedTodoList);
+      render(nothing, el);
     },
   };
 }

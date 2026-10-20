@@ -9,23 +9,23 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   {
-    title: "My todos",
+    title: "Omat tehtävät",
     icon: "listTodo",
     url: "/",
   },
   {
-    title: "Documentation",
+    title: "Dokumentaatio",
     icon: "bookOpenText",
     items: [
-      { title: "Introduction", url: "/docs/introduction" },
-      { title: "Get Started", url: "/docs/get-started" },
-      { title: "Rendering Patterns", url: "/docs/rendering-patterns" },
-      { title: "Tutorials", url: "/docs/tutorials" },
-      { title: "Changelog", url: "/docs/changelog" },
+      { title: "Esittely", url: "/docs/introduction" },
+      { title: "Aloittaminen", url: "/docs/get-started" },
+      { title: "Renderöintimallit", url: "/docs/rendering-patterns" },
+      { title: "Oppaat", url: "/docs/tutorials" },
+      { title: "Muutosloki", url: "/docs/changelog" },
     ],
   },
   {
-    title: "Settings",
+    title: "Asetukset",
     icon: "cog",
     url: "/settings",
   },

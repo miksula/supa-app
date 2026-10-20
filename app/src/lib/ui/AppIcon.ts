@@ -1,3 +1,4 @@
+import "./app-icon.css";
 import { html, LitElement, nothing, type PropertyValues } from "lit";
 import { createElement } from "lucide";
 import { config } from "@/config.ts";

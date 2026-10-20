@@ -1,7 +1,8 @@
 import { html, nothing, render } from "lit";
+import "./sidebar-footer.css";
 import { dispatchAction, onData, type SyncStatusData } from "@/events.ts";
+import type { Dispose } from "@/types.ts";
 
-type SidebarFooterElement = HTMLElement & { disposeSidebarFooter?: () => void };
 type ThemeScheme = "light" | "dark";
 type ThemeOption = {
   id: string;
@@ -9,8 +10,8 @@ type ThemeOption = {
   scheme: ThemeScheme;
 };
 
-const lightThemes: ThemeOption[] = [{ id: "newyork", label: "Light", scheme: "light" }];
-const darkThemes: ThemeOption[] = [{ id: "newyork", label: "Dark", scheme: "dark" }];
+const lightThemes: ThemeOption[] = [{ id: "newyork", label: "Vaalea", scheme: "light" }];
+const darkThemes: ThemeOption[] = [{ id: "newyork", label: "Tumma", scheme: "dark" }];
 
 function getSyncLabel(status: SyncStatusData | null) {
   if (!status) return "";
@@ -67,8 +68,8 @@ function setActiveTheme(theme: ThemeOption) {
   localStorage.setItem(storageKey, theme.id);
 }
 
-export function SidebarFooter(el: SidebarFooterElement) {
-  el.disposeSidebarFooter?.();
+export function SidebarFooter(el: HTMLElement): Dispose {
+  let disposed = false;
 
   let syncStatus: SyncStatusData | null = null;
   let isDark = isDarkModeActive();
@@ -107,11 +108,12 @@ export function SidebarFooter(el: SidebarFooterElement) {
   }
 
   const renderComponent = () => {
+    if (disposed) return;
     render(
       html`
         <div class="sidebar-footer">
           <div class="theme-switcher" role="group" aria-label="Teeman valinta">
-            <span class="label">Theme:</span>
+            <span class="label">Teema:</span>
             ${[...lightThemes, ...darkThemes].map((theme) => {
               const isActive =
                 (theme.scheme === "dark" && isDark && activeDarkTheme === theme.id) ||
@@ -154,13 +156,15 @@ export function SidebarFooter(el: SidebarFooterElement) {
     renderComponent();
   });
 
-  el.disposeSidebarFooter = () => {
+  renderComponent();
+  dispatchAction(el, "loadSyncStatus");
+
+  return () => {
+    if (disposed) return;
+    disposed = true;
     colorSchemeQuery.removeEventListener("change", checkColorMode);
     observer.disconnect();
     disposeSyncListener();
-    delete el.disposeSidebarFooter;
+    render(nothing, el);
   };
-
-  renderComponent();
-  dispatchAction(el, "loadSyncStatus");
 }

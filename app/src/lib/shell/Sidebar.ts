@@ -1,14 +1,11 @@
 import { html, render, nothing } from "lit";
-import type { RouteSource } from "@/types.ts";
+import "./sidebar.css";
+import type { Dispose, RouteSource } from "@/types.ts";
 import type { NavItem } from "@/nav/navConfig.ts";
 import "@/ui/AppIcon.ts";
 import type { AuthService } from "@/auth/AuthService.ts";
 import { SidebarFooter } from "./SidebarFooter.ts";
 import type { Session } from "@supabase/supabase-js";
-
-type SidebarTarget = HTMLElement & {
-  disposeSidebar?: () => void;
-};
 
 const normalizePath = (path: string): string => path.replace(/\/+$/, "") || "/";
 
@@ -51,9 +48,8 @@ export function Sidebar(
     navItems: NavItem[];
     authService: Pick<AuthService, "session" | "session$" | "logout">;
   },
-) {
-  const disposableTarget = target as SidebarTarget;
-  disposableTarget.disposeSidebar?.();
+): Dispose {
+  let disposed = false;
 
   const openItems = new Set<string>(
     navItems.filter((item) => isGroupActive(router.path, item)).map((item) => item.title),
@@ -107,15 +103,17 @@ export function Sidebar(
   }
 
   const renderNavigation = () => {
+    if (disposed) return;
     render(NavMain(navItems, router.path, openItems, toggleMenu), navigation);
   };
 
   let currentSession = authService.session;
   let isMenuOpen = false;
   let isLoggingOut = false;
-  let disposeAccountFooter: (() => void) | null = null;
+  let disposeAccountFooter: Dispose | null = null;
 
   const renderAccount = () => {
+    if (disposed) return;
     const userLabel = currentSession?.user.email ?? "Käyttäjä";
     disposeAccountFooter?.();
     disposeAccountFooter = null;
@@ -133,7 +131,7 @@ export function Sidebar(
           <span class="account-avatar" aria-hidden="true">${getUserInitials(currentSession)}</span>
           <span class="account-details">
             <span class="account-name">${userLabel}</span>
-            <span class="account-caption">Admin</span>
+            <span class="account-caption">Tili</span>
           </span>
           <app-icon name="upDown" size="16"></app-icon>
         </button>
@@ -145,7 +143,7 @@ export function Sidebar(
           aria-hidden="${!isMenuOpen}"
         >
           <div class="account-menu-info">
-            <strong>Signed in as</strong>
+            <strong>Kirjautuneena</strong>
             <span>${userLabel}</span>
           </div>
           <button
@@ -169,12 +167,7 @@ export function Sidebar(
       throw new Error("Unable to mount sidebar account menu: footer container is missing");
     }
 
-    SidebarFooter(accountFooter);
-    disposeAccountFooter = () => {
-      (
-        accountFooter as HTMLElement & { disposeSidebarFooter?: () => void }
-      ).disposeSidebarFooter?.();
-    };
+    disposeAccountFooter = SidebarFooter(accountFooter);
   };
 
   const toggleAccountMenu = () => {
@@ -234,20 +227,20 @@ export function Sidebar(
   document.addEventListener("click", onDocumentClick);
   document.addEventListener("keydown", onDocumentKeydown);
 
-  const cleanup = () => {
+  renderNavigation();
+  renderAccount();
+
+  return () => {
+    if (disposed) return;
+    disposed = true;
     disposeAccountFooter?.();
     disposeAccountFooter = null;
     disposeSessionListener();
     router.removeRouteListener(handleRouteChange);
     document.removeEventListener("click", onDocumentClick);
     document.removeEventListener("keydown", onDocumentKeydown);
-    delete disposableTarget.disposeSidebar;
+    render(nothing, target);
   };
-
-  disposableTarget.disposeSidebar = cleanup;
-
-  renderNavigation();
-  renderAccount();
 }
 
 function NavMain(
@@ -258,7 +251,7 @@ function NavMain(
 ) {
   return html`
     <div class="sidebar-group">
-      <div class="sidebar-label">Application</div>
+      <div class="sidebar-label">Sovellus</div>
       <ul class="sidebar-menu">
         ${navItems.map((item) => MenuItem(item, path, openItems, toggleItem))}
       </ul>
@@ -310,7 +303,7 @@ function MenuButton(title: string, isOpen: boolean, toggleItem: (title: string) 
     <button
       class="menu-toggle ${isOpen ? "-is-open" : ""}"
       type="button"
-      aria-label="Toggle submenu"
+      aria-label="Avaa tai sulje alavalikko"
       aria-expanded="${isOpen}"
       @click=${() => toggleItem(title)}
     >

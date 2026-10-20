@@ -158,24 +158,27 @@ Goal: a reader should only see code that is actually in use.
 
 ## Phase 7 — Lifecycle & component consistency (M)
 
-- [ ] **Define one mount contract** in [types.ts](./app/src/lib/types.ts)
+- [x] **Define one mount contract** in [types.ts](./app/src/lib/types.ts)
+
   ```ts
   export type Dispose = () => void;
   export type Mount<P = void> = (el: HTMLElement, props: P) => Dispose | void;
   ```
 
-  - `types.ts` currently has `MountFunction = (el) => void | (() => void)`; the `void` arm causes the `AppRoot.ts` type error noted in Phase 5.
-- [ ] **Replace DOM expando disposers** (`disposeSidebar`, `disposeSidebarFooter`, `disposePageHeader`) with returned `Dispose` functions; `SidebarLayout` / `Sidebar` keep the references.
-- [ ] **Let pages return `Dispose`** and have the router/layout manager call it on navigation.
+  - `Mount` replaces `MountFunction`; `AppRoot` uses it for pages and the sync-status mount, with `Mount<string>` for docs. Layout and card cleanup use `Dispose`.
+
+- [x] **Replace DOM expando disposers** (`disposeSidebar`, `disposeSidebarFooter`, `disposePageHeader`) with returned `Dispose` functions; `SidebarLayout` / `Sidebar` keep the references.
+- [x] **Let pages return `Dispose`** and have the router/layout manager call it on navigation.
   - [x] `AppRoot` already calls the page's returned disposer; `MyTodosPage` returns one.
-  - [ ] `DocsPage` and `LoginPage` return nothing yet.
-- [ ] **Update [app/README.md](./app/README.md) “Component patterns”** to match the chosen contract.
-- [ ] **Co-locate CSS with components** (`import "./sidebar.css"` from `Sidebar.ts`) instead of the manual global list in [index.css](./app/src/styles/index.css). (OCP: adding a component no longer edits a global file.)
+  - [x] `DocsPage`, `LoginPage` and `NotFoundPage` return disposers. Async pages ignore late results after disposal; `DocsPage` owns `DocViewer` cleanup.
+  - [x] DOM regression tests cover delayed responses, page replacement order and repeated shell mount/dispose cycles.
+- [x] **Update [app/README.md](./app/README.md) “Component patterns”** and the rendering-patterns guide to match the chosen contract.
+- [x] **Co-locate CSS with components** (`import "./sidebar.css"` from `Sidebar.ts`) instead of the manual global list in [index.css](./app/src/styles/index.css). (OCP: adding a component no longer edits a global file.)
 - [x] **Simplify [AppIcon.ts](./app/src/lib/ui/AppIcon.ts)**: sizes the host only, CSS sizes the inner `<svg>`, `aria-hidden="true"` set on every icon (done in the Lucide migration).
 - [x] **Add a sign-out UI** — “Kirjaudu ulos” in the [Sidebar.ts](./app/src/lib/shell/Sidebar.ts) account menu calls `authService.logout()`.
-- [ ] **Pick one UI language** — Finnish and English are still mixed:
-  - [SidebarFooter.ts](./app/src/lib/shell/SidebarFooter.ts): Finnish aria-labels/sync labels, English “Theme:” / “Light” / “Dark”.
-  - [Sidebar.ts](./app/src/lib/shell/Sidebar.ts): Finnish account menu (“Kirjaudu ulos”, “Tili”), English nav and “Toggle submenu”.
+- [x] **Pick one UI language** — Finnish controls, status messages, navigation, accessibility labels and page metadata (`lang="fi"`).
+  - Theme options are “Vaalea” / “Tumma”; account and navigation labels are Finnish throughout.
+  - Documentation content and user-entered data retain their original language.
 
 ---
 

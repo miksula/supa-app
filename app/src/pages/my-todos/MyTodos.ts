@@ -1,4 +1,6 @@
 import { html, nothing, render } from "lit";
+import "./my-todos.css";
+import type { Dispose } from "@/types.ts";
 import "@/ui/AppIcon.ts";
 import { TodoListCard, type TodoListCardController } from "./TodoListCard.ts";
 import { mapTodoLists, type ListWithTodoRow, type TodoStore } from "./TodoStore.ts";
@@ -16,7 +18,7 @@ export type MyTodosDependencies = {
   getUserId: () => string | null;
 };
 
-export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependencies) {
+export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependencies): Dispose {
   const abortController = new AbortController();
   const cardControllers = new Map<string, TodoListCardController>();
   const desktopQuery = window.matchMedia("(width >= 48rem)");
@@ -61,15 +63,30 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
       <div class="my-todos" data-component="my-todos">
         <div class="toolbar">
           <div class="navigation-controls">
-            <button class="navigation-button" type="button" aria-label="Previous page">
+            <button
+              class="navigation-button"
+              type="button"
+              aria-label="Edellinen sivu"
+              title="Edellinen sivu"
+            >
               <app-icon name="previous" size="18"></app-icon>
             </button>
-            <button class="navigation-button" type="button" aria-label="Next page">
+            <button
+              class="navigation-button"
+              type="button"
+              aria-label="Seuraava sivu"
+              title="Seuraava sivu"
+            >
               <app-icon name="next" size="18"></app-icon>
             </button>
           </div>
           <div class="toolbar-action">
-            <button class="action-button" type="button" aria-label="Create new list">
+            <button
+              class="action-button"
+              type="button"
+              aria-label="Luo uusi lista"
+              title="Luo uusi lista"
+            >
               <app-icon name="squarePen" size="16"></app-icon>
             </button>
           </div>
@@ -82,10 +99,10 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
 
   const root = el.querySelector<HTMLElement>('[data-component="my-todos"]');
   container = root?.querySelector<HTMLElement>(".todo-list-container") ?? null;
-  previousButton = root?.querySelector<HTMLButtonElement>('[aria-label="Previous page"]') ?? null;
-  nextButton = root?.querySelector<HTMLButtonElement>('[aria-label="Next page"]') ?? null;
+  previousButton = root?.querySelector<HTMLButtonElement>('[aria-label="Edellinen sivu"]') ?? null;
+  nextButton = root?.querySelector<HTMLButtonElement>('[aria-label="Seuraava sivu"]') ?? null;
 
-  const addListButton = root?.querySelector<HTMLButtonElement>('[aria-label="Create new list"]');
+  const addListButton = root?.querySelector<HTMLButtonElement>('[aria-label="Luo uusi lista"]');
 
   if (!container || !previousButton || !nextButton || !addListButton) {
     throw new Error("Unable to mount my todos: required element is missing");
@@ -268,6 +285,7 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
   })();
 
   return () => {
+    if (abortController.signal.aborted) return;
     abortController.abort();
     desktopQuery.removeEventListener("change", onMediaChange);
     for (const controller of cardControllers.values()) {

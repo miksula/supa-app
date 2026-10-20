@@ -1,3 +1,4 @@
+import "./app-link.css";
 import { html, LitElement } from "lit";
 
 const props = {

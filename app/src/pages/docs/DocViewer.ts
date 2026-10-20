@@ -1,4 +1,6 @@
-import { html, render } from "lit";
+import { html, nothing, render } from "lit";
+import "./doc-viewer.css";
+import type { Dispose } from "@/types.ts";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { marked } from "marked";
 
@@ -49,7 +51,8 @@ function preprocessObsidianMarkdown(markdown: string): string {
   return text;
 }
 
-export function DocViewer(target: HTMLElement, props: DocViewerProps) {
+export function DocViewer(target: HTMLElement, props: DocViewerProps): Dispose {
+  let disposed = false;
   const preprocessed = preprocessObsidianMarkdown(props.content);
   const parsedHtml = marked.parse(preprocessed, {
     gfm: true,
@@ -57,6 +60,7 @@ export function DocViewer(target: HTMLElement, props: DocViewerProps) {
   }) as string;
 
   const handleClick = (event: MouseEvent) => {
+    if (disposed) return;
     const anchor = (event.target as HTMLElement).closest("a");
     if (!anchor) return;
     const href = anchor.getAttribute("href");
@@ -85,4 +89,10 @@ export function DocViewer(target: HTMLElement, props: DocViewerProps) {
     `,
     target,
   );
+
+  return () => {
+    if (disposed) return;
+    disposed = true;
+    render(nothing, target);
+  };
 }
