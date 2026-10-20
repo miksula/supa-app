@@ -20,10 +20,20 @@ npm install # or: bun install
 cp app/.env.local.template app/.env.local
 cp stack/powersync/docker/.env.template stack/powersync/docker/.env
 npm run stack:up
+```
+
+> **First-time setup:** Copy the **Publishable** key (`sb_publishable_...`) from
+> the terminal output's **Authentication Keys** section and paste it as the
+> `VITE_SUPABASE_PUBLISHABLE_KEY` value in [app/.env.local](app/.env.local).
+> Do not use the **Secret** key in the browser app. To display the keys again,
+> run `npm run supabase:status`.
+
+Then start the app:
+
+```sh
 npm run app:start
 ```
 
-> [!INFO]
 > **Missing seed data after starting the stack?** If Supabase reports
 > `Starting database from backup...`, it is reusing a saved local database.
 > `stack:up` does not apply pending migrations or rerun the seed in this case.
@@ -33,6 +43,16 @@ npm run app:start
 > apply pending migrations and import the seed separately instead of resetting.
 > View the local database in Studio at <http://127.0.0.1:54323>, not the hosted
 > Supabase dashboard.
+
+> **PowerSync errors after a database reset?** This local setup uses the same
+> Supabase database for app data and PowerSync's internal storage. A Supabase
+> database reset removes that storage; a still-running PowerSync service may
+> return HTTP 500 (`PSYNC_S2001: relation "sync_rules" does not exist`). After
+> the database reset completes, run
+> `npx --no-install powersync docker reset --directory=stack/powersync`
+> to recreate the PowerSync containers and rebuild their storage through startup
+> migrations, then reload the app. This command does not reset Supabase or delete
+> its seeded data.
 
 To work on the UI without a running backend, use
 `npm run dev:offline --workspace=app`. See [app/README.md](app/README.md) and
