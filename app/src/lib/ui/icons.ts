@@ -33,6 +33,7 @@
  *   Leave out `width`/`height`/`class`/`style`; `<app-icon>` sets sizing, color and
  *   accessibility attributes. Hard-coded colors (e.g. `fill="#000"`) break theming, so
  *   use `currentColor`.
+ *
  *   An `IconNode` can't nest elements, so flatten `<g>` groups by moving their attributes
  *   onto the children. Turn an inline `style="fill: …"` into a `fill` attribute.
  *   `stroke-width` is controlled by `<app-icon>`; to change it for one usage, set the
@@ -44,6 +45,7 @@ import {
   ChessRook,
   ChevronLeft,
   ChevronRight,
+  ChevronsUpDown,
   Command,
   Hexagon,
   ListPlus,
@@ -84,6 +86,7 @@ export const appIcons = {
   previous: ChevronLeft,
   squarePen: SquarePen,
   trash: Trash,
+  upDown: ChevronsUpDown,
 } satisfies Record<string, IconDefinition>;
 
 export type AppIconName = keyof typeof appIcons;

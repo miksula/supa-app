@@ -124,7 +124,7 @@ export function Sidebar(target: HTMLElement) {
             <span class="account-name">${userLabel}</span>
             <span class="account-caption">Tili</span>
           </span>
-          <app-icon name="next" size="16"></app-icon>
+          <app-icon name="upDown" size="16"></app-icon>
         </button>
 
         <div
