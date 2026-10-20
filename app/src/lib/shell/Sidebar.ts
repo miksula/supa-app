@@ -56,7 +56,7 @@ export function Sidebar(target: HTMLElement) {
           <div class="sidebar-header">
             <a href="/" class="sidebar-brand">
               <div class="sidebar-brand-icon">
-                <app-icon name="command" size="16"></app-icon>
+                <app-icon name="listTodo" size="16"></app-icon>
               </div>
             </a>
             <div class="sidebar-brand-text">

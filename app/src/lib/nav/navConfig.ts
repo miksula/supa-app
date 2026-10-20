@@ -8,7 +8,7 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   {
     title: "My todos",
-    icon: "command",
+    icon: "listTodo",
     url: "/",
   },
   {
