@@ -122,7 +122,7 @@ export function Sidebar(target: HTMLElement) {
           <span class="account-avatar" aria-hidden="true">${getUserInitials(currentSession)}</span>
           <span class="account-details">
             <span class="account-name">${userLabel}</span>
-            <span class="account-caption">Tili</span>
+            <span class="account-caption">Admin</span>
           </span>
           <app-icon name="upDown" size="16"></app-icon>
         </button>

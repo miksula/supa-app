@@ -27,11 +27,6 @@ export const NAV_ITEMS: NavItem[] = [
   {
     title: "Settings",
     icon: "cog",
-    items: [
-      { title: "General", url: "/settings/general" },
-      { title: "Team", url: "/settings/team" },
-      { title: "Billing", url: "/settings/billing" },
-      { title: "Limits", url: "/settings/limits" },
-    ],
+    url: "/settings",
   },
 ];

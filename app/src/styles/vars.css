@@ -74,5 +74,5 @@
   --highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
   --button-highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
   --outline-color: light-dark(var(--color-blue-500), var(--color-blue-400));
-  --avatar-bg: light-dark(var(--nl-700), var(--nd-500));
+  --avatar-bg: light-dark(var(--nl-700), var(--nd-700));
 }
