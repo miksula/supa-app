@@ -21,6 +21,8 @@ export type TodoListData = Pick<ListWithTodoRow, "id" | "created_at" | "name" | 
 export type NewTodo = {
   description: string;
   listId: string;
+  /** Signed-in user id; `null` in offline mode (the server defaults it to `auth.uid()`). */
+  createdBy: string | null;
 };
 
 export type NewList = {
@@ -91,8 +93,14 @@ export class TodoStore {
 
   async createTodo(todo: NewTodo) {
     return await this.ps.execute(
-      "INSERT INTO todos (id, description, list_id, created_at) VALUES (?, ?, ?, ?)",
-      [crypto.randomUUID(), todo.description, todo.listId, new Date().toISOString()],
+      "INSERT INTO todos (id, description, list_id, created_by, created_at) VALUES (?, ?, ?, ?, ?)",
+      [
+        crypto.randomUUID(),
+        todo.description,
+        todo.listId,
+        todo.createdBy,
+        new Date().toISOString(),
+      ],
     );
   }
 
@@ -112,11 +120,15 @@ export class TodoStore {
     return await this.ps.execute("DELETE FROM lists WHERE id = ?", [listId]);
   }
 
-  async setTodoCompleted(todoId: string, completed: boolean) {
-    return await this.ps.execute("UPDATE todos SET completed = ?, completed_at = ? WHERE id = ?", [
-      completed ? 1 : 0,
-      completed ? new Date().toISOString() : null,
-      todoId,
-    ]);
+  async setTodoCompleted(todoId: string, completed: boolean, userId: string | null) {
+    return await this.ps.execute(
+      "UPDATE todos SET completed = ?, completed_at = ?, completed_by = ? WHERE id = ?",
+      [
+        completed ? 1 : 0,
+        completed ? new Date().toISOString() : null,
+        completed ? userId : null,
+        todoId,
+      ],
+    );
   }
 }

@@ -15,10 +15,6 @@ export class AuthController {
     try {
       await authService.init();
 
-      if (authService.session?.user.is_anonymous) {
-        await authService.logout();
-      }
-
       const syncLifecycle = createSyncLifecycle({
         connect: connectPowersync,
         reset: resetPowersyncForSessionChange,

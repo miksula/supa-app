@@ -8,7 +8,7 @@ include: []
 services:
   powersync:
     restart: unless-stopped
-    image: journeyapps/powersync-service:latest
+    image: journeyapps/powersync-service:1.26.1
     command: ["start", "-r", "unified"]
     env_file:
       - .env

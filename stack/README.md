@@ -46,8 +46,9 @@ PowerSync service and sync configuration are in `powersync/`.
 ## Database and sync configuration
 
 App-owned database schema changes belong in `supabase/migrations/`. The
-migrations create the `lists` and `todos` tables and the `powersync` publication
-used for logical replication. Apply pending migrations to a running local database with:
+migrations create the `lists` and `todos` tables, the `powersync_role`
+replication role, and the `powersync` publication (an explicit table list) used
+for logical replication. Apply pending migrations to a running local database with:
 
 ```bash
 npx --no-install supabase db push --local --workdir=stack
@@ -59,17 +60,29 @@ rows are synchronized.
 
 ### PowerSync database role
 
-`supabase/roles.sql` defines `powersync_role`, a least-privilege role for
-PowerSync replication: `REPLICATION` for logical replication, `BYPASSRLS` so it
-can read every row it replicates, and read-only `SELECT` on current and future
-`public` tables.
+PowerSync replicates as `powersync_role`, created by the
+`*_powersync_role.sql` migration: `REPLICATION` for logical replication,
+`BYPASSRLS` so it can read every row it replicates, and `SELECT` on the synced
+tables only. The migration creates the role without `LOGIN`, so no password is
+stored in migrations:
 
-The file is **not** applied automatically: it is not a migration and is not
-listed in `[db.seed]` in `supabase/config.toml`. The local PowerSync service
-currently connects as `postgres` (see `PS_DATA_SOURCE_URI` in
-`powersync/docker/.env`). To use the role, run the file once against the
-database, give the role `LOGIN` and a password, and point `PS_DATA_SOURCE_URI`
-at it.
+- Locally, `supabase/seed.sql` enables login with the dev password used in
+  `PS_DATA_SOURCE_URI` (`powersync/docker/.env.template`).
+- On a hosted project, run once:
+  `alter role powersync_role with login password '<strong-random-password>';`
+
+### Adding a synced table
+
+1. Migration: create the table with RLS policies, index the foreign-key
+   columns used by policies and sync queries,
+   `grant select on public.<table> to powersync_role;`, and add the table to
+   the publication (`alter publication powersync add table public.<table>;`).
+2. Add a stream query for the table to `powersync/sync-config.yaml`.
+3. Regenerate the client schema with `npm run schema:generate`
+   (writes `app/src/lib/sync/schema.ts`).
+4. Add the table name to the allow-list in
+   `supabase/migrations/20260412100000_process_powersync_crud.sql` (in a new
+   migration that replaces the function) so uploads are accepted.
 
 ## Migration workflow
 
@@ -127,9 +140,10 @@ with check ((select auth.uid()) = owner_id);
 ```
 
 Enabling RLS without policies denies access to `anon` and `authenticated`.
-The migration
-`20261010212054_enable_todo_tables_rls.sql` enables RLS and adds ownership
-policies for the existing `lists` and `todos` tables.
+`20261010212054_enable_todo_tables_rls.sql` enables RLS on `lists` and `todos`;
+`20261020115826_consolidate_todo_rls.sql` replaces the per-command policies with
+one ownership policy per table, plus restrictive policies that only allow the
+current user in `todos.created_by` / `completed_by`.
 
 ## Common commands
 
@@ -141,7 +155,11 @@ powersync status --directory=stack/powersync
 npm run schema:generate
 ```
 
-Create a local Supabase user through the Auth API:
+`supabase db reset` seeds a dev user (`dev@example.com` / `password123`) with
+sample lists and todos from `supabase/seed.sql`. Set `VITE_DEV_EMAIL` /
+`VITE_DEV_PASSWORD` in `app/.env.local` to prefill the login form.
+
+Create additional local users through the Auth API:
 
 ```bash
 curl -X POST 'http://127.0.0.1:54321/auth/v1/signup' \
@@ -192,10 +210,11 @@ supabase start --workdir=stack
 
 Configure the external database and storage connection strings in
 `powersync/docker/.env` (copied from `.env.template`, see above). When PowerSync runs in Docker and Supabase runs on the
-host, use `host.docker.internal` to reach the host:
+host, use `host.docker.internal` to reach the host. Replication uses
+`powersync_role`; PowerSync's own storage uses `postgres`:
 
 ```env
-PS_DATA_SOURCE_URI=postgres:postgres@host.docker.internal:54322/postgres
+PS_DATA_SOURCE_URI=postgresql://powersync_role:powersync_local@host.docker.internal:54322/postgres
 PS_STORAGE_SOURCE_URI=postgres:postgres@host.docker.internal:54322/postgres
 ```
 

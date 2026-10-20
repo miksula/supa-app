@@ -47,7 +47,7 @@ Goal: a reader should only see code that is actually in use.
 
 - [x] **Document `roles.sql`** — “PowerSync database role” section in [stack/README.md](./stack/README.md).
 
-- [x] **Fix `type-check` script** — `bun check` did not exist; now `tsc --noEmit -p app/tsconfig.json` with `typescript` as a dev dependency, and [app/tsconfig.json](./app/tsconfig.json) sets `target`/`module`/`moduleResolution: bundler`/`allowImportingTsExtensions`/`noEmit`.
+- [x] **Fix `type-check` script** — `bun check` did not exist; now `tsc --noEmit -p app/tsconfig.json` with `typescript` as a dev dependency, and [app/tsconfig.json](./app/tsconfig.json) sets `target`/`module`/`moduleResolution: bundler`/`allowImportingTsExtensions`/`noEmit`, plus `useDefineForClassFields: false` so ES2022 class fields don't shadow Lit reactive properties.
 
 ---
 
@@ -73,18 +73,18 @@ Goal: a reader should only see code that is actually in use.
 
 ## Phase 4 — Backend stack cleanup (S)
 
-- [ ] **Seed a dev user + sample data** in [seed.sql](./stack/supabase/seed.sql) (file is still empty)
+- [x] **Seed a dev user + sample data** in [seed.sql](./stack/supabase/seed.sql) — `dev@example.com` / `password123`, two lists, three todos.
   - Replaces the hardcoded login credentials (Phase 3) and gives `db reset` something to show.
 
-- [ ] **Disable anonymous sign-ins**
+- [x] **Disable anonymous sign-ins** — config updated and the `is_anonymous` branch removed.
   - [config.toml](./stack/supabase/config.toml): `enable_anonymous_sign_ins = false`
   - Then remove the `is_anonymous` → `logout()` branch in [AuthController.ts](./app/src/lib/auth/AuthController.ts). (SRP: one less job for the controller.)
 
-- [ ] **Resolve [roles.sql](./stack/supabase/roles.sql)**
+- [x] **Resolve `roles.sql`** — converted to the `powersync_role` migration (no `LOGIN`; seed.sql sets a local password) and `PS_DATA_SOURCE_URI` uses `powersync_role`. Note: the Supabase CLI did apply `supabase/roles.sql` as “globals” on `db reset`, but it never reached hosted projects.
   - Not applied by any migration or seed; PowerSync connects as `postgres`.
   - Either convert it into a migration and use `powersync_role` in `PS_DATA_SOURCE_URI`, or delete it.
 
-- [ ] **Add missing FK indexes** (new migration)
+- [x] **Add missing FK indexes** (new migration)
 
   ```sql
   create index lists_owner_id_idx on public.lists (owner_id);
@@ -93,25 +93,27 @@ Goal: a reader should only see code that is actually in use.
   - Used by every RLS policy, both sync queries, and FK cascades.
   - Also consider a client index in [schema.ts](./app/src/lib/sync/schema.ts): `todos: { indexes: { list: ["list_id"] } }`.
 
-- [ ] **Consolidate RLS policies** (new migration)
+- [x] **Consolidate RLS policies** (new migration)
   - [enable_todo_tables_rls.sql](./stack/supabase/migrations/20261010212054_enable_todo_tables_rls.sql) repeats the list-ownership subquery 5×.
   - Replace with one `for all` policy per table (as recommended in [stack/README.md](./stack/README.md)).
 
-- [ ] **Enforce author fields**
+- [x] **Enforce author fields** — `created_by` defaults to `auth.uid()`; restrictive insert/update policies allow only the current user. The app now sends `created_by` / `completed_by`.
   - `todos.created_by` / `completed_by` accept any user id.
   - Add `with check (created_by = (select auth.uid()))`
 
-- [ ] **Use an explicit publication table list**
+- [x] **Use an explicit publication table list** — recreated (a `for all tables` publication cannot be altered).
   - `create publication powersync for all tables` replicates every future table.
   - `alter publication powersync set table public.lists, public.todos;`
 
-- [ ] **Pin PowerSync image version** in [docker-compose.yaml](./stack/powersync/docker/docker-compose.yaml) (currently `:latest`).
+- [x] **Pin PowerSync image version** in [docker-compose.yaml](./stack/powersync/docker/docker-compose.yaml) (`1.26.1`).
 
-- [ ] **Add an “Adding a synced table” checklist** to [stack/README.md](./stack/README.md):
+- [x] **Add an “Adding a synced table” checklist** to [stack/README.md](./stack/README.md):
   1. Migration: table + RLS + indexes + publication
   2. [sync-config.yaml](./stack/powersync/sync-config.yaml) stream query
   3. `npm run schema:generate` → [schema.ts](./app/src/lib/sync/schema.ts)
   4. Allow-list in [process_powersync_crud](./stack/supabase/migrations/20260412100000_process_powersync_crud.sql)
+
+- [ ] **Move PowerSync API tokens to `!env`** — [service.yaml](./stack/powersync/service.yaml) `api.tokens` and [cli.yaml](./stack/powersync/cli.yaml) `api_key` still hold the dev token. The CLI reads `PS_ADMIN_TOKEN` from the shell (not `docker/.env`), so this needs a documented export.
 
 ---
 

@@ -103,7 +103,11 @@ export function MyTodos(el: HTMLElement, store = new TodoStore(powersync)) {
     }
 
     try {
-      await store.createTodo({ description, listId });
+      await store.createTodo({
+        description,
+        listId,
+        createdBy: authService.session?.user.id ?? null,
+      });
       form.reset();
     } catch (error) {
       console.error("Failed to create todo", error);
@@ -118,7 +122,8 @@ export function MyTodos(el: HTMLElement, store = new TodoStore(powersync)) {
 
     const checkbox = event.currentTarget;
     const completed = checkbox.checked;
-    void store.setTodoCompleted(todoId, completed).catch((error: unknown) => {
+    const userId = authService.session?.user.id ?? null;
+    void store.setTodoCompleted(todoId, completed, userId).catch((error: unknown) => {
       checkbox.checked = !completed;
       console.error("Failed to update todo completion", error);
     });
