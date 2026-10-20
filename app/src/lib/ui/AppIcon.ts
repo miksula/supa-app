@@ -2,8 +2,6 @@ import { html, LitElement, nothing, type PropertyValues } from "lit";
 import { createElement } from "lucide";
 import { appIcons, isAppIconName, resolveIcon, type AppIconName } from "./icons.ts";
 
-export type { AppIconName };
-
 /**
  * Renders an icon from the registry in `./icons.ts` (see that file for adding icons).
  *

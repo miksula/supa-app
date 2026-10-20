@@ -119,12 +119,15 @@ Goal: a reader should only see code that is actually in use.
 
 ## Phase 5 — Tooling guardrails (S)
 
-- [ ] **Enable `"strict": true`** in [app/tsconfig.json](./app/tsconfig.json) and fix the resulting errors.
-  - Do the tsconfig fixes from Phase 2 first. With those in place, the only remaining (non-strict) error is in [AppRoot.ts](./app/src/lib/AppRoot.ts): `page(...) ?? null` returns `void | (() => void)`, which doesn't fit `disposeActivePage` — fixed by the Phase 7 mount contract.
-- [ ] **Add [knip](https://knip.dev)** to detect unused files/exports/dependencies (would have caught all of Phase 1).
-- [ ] **Strengthen [.oxlintrc.json](./.oxlintrc.json)** — e.g. `no-unused-vars: error`, `no-console: warn`.
-- [ ] **Add CI** (`.github/workflows/ci.yml`): `oxlint && oxfmt --check && tsc --noEmit && knip`.
-- [ ] **Add first unit tests** (Vitest) for already-pure, injectable modules:
+- [x] **Enable `"strict": true`** in [app/tsconfig.json](./app/tsconfig.json) and fix the resulting errors.
+  - No errors with TypeScript 7; the `page(...) ?? null` typing in [AppRoot.ts](./app/src/lib/AppRoot.ts) is still cleaned up by the Phase 7 mount contract.
+- [x] **Add [knip](https://knip.dev)** to detect unused files/exports/dependencies (would have caught all of Phase 1).
+  - [knip.json](./knip.json) ignores `AppLink.ts` (kept on purpose) plus `@journeyapps/wa-sqlite` / `tailwindcss` (used outside TS). Unused exports were un-exported.
+  - [ ] Decide on `db` (Kysely) in [client.ts](./app/src/lib/sync/client.ts): tagged `@public` but unused; use it in the todo repository (Phase 9) or drop it with `@powersync/kysely-driver`.
+- [x] **Strengthen [.oxlintrc.json](./.oxlintrc.json)** — `no-unused-vars: error`, `no-console: warn` (allows `error`/`warn`; off in `scripts/`).
+- [x] **Add CI** ([ci.yml](./.github/workflows/ci.yml)): oxlint, oxfmt --check, tsc, knip, vitest. Same steps locally via `npm run check`.
+  - [ ] `bun.lock` is git-ignored (`*.lock`), so CI installs unpinned versions; consider committing it and using `bun install --frozen-lockfile`.
+- [x] **Add first unit tests** (Vitest) for already-pure, injectable modules:
   - [authGuard.ts](./app/src/lib/auth/authGuard.ts) — redirect matrix (ready/auth/path)
   - [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts) — connect once per user, reset on sign-out, retry after failure
 

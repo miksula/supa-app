@@ -53,7 +53,7 @@ authentication and remote sync while keeping the local database available.
 - UI is rendered with Lit; styles are in `src/styles/`.
 - `@packages/router` and `@packages/docs` are workspace packages in
   `../packages/`; the root `package.json` defines the workspaces and
-  convenience scripts (`lint`, `fmt`, `type-check`, `schema:generate`,
+  convenience scripts (`lint`, `fmt`, `type-check`, `test`, `knip`, `check`, `schema:generate`,
   `stack:up`/`stack:down`).
 
 ## Component patterns

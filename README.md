@@ -27,6 +27,11 @@ To work on the UI without a running backend, use
 `npm run dev:offline --workspace=app`. See [app/README.md](app/README.md) and
 [stack/README.md](stack/README.md) for more details.
 
+Before pushing, run `npm run check`. It runs the same steps as CI
+(`.github/workflows/ci.yml`): oxlint, `oxfmt --check`, `tsc` (strict), knip
+(unused files, exports and dependencies) and the Vitest unit tests
+(`*.test.ts` next to the code they test).
+
 ## Repository map
 
 - `app/` — browser app, routing, Supabase Auth, local database and sync client.

@@ -19,7 +19,7 @@ export const powersync = new PowerSyncDatabase({
   schema: AppSchema,
 });
 
-export const powersyncConnector = new SupabasePowerSyncConnector(
+const powersyncConnector = new SupabasePowerSyncConnector(
   authService,
   import.meta.env.VITE_POWERSYNC_URL,
 );
@@ -40,4 +40,9 @@ export async function resetPowersyncForSessionChange() {
   await powersync.disconnectAndClear({ clearLocal: true });
 }
 
+/**
+ * Typed Kysely query builder over the local database. Not used yet (TodoStore uses
+ * raw SQL); kept for the todo repository work.
+ * @public
+ */
 export const db = wrapPowerSyncWithKysely<Database>(powersync);

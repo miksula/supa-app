@@ -15,16 +15,21 @@
     "fmt:check": "oxfmt --check",
     "schema:generate": "powersync generate schema --output=ts --output-path=app/src/lib/sync/schema.ts --directory=stack/powersync",
     "type-check": "tsc --noEmit -p app/tsconfig.json",
+    "test": "vitest run",
+    "knip": "knip",
+    "check": "oxlint && oxfmt --check && tsc --noEmit -p app/tsconfig.json && knip && vitest run",
     "stack:up": "supabase start --workdir stack && powersync docker start --directory=stack/powersync",
     "stack:down": "supabase stop --workdir stack && powersync docker stop --directory=stack/powersync",
     "supabase:status": "supabase status --workdir stack"
   },
   "devDependencies": {
     "@tailwindcss/node": "^4.2.2",
+    "knip": "^6.42.1",
     "oxfmt": "^0.72.0",
     "oxlint": "^1.87.0",
     "powersync": "^0.10.2",
     "supabase": "^2.120.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
   }
 }

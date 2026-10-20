@@ -5,6 +5,7 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "noEmit": true,
+    "strict": true,
     "useDefineForClassFields": false,
     "lib": ["dom", "dom.iterable", "es2022"],
     "skipLibCheck": true,

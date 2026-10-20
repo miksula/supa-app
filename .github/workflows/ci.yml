@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - name: Lint
+        run: bunx oxlint
+      - name: Format
+        run: bunx oxfmt --check
+      - name: Type-check
+        run: bunx tsc --noEmit -p app/tsconfig.json
+      - name: Unused code (knip)
+        run: bunx knip
+      - name: Unit tests
+        run: bunx vitest run

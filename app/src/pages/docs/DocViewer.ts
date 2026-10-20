@@ -13,7 +13,7 @@ export interface DocViewerProps {
  * - Transforms wikilinks [[doc]] and [[doc|label]] into standard markdown router links
  * - Transforms relative .md links to internal /docs/... links
  */
-export function preprocessObsidianMarkdown(markdown: string): string {
+function preprocessObsidianMarkdown(markdown: string): string {
   // Strip YAML frontmatter
   let text = markdown.replace(/^---[\r\n]+[\s\S]*?[\r\n]+---[\r\n]*/, "");
 

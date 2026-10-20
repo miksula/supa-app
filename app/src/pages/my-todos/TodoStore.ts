@@ -2,7 +2,7 @@ import type { PowerSyncDatabase } from "@powersync/web";
 import type { Database } from "@/sync/schema.ts";
 
 export type Todo = Database["todos"];
-export type List = Database["lists"];
+type List = Database["lists"];
 export type ListWithTodoRow = List & {
   item_id: string | null;
   item_created_at: string | null;

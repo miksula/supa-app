@@ -60,8 +60,6 @@ import {
   type SVGProps,
 } from "lucide";
 
-export type { IconNode, SVGProps };
-
 /** A non-Lucide icon that needs its own root `<svg>` attributes (viewBox, fill, …). */
 export type CustomIcon = {
   node: IconNode;

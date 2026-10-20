@@ -83,7 +83,7 @@ type AsyncRouteItem = {
 
 const SPA_NAVIGATION_TYPES = new Set(["push", "replace", "traverse"]);
 
-export class Router {
+class Router {
   private routes: RouteItem[] = [];
   private asyncRoutes: AsyncRouteItem[] = [];
   private root = "/";

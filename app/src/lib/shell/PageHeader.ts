@@ -51,21 +51,25 @@ export function PageHeader(el: PageHeaderElement) {
                   const isLast = idx === breadcrumbs.length - 1;
                   return html`
                     <li class="breadcrumb-item">
-                      ${item.url && !isLast
-                        ? html`<a href="${item.url}" class="breadcrumb-link">${item.label}</a>`
-                        : html`<span
-                            class="breadcrumb-page ${isLast ? "-is-current" : ""}"
-                            aria-current="${isLast ? "page" : "false"}"
-                            >${item.label}</span
-                          >`}
+                      ${
+                        item.url && !isLast
+                          ? html`<a href="${item.url}" class="breadcrumb-link">${item.label}</a>`
+                          : html`<span
+                              class="breadcrumb-page ${isLast ? "-is-current" : ""}"
+                              aria-current="${isLast ? "page" : "false"}"
+                              >${item.label}</span
+                            >`
+                      }
                     </li>
-                    ${!isLast
-                      ? html`
-                          <li class="breadcrumb-separator" aria-hidden="true">
-                            <app-icon name="next" size="14"></app-icon>
-                          </li>
-                        `
-                      : ""}
+                    ${
+                      !isLast
+                        ? html`
+                            <li class="breadcrumb-separator" aria-hidden="true">
+                              <app-icon name="next" size="14"></app-icon>
+                            </li>
+                          `
+                        : ""
+                    }
                   `;
                 })}
               </ol>
