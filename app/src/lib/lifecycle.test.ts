@@ -311,7 +311,7 @@ describe("shell disposal", () => {
     const target = createTarget();
     const dispose = SidebarFooter(target);
     disposers.push(dispose);
-    expect(target.querySelector('[aria-pressed="true"]')?.textContent?.trim()).toBe("Tumma");
+    expect(target.querySelector('[aria-pressed="true"]')?.textContent?.trim()).toBe("Dark");
     target.querySelector<HTMLButtonElement>(".theme-btn")!.click();
     expect(document.documentElement.style.colorScheme).toBe("light");
     expect(localStorage.getItem("color-scheme")).toBe("light");

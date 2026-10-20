@@ -1,8 +1,8 @@
 export type ThemeScheme = "light" | "dark";
 export type ThemeOption = { id: string; label: string; scheme: ThemeScheme };
 
-export const lightThemes: ThemeOption[] = [{ id: "newyork", label: "Vaalea", scheme: "light" }];
-export const darkThemes: ThemeOption[] = [{ id: "newyork", label: "Tumma", scheme: "dark" }];
+export const lightThemes: ThemeOption[] = [{ id: "newyork", label: "Light", scheme: "light" }];
+export const darkThemes: ThemeOption[] = [{ id: "newyork", label: "Dark", scheme: "dark" }];
 
 export function resolveColorScheme(preference: string | null, prefersDark: boolean): ThemeScheme {
   return preference === "light" || preference === "dark"

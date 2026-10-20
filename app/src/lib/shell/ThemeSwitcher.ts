@@ -25,8 +25,8 @@ export function ThemeSwitcher(el: HTMLElement): Dispose {
     const activeDarkTheme = getActiveTheme("dark", darkThemes);
     render(
       html`
-        <div class="theme-switcher" role="group" aria-label="Teeman valinta">
-          <span class="label">Teema:</span>
+        <div class="theme-switcher" role="group" aria-label="Theme selection">
+          <span class="label">Theme:</span>
           ${[...lightThemes, ...darkThemes].map((theme) => {
             const isActive =
               theme.scheme === "dark"
