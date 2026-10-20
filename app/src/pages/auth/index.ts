@@ -3,8 +3,9 @@ import { authService } from "@/auth/auth.ts";
 
 export function LoginPage(el: HTMLElement) {
   let isSubmitting = false;
-  let email = "mika@example.com";
-  let password = "My1234NewStrongPassword";
+  // Dev-only prefill from app/.env.local; production builds start empty.
+  let email = import.meta.env.DEV ? (import.meta.env.VITE_DEV_EMAIL ?? "") : "";
+  let password = import.meta.env.DEV ? (import.meta.env.VITE_DEV_PASSWORD ?? "") : "";
   let statusMessage: string | null = null;
 
   const renderComponent = () => {

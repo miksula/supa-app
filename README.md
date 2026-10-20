@@ -12,11 +12,13 @@ The following binaries are required for running the application:
 - `node` and `npm` (or `bun`) to install dependencies, build and run the dev server.
 - `docker` (or `orbstack`) to run the local backend services.
 
-Install dependencies with npm, configure `app/.env.local` from the provided
-template, then start the local stack and app from the repository root:
+Install dependencies with npm, create the local env files from the provided
+templates, then start the local stack and app from the repository root:
 
 ```sh
 npm install # or: bun install
+cp app/.env.local.template app/.env.local
+cp stack/powersync/docker/.env.template stack/powersync/docker/.env
 npm run stack:up
 npm run app:start
 ```

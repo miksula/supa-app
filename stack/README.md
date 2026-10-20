@@ -21,6 +21,13 @@ equivalent is `bunx --no-install supabase ...`.
 
 ## Start and stop services
 
+PowerSync reads its connection strings from `powersync/docker/.env`, which is
+git-ignored. Create it from the template once:
+
+```bash
+cp stack/powersync/docker/.env.template stack/powersync/docker/.env
+```
+
 Start both local services at project root:
 
 ```bash
@@ -184,7 +191,7 @@ supabase start --workdir=stack
 ```
 
 Configure the external database and storage connection strings in
-`powersync/docker/.env`. When PowerSync runs in Docker and Supabase runs on the
+`powersync/docker/.env` (copied from `.env.template`, see above). When PowerSync runs in Docker and Supabase runs on the
 host, use `host.docker.internal` to reach the host:
 
 ```env

@@ -53,20 +53,21 @@ Goal: a reader should only see code that is actually in use.
 
 ## Phase 3 — Correctness & security fixes (S)
 
-- [ ] **Wrong redirect path on bootstrap failure**
+- [x] **Wrong redirect path on bootstrap failure** — now navigates to `/auth`.
   - [AuthController.ts](./app/src/lib/auth/AuthController.ts) still navigates to `/login`; the route is `/auth`.
 
 - [x] **`route` is undefined when landing on `/`**
   - Fixed by the router's `navigationRevision` guard: the `/` handler's `navigate()` bumps the revision, so `check()` skips the stale listener call.
   - Remaining edge: the Navigation-API intercept path (`matchSyncRoute`/`matchAsyncRoute`) has no revision guard, so a link to `/` briefly re-renders the previous route before redirecting — see Phase 10.
 
-- [ ] **Remove hardcoded credentials**
+- [x] **Remove hardcoded credentials** — fields start empty; the dev server prefills from `VITE_DEV_EMAIL`/`VITE_DEV_PASSWORD` (see [.env.local.template](./app/.env.local.template)).
   - [pages/auth/index.ts](./app/src/pages/auth/index.ts) still defaults `email`/`password` to real-looking values.
   - Use `import.meta.env.DEV ? import.meta.env.VITE_DEV_EMAIL : ""`.
 
-- [ ] **Ignore env files**
+- [x] **Ignore env files**
   - [x] `app/.env.local` is not tracked (covered by `*.local` in [app/.gitignore](./app/.gitignore)).
-  - [ ] Add `.env*` (with `!.env*.template`) to the root [.gitignore](./.gitignore) as a safety net.
+  - [x] Add `.env*` (with `!.env*.template`) to the root [.gitignore](./.gitignore) as a safety net.
+  - [x] `stack/powersync/docker/.env` untracked and replaced by [.env.template](./stack/powersync/docker/.env.template).
 
 ---
 

@@ -37,7 +37,7 @@ export class AuthController {
       }
     } catch (error) {
       console.error("Failed to bootstrap authentication", error);
-      router.navigate("/login");
+      router.navigate("/auth");
     }
   }
 }
