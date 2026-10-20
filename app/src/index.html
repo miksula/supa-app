@@ -33,9 +33,9 @@
     <div class="app"></div>
 
     <script type="module">
-      import { AppRoot } from "/lib/AppRoot.ts";
+      import { startApp } from "/lib/main.ts";
 
-      AppRoot(document.querySelector("body > .app"));
+      startApp(document.querySelector("body > .app"));
     </script>
   </body>
 </html>

@@ -1,11 +1,21 @@
-import { router } from "@packages/router";
-import { connectPowersync, isOfflineMode, resetPowersyncForSessionChange } from "@/sync/client.ts";
-import { createSyncLifecycle } from "@/sync/syncLifecycle.ts";
-import { authService } from "@/auth/auth.ts";
-import { enforceAuthRoute } from "@/auth/routeGuard.ts";
+import type { AppRouter } from "@/types.ts";
+import type { createSyncLifecycle } from "@/sync/syncLifecycle.ts";
+import type { AuthService } from "./AuthService.ts";
+
+type AuthControllerDependencies = {
+  authService: Pick<AuthService, "ready" | "init" | "session" | "onAuthStateChange">;
+  router: Pick<AppRouter, "path" | "check" | "navigate">;
+  syncLifecycle: ReturnType<typeof createSyncLifecycle>;
+  enforceAuthRoute: (path: string) => boolean;
+  isOfflineMode: boolean;
+};
 
 export class AuthController {
+  constructor(private readonly dependencies: AuthControllerDependencies) {}
+
   async bootstrap() {
+    const { authService, router, syncLifecycle, enforceAuthRoute, isOfflineMode } =
+      this.dependencies;
     if (isOfflineMode) {
       authService.ready = true;
       router.check();
@@ -14,11 +24,6 @@ export class AuthController {
 
     try {
       await authService.init();
-
-      const syncLifecycle = createSyncLifecycle({
-        connect: connectPowersync,
-        reset: resetPowersyncForSessionChange,
-      });
 
       // Single auth subscription, fanned out to sync and the route guard.
       authService.onAuthStateChange(async (event, session) => {

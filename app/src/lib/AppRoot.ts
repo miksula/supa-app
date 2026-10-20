@@ -1,34 +1,32 @@
-import { router } from "@packages/router";
-import { AuthController } from "@/auth/AuthController.ts";
-import { enforceAuthRoute } from "@/auth/routeGuard.ts";
-import { SyncController } from "@/sync/SyncController.ts";
-import { SidebarLayout } from "@/shell/SidebarLayout.ts";
-import { LoginLayout } from "@/shell/LoginLayout.ts";
-import { LoginPage } from "../pages/auth/index.ts";
-import { MyTodosPage } from "../pages/my-todos/index.ts";
-import { DocsPage } from "../pages/docs/index.ts";
-import { NotFoundPage } from "../pages/not-found/index.ts";
-import type { LayoutFactory, LayoutInstance, MountFunction } from "@/types.ts";
+import type { AppRouter, LayoutFactory, LayoutInstance, MountFunction } from "@/types.ts";
 
-// Extensible registry: add new layouts here or pass custom factories directly
-const layouts = {
-  app: SidebarLayout,
-  login: LoginLayout,
-} satisfies Record<string, LayoutFactory>;
+type LayoutName = "app" | "login";
 
-type LayoutName = keyof typeof layouts;
+type AppDependencies = {
+  router: Pick<AppRouter, "get" | "navigate" | "addRouteListener">;
+  auth: { bootstrap: () => Promise<void> };
+  enforceAuthRoute: (path: string) => boolean;
+  mountSync: MountFunction;
+  layouts: Record<LayoutName, LayoutFactory>;
+  pages: {
+    login: MountFunction;
+    todos: MountFunction;
+    docs: (target: HTMLElement, id: string) => ReturnType<MountFunction>;
+    notFound: MountFunction;
+  };
+};
 
 type RouteConfig = {
   page: MountFunction;
   layout: LayoutName | LayoutFactory;
 };
 
-export function AppRoot(el: HTMLElement) {
+export function AppRoot(el: HTMLElement, dependencies: AppDependencies) {
+  const { router, auth, enforceAuthRoute, mountSync, layouts, pages } = dependencies;
   let route: RouteConfig;
-  const auth = new AuthController();
 
   // Observe synchronization state
-  SyncController(el);
+  mountSync(el);
 
   // Track active layout instance to prevent unnecessary re-rendering
   let currentLayoutKey: unknown = null;
@@ -45,7 +43,7 @@ export function AppRoot(el: HTMLElement) {
       redirect("/my-todos");
     })
     .get("/my-todos", () => {
-      route = { page: MyTodosPage, layout: "app" };
+      route = { page: pages.todos, layout: "app" };
     })
     .get("/docs", () => {
       redirect("/docs/introduction");
@@ -53,15 +51,15 @@ export function AppRoot(el: HTMLElement) {
     .get("/docs/:id", (context) => {
       const id = context.param("id") as string;
       route = {
-        page: (target) => DocsPage(target, id),
+        page: (target) => pages.docs(target, id),
         layout: "app",
       };
     })
     .get("/auth", () => {
-      route = { page: LoginPage, layout: "login" };
+      route = { page: pages.login, layout: "login" };
     })
     .get("/*", () => {
-      route = { page: NotFoundPage, layout: "app" };
+      route = { page: pages.notFound, layout: "app" };
     });
 
   router.addRouteListener(function renderRoute(path) {

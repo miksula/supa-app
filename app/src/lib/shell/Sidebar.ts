@@ -1,8 +1,8 @@
 import { html, render, nothing } from "lit";
-import { router } from "@packages/router";
-import { NAV_ITEMS, type NavItem } from "@/nav/navConfig.ts";
+import type { RouteSource } from "@/types.ts";
+import type { NavItem } from "@/nav/navConfig.ts";
 import "@/ui/AppIcon.ts";
-import { authService } from "@/auth/auth.ts";
+import type { AuthService } from "@/auth/AuthService.ts";
 import { SidebarFooter } from "./SidebarFooter.ts";
 import type { Session } from "@supabase/supabase-js";
 
@@ -12,9 +12,9 @@ type SidebarTarget = HTMLElement & {
 
 const normalizePath = (path: string): string => path.replace(/\/+$/, "") || "/";
 
-const isItemActive = (url?: string): boolean => {
+const isItemActive = (path: string, url?: string): boolean => {
   if (!url) return false;
-  const currentPath = normalizePath(router.path);
+  const currentPath = normalizePath(path);
   const targetPath = normalizePath(url);
 
   if (targetPath === "/") {
@@ -24,8 +24,8 @@ const isItemActive = (url?: string): boolean => {
   return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
 };
 
-const isGroupActive = (item: NavItem) =>
-  item.items?.some((sub) => router.path.startsWith(sub.url)) ?? false;
+const isGroupActive = (path: string, item: NavItem) =>
+  item.items?.some((sub) => path.startsWith(sub.url)) ?? false;
 
 function getAvatarName(session: Session | null) {
   return session?.user.email ?? session?.user.id ?? "Käyttäjä";
@@ -40,15 +40,28 @@ function getUserInitials(session: Session | null) {
     : (parts[0] ?? "K").slice(0, 2).toUpperCase();
 }
 
-export function Sidebar(target: HTMLElement) {
+export function Sidebar(
+  target: HTMLElement,
+  {
+    router,
+    navItems,
+    authService,
+  }: {
+    router: RouteSource;
+    navItems: NavItem[];
+    authService: Pick<AuthService, "session" | "session$" | "logout">;
+  },
+) {
   const disposableTarget = target as SidebarTarget;
   disposableTarget.disposeSidebar?.();
 
-  const openItems = new Set<string>(NAV_ITEMS.filter(isGroupActive).map((item) => item.title));
+  const openItems = new Set<string>(
+    navItems.filter((item) => isGroupActive(router.path, item)).map((item) => item.title),
+  );
 
   const syncOpenItems = () => {
-    for (const item of NAV_ITEMS) {
-      if (isGroupActive(item)) {
+    for (const item of navItems) {
+      if (isGroupActive(router.path, item)) {
         openItems.add(item.title);
       }
     }
@@ -94,7 +107,7 @@ export function Sidebar(target: HTMLElement) {
   }
 
   const renderNavigation = () => {
-    render(NavMain(openItems, toggleMenu), navigation);
+    render(NavMain(navItems, router.path, openItems, toggleMenu), navigation);
   };
 
   let currentSession = authService.session;
@@ -237,20 +250,30 @@ export function Sidebar(target: HTMLElement) {
   renderAccount();
 }
 
-function NavMain(openItems: Set<string>, toggleItem: (title: string) => void) {
+function NavMain(
+  navItems: NavItem[],
+  path: string,
+  openItems: Set<string>,
+  toggleItem: (title: string) => void,
+) {
   return html`
     <div class="sidebar-group">
       <div class="sidebar-label">Application</div>
       <ul class="sidebar-menu">
-        ${NAV_ITEMS.map((item) => MenuItem(item, openItems, toggleItem))}
+        ${navItems.map((item) => MenuItem(item, path, openItems, toggleItem))}
       </ul>
     </div>
   `;
 }
 
-function MenuItem(item: NavItem, openItems: Set<string>, toggleItem: (title: string) => void) {
+function MenuItem(
+  item: NavItem,
+  path: string,
+  openItems: Set<string>,
+  toggleItem: (title: string) => void,
+) {
   const isOpen = openItems.has(item.title);
-  const active = isItemActive(item.url);
+  const active = isItemActive(path, item.url);
 
   return html`
     <li class="menu-item ${isOpen ? "-is-open" : ""}">
@@ -274,7 +297,7 @@ function MenuItem(item: NavItem, openItems: Set<string>, toggleItem: (title: str
         item.items
           ? html`
               ${MenuButton(item.title, isOpen, toggleItem)}
-              ${isOpen ? SubMenu(item.items) : nothing}
+              ${isOpen ? SubMenu(item.items, path) : nothing}
             `
           : nothing
       }
@@ -296,12 +319,12 @@ function MenuButton(title: string, isOpen: boolean, toggleItem: (title: string) 
   `;
 }
 
-function SubMenu(items: NonNullable<NavItem["items"]>) {
+function SubMenu(items: NonNullable<NavItem["items"]>, path: string) {
   return html`
     <div class="sub-menu">
       <ul>
         ${items.map((item) => {
-          const active = isItemActive(item.url);
+          const active = isItemActive(path, item.url);
           return html`
             <li>
               <a

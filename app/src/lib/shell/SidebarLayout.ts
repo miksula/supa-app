@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import type { LayoutFactory, LayoutInstance } from "../types.ts";
+import type { LayoutInstance } from "../types.ts";
 import { Sidebar } from "./Sidebar.ts";
 import { PageHeader, type PageHeaderElement } from "./PageHeader.ts";
 
@@ -32,7 +32,10 @@ function saveOpenState(open: boolean) {
   }
 }
 
-export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInstance => {
+export const SidebarLayout = (
+  container: HTMLElement,
+  dependencies: Parameters<typeof Sidebar>[1],
+): LayoutInstance => {
   let isOpen = getInitialOpenState();
   const state = isOpen ? "expanded" : "collapsed";
   const collapsible = isOpen ? "" : "offcanvas";
@@ -73,8 +76,8 @@ export const SidebarLayout: LayoutFactory = (container: HTMLElement): LayoutInst
   const headerEl = container.querySelector<HTMLElement>('[data-slot="header"]')!;
   const slot = container.querySelector<HTMLElement>('[data-slot="content"]')!;
 
-  Sidebar(asideEl);
-  PageHeader(headerEl);
+  Sidebar(asideEl, dependencies);
+  PageHeader(headerEl, dependencies.router);
 
   const updateState = (open: boolean) => {
     isOpen = open;

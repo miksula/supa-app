@@ -27,7 +27,12 @@ authentication and remote sync while keeping the local database available.
 ## Basic architecture
 
 - `src/index.html` is the browser entry point. It loads styles and calls
-  `AppRoot`.
+  `startApp` in [src/lib/main.ts](src/lib/main.ts).
+- [src/lib/config.ts](src/lib/config.ts) contains all app environment reads,
+  including offline mode and development-only login prefill.
+- [src/lib/main.ts](src/lib/main.ts) is the composition root. It constructs auth,
+  the local database, connector, route guard, sync lifecycle and todo store, then
+  binds their dependencies to pages, layouts and controllers.
 - `src/lib/AppRoot.ts` registers routes, picks a layout (`SidebarLayout` or
   `LoginLayout`) for each route, mounts the page, and starts the auth and
   sync-status controllers.
@@ -35,13 +40,14 @@ authentication and remote sync while keeping the local database available.
   `not-found/`). Feature-specific modules live next to their page, e.g.
   `pages/my-todos/TodoStore.ts` reads and writes the local todo data.
 - `src/lib/` contains shared code, grouped by concern:
-  - `auth/`: `AuthService.ts` wraps Supabase Auth (`auth.ts` exports the
-    shared instance), `AuthController.ts` bootstraps the session, and
-    `authGuard.ts`/`routeGuard.ts` redirect unauthenticated routes.
-  - `sync/`: `client.ts` configures the PowerSync database and Kysely
+  - `auth/`: `AuthService.ts` wraps Supabase Auth using injected configuration,
+    `AuthController.ts` bootstraps the session with injected dependencies, and
+    `authGuard.ts` creates the route guard. There are no auth service singletons.
+  - `sync/`: `client.ts` provides a factory for the PowerSync database and Kysely
     adapter, `schema.ts` is the client schema (generated with
     `npm run schema:generate`), `SupabasePowerSyncConnector.ts` supplies
-    credentials and uploads local changes, `syncLifecycle.ts` connects
+    credentials and uploads local changes using an injected Supabase client,
+    `syncLifecycle.ts` connects
     PowerSync for a signed-in user and clears local data on sign-out, and
     `SyncController.ts` publishes sync status to the UI.
   - `shell/`: layouts and app chrome (`SidebarLayout`, `Sidebar`,
@@ -132,6 +138,10 @@ Lit render may recreate.
 ## Adding pages
 
 When adding a screen, register its route and layout in `AppRoot`, put the page
-in `src/pages/`, and keep reusable behavior in `src/lib/`. When changing synced
+in `src/pages/`, and bind its dependencies in [src/lib/main.ts](src/lib/main.ts).
+Pass callbacks, a store, or a narrow service interface to pages and components;
+do not import runtime auth, sync or router singletons into them. The router
+package's existing singleton is used only by the composition root.
+Keep reusable behavior in `src/lib/`. When changing synced
 tables, update the PowerSync schema and keep it aligned with the backend schema
 and sync configuration.

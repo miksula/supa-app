@@ -1,5 +1,4 @@
-import type { SyncStatus } from "@powersync/web";
-import { isOfflineMode, powersync } from "@/sync/client.ts";
+import type { PowerSyncDatabase, SyncStatus } from "@powersync/web";
 import { dispatchData, onAction, type SyncStatusData } from "@/events.ts";
 
 function toSyncStatusData(status: SyncStatus): SyncStatusData {
@@ -27,7 +26,16 @@ const offlineStatus: SyncStatusData = {
  * on the requester and keeps it updated on every PowerSync status change.
  * Requesters that left the DOM are dropped on the next change.
  */
-export function SyncController(el: HTMLElement) {
+export function SyncController(
+  el: HTMLElement,
+  {
+    powersync,
+    isOfflineMode,
+  }: {
+    powersync: Pick<PowerSyncDatabase, "currentStatus" | "registerListener">;
+    isOfflineMode: boolean;
+  },
+) {
   let current = isOfflineMode ? offlineStatus : toSyncStatusData(powersync.currentStatus);
   const requesters = new Set<EventTarget>();
 

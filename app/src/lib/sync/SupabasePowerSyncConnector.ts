@@ -1,19 +1,25 @@
 import { UpdateType } from "@powersync/web";
 import type { CommonPowerSyncDatabase, CrudEntry, PowerSyncBackendConnector } from "@powersync/web";
-import type { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { AuthService } from "../auth/AuthService.ts";
+import type { PostgrestSingleResponse, SupabaseClient } from "@supabase/supabase-js";
 
 /// Postgres Response codes that we cannot recover from by retrying.
 const FATAL_RESPONSE_CODES = [new RegExp("^22...$"), new RegExp("^23...$"), new RegExp("^42501$")];
 
 export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
   constructor(
-    private readonly authService: AuthService,
+    private readonly client: SupabaseClient,
     private readonly powersyncUrl: string,
   ) {}
 
   async fetchCredentials() {
-    const session = await this.authService.getSession();
+    const {
+      data: { session },
+      error,
+    } = await this.client.auth.getSession();
+
+    if (error) {
+      throw error;
+    }
 
     if (!session) {
       throw new Error("Could not fetch Supabase credentials: no active session");
@@ -49,7 +55,7 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
          * `*_process_powersync_crud.sql` migration in the infra `stack/`.
          */
         lastOp = transaction.crud.at(-1) ?? null;
-        const { error } = await this.authService.client.rpc("process_powersync_crud", {
+        const { error } = await this.client.rpc("process_powersync_crud", {
           ops: transaction.crud.map((op) => ({
             ...op,
             table: op.table,
@@ -63,7 +69,7 @@ export class SupabasePowerSyncConnector implements PowerSyncBackendConnector {
       } else {
         for (const op of transaction.crud) {
           lastOp = op;
-          const table = this.authService.client.from(op.table);
+          const table = this.client.from(op.table);
           let result: PostgrestSingleResponse<null>;
           const opData = op.opData;
           switch (op.op) {

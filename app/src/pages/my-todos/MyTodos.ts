@@ -1,11 +1,22 @@
 import { html, nothing, render } from "lit";
 import "@/ui/AppIcon.ts";
-import { authService } from "@/auth/auth.ts";
-import { powersync } from "@/sync/client.ts";
 import { TodoListCard, type TodoListCardController } from "./TodoListCard.ts";
-import { mapTodoLists, type ListWithTodoRow, TodoStore } from "./TodoStore.ts";
+import { mapTodoLists, type ListWithTodoRow, type TodoStore } from "./TodoStore.ts";
 
-export function MyTodos(el: HTMLElement, store = new TodoStore(powersync)) {
+export type MyTodosDependencies = {
+  store: Pick<
+    TodoStore,
+    | "watchUserLists"
+    | "createTodo"
+    | "setTodoCompleted"
+    | "createList"
+    | "updateListName"
+    | "deleteList"
+  >;
+  getUserId: () => string | null;
+};
+
+export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependencies) {
   const abortController = new AbortController();
   const cardControllers = new Map<string, TodoListCardController>();
   const desktopQuery = window.matchMedia("(width >= 48rem)");
@@ -106,7 +117,7 @@ export function MyTodos(el: HTMLElement, store = new TodoStore(powersync)) {
       await store.createTodo({
         description,
         listId,
-        createdBy: authService.session?.user.id ?? null,
+        createdBy: getUserId(),
       });
       form.reset();
     } catch (error) {
@@ -122,7 +133,7 @@ export function MyTodos(el: HTMLElement, store = new TodoStore(powersync)) {
 
     const checkbox = event.currentTarget;
     const completed = checkbox.checked;
-    const userId = authService.session?.user.id ?? null;
+    const userId = getUserId();
     void store.setTodoCompleted(todoId, completed, userId).catch((error: unknown) => {
       checkbox.checked = !completed;
       console.error("Failed to update todo completion", error);
@@ -130,7 +141,7 @@ export function MyTodos(el: HTMLElement, store = new TodoStore(powersync)) {
   };
 
   const onAddList = async () => {
-    const ownerId = authService.session?.user.id;
+    const ownerId = getUserId();
     if (!ownerId) {
       console.error("Unable to create list: no authenticated user");
       return;

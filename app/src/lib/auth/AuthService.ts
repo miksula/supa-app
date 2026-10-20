@@ -5,11 +5,10 @@ import {
   type SupabaseClient,
 } from "@supabase/supabase-js";
 
-const isOfflineMode = import.meta.env.VITE_OFFLINE_MODE === "true";
-
 export type SupabaseConfig = {
   supabaseUrl: string;
   supabaseKey: string;
+  isOfflineMode: boolean;
 };
 
 export type SessionObservable = {
@@ -25,18 +24,14 @@ export class AuthService {
   private currentSession: Session | null = null;
   private readonly sessionListeners = new Set<(session: Session | null) => void>();
 
-  constructor() {
-    this.config = {
-      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
-      supabaseKey:
-        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY,
-    };
+  constructor(config: SupabaseConfig) {
+    this.config = config;
 
     this.client = createClient(this.config.supabaseUrl, this.config.supabaseKey, {
       auth: {
-        persistSession: !isOfflineMode,
-        autoRefreshToken: !isOfflineMode,
-        detectSessionInUrl: !isOfflineMode,
+        persistSession: !config.isOfflineMode,
+        autoRefreshToken: !config.isOfflineMode,
+        detectSessionInUrl: !config.isOfflineMode,
       },
     });
 

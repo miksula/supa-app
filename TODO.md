@@ -123,7 +123,7 @@ Goal: a reader should only see code that is actually in use.
   - No errors with TypeScript 7; the `page(...) ?? null` typing in [AppRoot.ts](./app/src/lib/AppRoot.ts) is still cleaned up by the Phase 7 mount contract.
 - [x] **Add [knip](https://knip.dev)** to detect unused files/exports/dependencies (would have caught all of Phase 1).
   - [knip.json](./knip.json) ignores `AppLink.ts` (kept on purpose) plus `@journeyapps/wa-sqlite` / `tailwindcss` (used outside TS). Unused exports were un-exported.
-  - [ ] Decide on `db` (Kysely) in [client.ts](./app/src/lib/sync/client.ts): tagged `@public` but unused; use it in the todo repository (Phase 9) or drop it with `@powersync/kysely-driver`.
+  - [ ] Decide on `db` (Kysely) in [client.ts](./app/src/lib/sync/client.ts): returned by `createPowerSync()` but unused; use it in the todo repository (Phase 9) or drop it with `@powersync/kysely-driver`.
 - [x] **Strengthen [.oxlintrc.json](./.oxlintrc.json)** — `no-unused-vars: error`, `no-console: warn` (allows `error`/`warn`; off in `scripts/`).
 - [x] **Add CI** ([ci.yml](./.github/workflows/ci.yml)): oxlint, oxfmt --check, tsc, knip, vitest. Same steps locally via `npm run check`.
   - [ ] `bun.lock` is git-ignored (`*.lock`), so CI installs unpinned versions; consider committing it and using `bun install --frozen-lockfile`.
@@ -135,22 +135,23 @@ Goal: a reader should only see code that is actually in use.
 
 ## Phase 6 — Inversion of Control: one config & one composition root (M)
 
-- [ ] **Create `lib/config.ts`** with all `import.meta.env` reads
-  - Removes the duplicated `isOfflineMode` from [AuthService.ts](./app/src/lib/auth/AuthService.ts) and [client.ts](./app/src/lib/sync/client.ts).
+- [x] **Create [lib/config.ts](./app/src/lib/config.ts)** with all `import.meta.env` reads
+  - Centralizes endpoints, keys, offline mode, development mode and dev-only login prefill.
 
-- [ ] **Inject config into `AuthService`** — `new AuthService(config)` instead of reading env in the constructor.
+- [x] **Inject config into `AuthService`** — `new AuthService(config)` instead of reading env in the constructor.
 
-- [ ] **Single composition root** (e.g. `lib/main.ts`, called from [index.html](./app/src/index.html))
-  - Constructs `authService`, `powersync`, connector, guard, sync lifecycle; passes them to `AppRoot` / `AuthController`.
-  - Removes module-level singletons in [auth.ts](./app/src/lib/auth/auth.ts), [routeGuard.ts](./app/src/lib/auth/routeGuard.ts), [client.ts](./app/src/lib/sync/client.ts).
+- [x] **Single composition root** in [lib/main.ts](./app/src/lib/main.ts), called from [index.html](./app/src/index.html)
+  - Constructs `authService`, the PowerSync database, connector, guard, sync lifecycle and todo store; injects dependencies into `AppRoot` / `AuthController`.
+  - Deletes `auth.ts` and `routeGuard.ts`; [client.ts](./app/src/lib/sync/client.ts) now exports a factory instead of singleton instances.
+  - The router package's singleton remains for Phase 10; only the composition root imports it at runtime.
 
-- [ ] **Pass dependencies to pages/components**
-  - e.g. `LoginPage(el, { login: auth.login })`; `Sidebar(el, { path, navItems })` instead of importing `router`.
-  - New singleton imports to remove: [Sidebar.ts](./app/src/lib/shell/Sidebar.ts) imports `authService` (session label + logout); [MyTodos.ts](./app/src/pages/my-todos/MyTodos.ts) imports `authService` and `powersync` (its `store` param is already injectable, but `MyTodosPage` never passes one).
+- [x] **Pass dependencies to pages/components**
+  - Login gets a bound callback and prefill values; shell components get routing, navigation items and account capabilities; docs get a navigation callback.
+  - [MyTodosPage](./app/src/pages/my-todos/index.ts) passes an injected store and live user-ID getter to [MyTodos.ts](./app/src/pages/my-todos/MyTodos.ts), with no singleton fallback.
+  - Config, auth construction, controller bootstrap and connector behavior have focused unit tests.
 
-- [ ] **Narrow the connector's dependency**
-  - [SupabasePowerSyncConnector](./app/src/lib/sync/SupabasePowerSyncConnector.ts) depends on concrete `AuthService` and reaches into `.client`.
-  - Inject `{ getSession, rpc }` (or a `SupabaseClient`) instead.
+- [x] **Narrow the connector's dependency**
+  - [SupabasePowerSyncConnector](./app/src/lib/sync/SupabasePowerSyncConnector.ts) receives a `SupabaseClient` directly, preserving existing credentials and upload behavior without depending on `AuthService`.
 
 ---
 
@@ -213,9 +214,9 @@ Goal: a reader should only see code that is actually in use.
 - [x] **Create a todo repository** (SRP: data access only, IoC: DB passed in)
   - Implemented as [TodoStore.ts](./app/src/pages/my-todos/TodoStore.ts) taking a `PowerSyncDatabase`: `watchUserLists()`, `createList()`, `createTodo()`, `updateListName()`, `setTodoCompleted()`, `deleteList()`, plus pure `mapTodoLists()`.
   - Optional: move it to `lib/todos/` if other pages will use it.
-- [ ] **Inject the repository into [MyTodosPage](./app/src/pages/my-todos/index.ts)**
+- [x] **Inject the repository into [MyTodosPage](./app/src/pages/my-todos/index.ts)**
   - [x] Placeholder boxes replaced by [MyTodos.ts](./app/src/pages/my-todos/MyTodos.ts), [TodoList.ts](./app/src/pages/my-todos/TodoList.ts), [TodoListCard.ts](./app/src/pages/my-todos/TodoListCard.ts).
-  - [ ] `MyTodos(el, store = new TodoStore(powersync))` falls back to the singleton; pass the store from `MyTodosPage` / the composition root (Phase 6).
+  - [x] The composition root creates `TodoStore` and passes it through `MyTodosPage`; `MyTodos` has no singleton fallback (Phase 6).
 - [ ] **Unit-test the repository** against an in-memory PowerSync / SQLite DB (start with the pure `mapTodoLists()`).
 
 ---

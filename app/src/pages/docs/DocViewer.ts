@@ -1,10 +1,10 @@
 import { html, render } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { marked } from "marked";
-import { router } from "@packages/router";
 
 export interface DocViewerProps {
   content: string;
+  navigate: (path: string) => void;
 }
 
 /**
@@ -73,7 +73,7 @@ export function DocViewer(target: HTMLElement, props: DocViewerProps) {
 
     if (href.startsWith("/") && !href.startsWith("//")) {
       event.preventDefault();
-      router.navigate(href);
+      props.navigate(href);
     }
   };
 

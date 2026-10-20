@@ -1,10 +1,10 @@
 import { html, LitElement } from "lit";
-import { router } from "@packages/router";
 
 const props = {
   text: { type: String },
   to: { type: String },
   active: { type: Boolean },
+  navigate: { attribute: false },
 };
 
 class AppLink extends LitElement {
@@ -16,6 +16,7 @@ class AppLink extends LitElement {
   public to: string;
   /** Whether the link is currently active. */
   public active?: boolean;
+  public navigate?: (path: string) => void;
 
   constructor() {
     super();
@@ -42,8 +43,10 @@ class AppLink extends LitElement {
   }
 
   private handleClick = (event: Event) => {
-    event.preventDefault();
-    router.navigate(this.to);
+    if (this.navigate) {
+      event.preventDefault();
+      this.navigate(this.to);
+    }
   };
 }
 

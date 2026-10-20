@@ -1,5 +1,8 @@
 export type MountFunction = (el: HTMLElement) => void | (() => void);
 
+export type AppRouter = typeof import("@packages/router").router;
+export type RouteSource = Pick<AppRouter, "path" | "addRouteListener" | "removeRouteListener">;
+
 export interface LayoutInstance {
   /** Root DOM element of the layout */
   element: HTMLElement;

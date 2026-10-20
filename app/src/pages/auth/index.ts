@@ -1,11 +1,16 @@
 import { html, render } from "lit";
-import { authService } from "@/auth/auth.ts";
 
-export function LoginPage(el: HTMLElement) {
+export function LoginPage(
+  el: HTMLElement,
+  props: {
+    login: (email: string, password: string) => Promise<void>;
+    initialEmail?: string;
+    initialPassword?: string;
+  },
+) {
   let isSubmitting = false;
-  // Dev-only prefill from app/.env.local; production builds start empty.
-  let email = import.meta.env.DEV ? (import.meta.env.VITE_DEV_EMAIL ?? "") : "";
-  let password = import.meta.env.DEV ? (import.meta.env.VITE_DEV_PASSWORD ?? "") : "";
+  let email = props.initialEmail ?? "";
+  let password = props.initialPassword ?? "";
   let statusMessage: string | null = null;
 
   const renderComponent = () => {
@@ -90,7 +95,7 @@ export function LoginPage(el: HTMLElement) {
     renderComponent();
 
     try {
-      await authService.login(email, password);
+      await props.login(email, password);
     } catch (error) {
       statusMessage =
         error instanceof Error ? error.message : "Unable to sign in. Please try again.";

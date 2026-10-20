@@ -1,5 +1,6 @@
 import { html, LitElement, nothing, type PropertyValues } from "lit";
 import { createElement } from "lucide";
+import { config } from "@/config.ts";
 import { appIcons, isAppIconName, resolveIcon, type AppIconName } from "./icons.ts";
 
 /**
@@ -44,7 +45,7 @@ class AppIcon extends LitElement {
   override render() {
     if (!this.name) return nothing;
     if (!isAppIconName(this.name)) {
-      if (import.meta.env.DEV) console.warn(`<app-icon>: unknown icon name "${this.name}"`);
+      if (config.isDevelopment) console.warn(`<app-icon>: unknown icon name "${this.name}"`);
       return nothing;
     }
 

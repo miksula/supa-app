@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import { router } from "@packages/router";
+import type { RouteSource } from "@/types.ts";
 import { resolveBreadcrumbs, type BreadcrumbItem } from "@/nav/breadcrumb.ts";
 import "@/ui/AppIcon.ts";
 
@@ -8,7 +8,7 @@ export type PageHeaderElement = HTMLElement & {
   setBreadcrumbs?: (items: BreadcrumbItem[]) => void;
 };
 
-export function PageHeader(el: PageHeaderElement) {
+export function PageHeader(el: PageHeaderElement, router: RouteSource) {
   el.disposePageHeader?.();
 
   let breadcrumbs: BreadcrumbItem[] = resolveBreadcrumbs(router.path);

@@ -1,11 +1,19 @@
 import { html, render } from "lit";
 import { getDocContent } from "@packages/docs";
-import { router } from "@packages/router";
 import { DocViewer } from "./DocViewer.ts";
 
 let activeDocRequestId = 0;
 
-export function DocsPage(target: HTMLElement, docId = "introduction") {
+export function DocsPage(
+  target: HTMLElement,
+  {
+    docId = "introduction",
+    navigate,
+  }: {
+    docId?: string;
+    navigate: (path: string) => void;
+  },
+) {
   const currentRequestId = ++activeDocRequestId;
 
   // Render initial loading skeleton
@@ -45,7 +53,7 @@ export function DocsPage(target: HTMLElement, docId = "introduction") {
                   class="app-link"
                   @click=${(e: Event) => {
                     e.preventDefault();
-                    router.navigate("/docs/introduction");
+                    navigate("/docs/introduction");
                   }}
                 >
                   Return to Introduction
@@ -72,7 +80,7 @@ export function DocsPage(target: HTMLElement, docId = "introduction") {
 
     const docViewerOutlet = target.querySelector<HTMLElement>('[data-slot="doc-viewer-outlet"]');
     if (docViewerOutlet) {
-      DocViewer(docViewerOutlet, { content });
+      DocViewer(docViewerOutlet, { content, navigate });
     }
   });
 }
