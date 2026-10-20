@@ -22,10 +22,12 @@ export function AppRoot(el: HTMLElement, dependencies: AppDependencies) {
   for (const route of createRoutes(pages)) {
     router.get(route.path, (context) => {
       if (disposed || enforceAuthRoute(context.path.split("?")[0])) return;
+
       if ("redirect" in route) {
         router.navigate(route.redirect);
         return;
       }
+
       layoutManager.show({
         page: route.resolve(context),
         layout: layouts[route.layout],
@@ -35,6 +37,7 @@ export function AppRoot(el: HTMLElement, dependencies: AppDependencies) {
   }
 
   void auth.bootstrap();
+
   return () => {
     if (disposed) return;
     disposed = true;

@@ -80,7 +80,7 @@ export function resolveBreadcrumbs(path: string): BreadcrumbItem[] {
   // Fallback: parse URL segments
   const segments = normalized.split("/").filter(Boolean);
   if (segments.length === 0) {
-    return [{ label: "Etusivu", isCurrent: true }];
+    return [{ label: "Home", isCurrent: true }];
   }
 
   let accumulated = "";

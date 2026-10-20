@@ -1,3 +1,20 @@
+/**
+ * The Composition Root File
+ * Implements the Dependency Inversion Principle (DIP):
+ *
+ * High-level modules should not depend on low-level modules; both should depend
+ * on abstractions. Details should depend on abstractions, not vice versa.
+ *
+ * Key benefits in this application:
+ * 1. Loose coupling: UI components, layouts, and pages do not instantiate concrete
+ *    SDKs or databases directly. They receive contracts, services, or stores from above.
+ * 2. Testability & mockability: Business logic and UI can be tested in isolation by
+ *    swapping implementations with mocks or test doubles without touching component code.
+ * 3. Flexibility & maintainability: Environment-specific variations (such as offline mode
+ *    disabling auth persistence and sync) are configured centrally here in the Composition
+ *    Root rather than leaking across page implementations.
+ */
+
 import { Router } from "@packages/router";
 import { createClient } from "@supabase/supabase-js";
 import { config } from "./config.ts";
@@ -19,6 +36,7 @@ import { DocsPage } from "../pages/docs/index.ts";
 import { NotFoundPage } from "../pages/not-found/index.ts";
 
 export function startApp(el: HTMLElement) {
+  // 1. Core infrastructure: client-side routing & remote backend client (Supabase)
   const router = new Router();
   const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
     auth: {
@@ -27,10 +45,16 @@ export function startApp(el: HTMLElement) {
       detectSessionInUrl: !config.isOfflineMode,
     },
   });
+
+  // 2. Authentication service & route protection guard
   const authService = new AuthService(supabase);
+  const enforceAuthRoute = createAuthGuard(authService, router, { disabled: config.isOfflineMode });
+
+  // 3. Local-first sync infrastructure: local SQLite (PowerSync) & backend connector
   const { powersync } = createPowerSync();
   const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
-  const enforceAuthRoute = createAuthGuard(authService, router, { disabled: config.isOfflineMode });
+
+  // 4. Sync lifecycle: connect on login and clean up local data on logout
   const syncLifecycle = createSyncLifecycle({
     connect: async () => {
       if (!config.isOfflineMode) await powersync.connect(connector);
@@ -39,6 +63,8 @@ export function startApp(el: HTMLElement) {
       if (!config.isOfflineMode) await powersync.disconnectAndClear({ clearLocal: true });
     },
   });
+
+  // 5. Auth controller: coordinates auth events with route navigation and sync lifecycle
   const auth = new AuthController({
     authService,
     router,
@@ -46,11 +72,14 @@ export function startApp(el: HTMLElement) {
     enforceAuthRoute,
     isOfflineMode: config.isOfflineMode,
   });
+
+  // 6. Data stores & navigation helpers for UI consumers
   const store = new TodoStore(powersync);
   const navigate = (path: string) => {
     router.navigate(path);
   };
 
+  // 7. Composition Root: inject dependencies, layouts, and page factories into AppRoot
   AppRoot(el, {
     router,
     auth,

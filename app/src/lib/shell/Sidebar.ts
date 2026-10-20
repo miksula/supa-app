@@ -253,7 +253,7 @@ function NavMain(
 ) {
   return html`
     <div class="sidebar-group">
-      <div class="sidebar-label">Sovellus</div>
+      <div class="sidebar-label">Application</div>
       <ul class="sidebar-menu">
         ${navItems.map((item) => MenuItem(item, path, openItems, toggleItem))}
       </ul>
