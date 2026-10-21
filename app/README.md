@@ -30,10 +30,14 @@ authentication and remote sync while keeping the local database available.
   `startApp` in [src/lib/main.ts](src/lib/main.ts).
 - [src/lib/config.ts](src/lib/config.ts) contains all app environment reads,
   including offline mode and development-only login prefill.
-- [src/lib/main.ts](src/lib/main.ts) is the composition root. It constructs an
-  explicit `Router` instance, auth,
-  the local database, connector, route guard, sync lifecycle and todo store, then
-  binds their dependencies to pages, layouts and controllers.
+- [src/lib/platform.ts](src/lib/platform.ts) creates the stable infrastructure behind
+  `createPlatform()`: an explicit `Router` instance, Supabase, auth, the local
+  database, connector, route guard, sync lifecycle and the shell layouts. It returns
+  narrow handles (`db`, `router`, `session`, `navigate`, `config`) rather than raw
+  services.
+- [src/lib/main.ts](src/lib/main.ts) is the composition root for the actively
+  developed parts. It creates the data stores and binds their dependencies to pages
+  and navigation, then passes them, together with the platform shell, to `AppRoot`.
 - [src/lib/AppRoot.ts](src/lib/AppRoot.ts) registers the injected route table from
   [src/lib/routes.ts](src/lib/routes.ts), applies the auth guard, and starts the
   auth and sync-status controllers. [src/lib/layoutManager.ts](src/lib/layoutManager.ts)
@@ -42,7 +46,7 @@ authentication and remote sync while keeping the local database available.
   `not-found/`). Feature-specific modules live next to their page, e.g.
   `pages/my-todos/TodoStore.ts` reads and writes the local todo data.
 - `src/lib/` contains shared code, grouped by concern:
-  - `auth/`: `AuthService.ts` wraps an injected Supabase client created in `main.ts`,
+  - `auth/`: `AuthService.ts` wraps an injected Supabase client created in `platform.ts`,
     `AuthController.ts` bootstraps the session with injected dependencies, and
     `authGuard.ts` creates the route guard. There are no auth service singletons.
   - `sync/`: `client.ts` provides a factory for the PowerSync database and Kysely
@@ -222,8 +226,8 @@ to run in Node. Verify responsive layouts and CSS in a real browser as well.
 When adding a screen, register its route and layout in `routes.ts`, put the page
 in `src/pages/`, and bind its dependencies in [src/lib/main.ts](src/lib/main.ts).
 Pass callbacks, a store, or a narrow service interface to pages and components;
-do not import runtime auth, sync or router singletons into them. The composition
-root creates and injects the router instance.
+do not import runtime auth, sync or router singletons into them. The platform
+([src/lib/platform.ts](src/lib/platform.ts)) creates and injects the router instance.
 Keep reusable behavior in `src/lib/`. When changing synced
 tables, update the PowerSync schema and keep it aligned with the backend schema
 and sync configuration.

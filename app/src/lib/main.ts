@@ -11,24 +11,17 @@
  * 2. Testability & mockability: Business logic and UI can be tested in isolation by
  *    swapping implementations with mocks or test doubles without touching component code.
  * 3. Flexibility & maintainability: Environment-specific variations (such as offline mode
- *    disabling auth persistence and sync) are configured centrally here in the Composition
- *    Root rather than leaking across page implementations.
+ *    disabling auth persistence and sync) are configured centrally in the platform
+ *    (`platform.ts`) rather than leaking across page implementations.
+ *
+ * This file only wires the actively developed parts (data stores, pages, navigation).
+ * Stable infrastructure (router, Supabase, auth, PowerSync, sync lifecycle, layouts)
+ * lives behind `createPlatform()`.
  */
 
-import { Router } from "@packages/router";
-import { createClient } from "@supabase/supabase-js";
-import { config } from "./config.ts";
 import { AppRoot } from "./AppRoot.ts";
-import { AuthService } from "./auth/AuthService.ts";
-import { AuthController } from "./auth/AuthController.ts";
-import { createAuthGuard } from "./auth/authGuard.ts";
-import { createPowerSync } from "./sync/client.ts";
-import { SupabasePowerSyncConnector } from "./sync/SupabasePowerSyncConnector.ts";
-import { createSyncLifecycle } from "./sync/syncLifecycle.ts";
-import { SyncController } from "./sync/SyncController.ts";
+import { createPlatform } from "./platform.ts";
 import { NAV_ITEMS } from "./nav/navConfig.ts";
-import { SidebarLayout } from "./shell/SidebarLayout.ts";
-import { LoginLayout } from "./shell/LoginLayout.ts";
 import { LoginPage } from "../pages/auth/index.ts";
 import { MyTodosPage } from "../pages/my-todos/index.ts";
 import { TodoStore } from "../pages/my-todos/TodoStore.ts";
@@ -36,72 +29,24 @@ import { DocsPage } from "../pages/docs/index.ts";
 import { NotFoundPage } from "../pages/not-found/index.ts";
 
 export function startApp(el: HTMLElement) {
-  // 1. Core infrastructure: client-side routing & remote backend client (Supabase)
-  const router = new Router();
-  const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
-    auth: {
-      persistSession: !config.isOfflineMode,
-      autoRefreshToken: !config.isOfflineMode,
-      detectSessionInUrl: !config.isOfflineMode,
-    },
-  });
+  const platform = createPlatform({ navItems: NAV_ITEMS });
+  const { config, db, navigate, session } = platform;
 
-  // 2. Authentication service & route protection guard
-  const authService = new AuthService(supabase);
-  const enforceAuthRoute = createAuthGuard(authService, router, { disabled: config.isOfflineMode });
+  // Data stores
+  const todoStore = new TodoStore(db);
 
-  // 3. Local-first sync infrastructure: local SQLite (PowerSync) & backend connector
-  const { powersync } = createPowerSync();
-  const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
-
-  // 4. Sync lifecycle: connect on login and clean up local data on logout
-  const syncLifecycle = createSyncLifecycle({
-    connect: async () => {
-      if (!config.isOfflineMode) await powersync.connect(connector);
-    },
-    reset: async () => {
-      if (!config.isOfflineMode) await powersync.disconnectAndClear({ clearLocal: true });
-    },
-  });
-
-  // 5. Auth controller: coordinates auth events with route navigation and sync lifecycle
-  const auth = new AuthController({
-    authService,
-    router,
-    syncLifecycle,
-    enforceAuthRoute,
-    isOfflineMode: config.isOfflineMode,
-  });
-
-  // 6. Data stores & navigation helpers for UI consumers
-  const store = new TodoStore(powersync);
-  const navigate = (path: string) => {
-    router.navigate(path);
-  };
-
-  // 7. Composition Root: inject dependencies, layouts, and page factories into AppRoot
-  AppRoot(el, {
-    router,
-    auth,
-    enforceAuthRoute,
-    mountSync: (target) =>
-      SyncController(target, { powersync, isOfflineMode: config.isOfflineMode }),
-    layouts: {
-      app: (target) => SidebarLayout(target, { router, navItems: NAV_ITEMS, authService }),
-      login: LoginLayout,
-    },
+  // Inject platform shell and page factories into AppRoot
+  return AppRoot(el, {
+    router: platform.router,
+    ...platform.shell,
     pages: {
       login: (target) =>
         LoginPage(target, {
-          login: (email, password) => authService.login(email, password),
+          login: session.login,
           initialEmail: config.devEmail,
           initialPassword: config.devPassword,
         }),
-      todos: (target) =>
-        MyTodosPage(target, {
-          store,
-          getUserId: () => authService.session?.user.id ?? null,
-        }),
+      todos: (target) => MyTodosPage(target, { store: todoStore, getUserId: session.userId }),
       docs: (target, docId) => DocsPage(target, { docId, navigate }),
       notFound: NotFoundPage,
     },

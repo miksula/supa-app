@@ -11,7 +11,7 @@ Navigation in this application is intentionally lightweight and decoupled from h
 1. **Router (`@packages/router`)**: A minimal client-side hash/path router managing URL history and route patterns.
 2. **Route Definitions (`app/src/lib/routes.ts`)**: Pure configuration mapping URL paths to layout names, transitions, and page resolvers.
 3. **Layout Manager (`app/src/lib/layoutManager.ts`)**: Controls the layout shell lifecycle, slots page content, and manages native View Transitions.
-4. **App Root (`app/src/lib/AppRoot.ts`) & Composition Root (`app/src/lib/main.ts`)**: Glues dependencies, authentication guards, layouts, and page factories together via Dependency Inversion.
+4. **App Root (`app/src/lib/AppRoot.ts`), Platform (`app/src/lib/platform.ts`) & Composition Root (`app/src/lib/main.ts`)**: The platform creates the stable infrastructure and layouts; `main.ts` wires data stores and page factories into `AppRoot` via Dependency Inversion.
 
 ```
 URL Change
@@ -211,20 +211,23 @@ Update the `LayoutName` type in both `app/src/lib/routes.ts` and `app/src/lib/Ap
 type LayoutName = "app" | "login" | "minimal";
 ```
 
-### Step 3: Wire the Layout in `main.ts` (`app/src/lib/main.ts`)
+### Step 3: Wire the Layout in `platform.ts` (`app/src/lib/platform.ts`)
 
-Provide the layout in the `layouts` map when calling `AppRoot`:
+Layouts are shell infrastructure, so they are provided by `createPlatform` in the `shell.layouts` map, which `main.ts` spreads into `AppRoot`:
 
 ```ts
-AppRoot(el, {
+// app/src/lib/platform.ts
+return {
   // ...
-  layouts: {
-    app: (target) => SidebarLayout(target, { router, navItems: NAV_ITEMS, authService }),
-    login: LoginLayout,
-    minimal: MinimalLayout,
+  shell: {
+    // ...
+    layouts: {
+      app: (target: HTMLElement) => SidebarLayout(target, { router, navItems, authService }),
+      login: LoginLayout,
+      minimal: MinimalLayout,
+    },
   },
-  // ...
-});
+};
 ```
 
 Now any route can use `layout: "minimal"` in `createRoutes`.
@@ -234,6 +237,6 @@ Now any route can use `layout: "minimal"` in `createRoutes`.
 ## Summary of Best Practices
 
 - **Always return a cleanup function**: Ensure pages and layouts return `() => void` so subscriptions, DOM nodes, and listeners do not leak.
-- **Do not import concrete pages into `AppRoot`**: Keep `AppRoot` and `routes.ts` agnostic of concrete page implementations. Wire dependencies centrally in `main.ts` (Composition Root).
+- **Do not import concrete pages into `AppRoot`**: Keep `AppRoot` and `routes.ts` agnostic of concrete page implementations. Wire page dependencies centrally in `main.ts` (Composition Root) and infrastructure and layouts in `platform.ts`.
 - **Use `router.navigate(path)` for programmatic navigation**: For button clicks or form submissions, invoke `router.navigate("/path")` rather than mutating `window.location` directly.
 

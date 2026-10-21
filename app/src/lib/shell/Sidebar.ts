@@ -275,7 +275,7 @@ function MenuItem(
       <a
         href="${item.url ?? "#"}"
         class="menu-link ${active ? "-is-active" : ""}"
-        aria-current="${active ? "page" : nothing}"
+        aria-current="${active ? "page" : "false"}"
         @click=${
           item.items && !item.url
             ? (e: Event) => {
@@ -325,7 +325,7 @@ function SubMenu(items: NonNullable<NavItem["items"]>, path: string) {
               <a
                 href="${item.url}"
                 class="sub-menu-link ${active ? "-is-active" : ""}"
-                aria-current="${active ? "page" : nothing}"
+                aria-current="${active ? "page" : "false"}"
               >
                 <span class="truncate text-sm">${item.title}</span>
               </a>

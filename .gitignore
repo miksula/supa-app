@@ -5,4 +5,4 @@ dist
 .DS_Store
 .env*
 !.env*.template
-*-push.sh
+git-*.sh

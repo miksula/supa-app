@@ -92,7 +92,10 @@ supa-app/
 
 Inside `app/src/lib/` code is grouped by concern:
 
-- `main.ts`: the composition root, where every long-lived object is created.
+- `platform.ts`: stable infrastructure (router, Supabase, auth, PowerSync, sync
+  lifecycle, shell layouts) behind `createPlatform()`.
+- `main.ts`: the composition root for the actively developed parts: stores,
+  pages and navigation.
 - `AppRoot.ts`, `routes.ts`, `layoutManager.ts`: route registration and page
   swapping.
 - `auth/`: sign-in state, the route guard and the startup sequence.
@@ -153,17 +156,24 @@ app:
 </body>
 ```
 
-### 2. Composition root: `main.ts`
+### 2. Composition root: `platform.ts` and `main.ts`
 
-`startApp` in `app/src/lib/main.ts` is the only place in the app that creates
-long-lived objects. Everything else receives what it needs as arguments. This
-is dependency injection without a framework, and it is the most important
-convention in the code base.
+Long-lived objects are created in two places, and everything else receives
+what it needs as arguments. This is dependency injection without a framework,
+and it is the most important convention in the code base. The wiring is split
+by how often it changes:
 
-The first half of the function builds the services:
+- `createPlatform` in `app/src/lib/platform.ts` holds the **stable
+  infrastructure**: router, Supabase client, auth, PowerSync, sync lifecycle
+  and the shell layouts. You rarely touch it once it works.
+- `startApp` in `app/src/lib/main.ts` is the **composition root** for the
+  parts that change often: data stores, pages and navigation. It imports no
+  SDK. Adding a feature normally means editing only this file.
+
+The platform builds the services:
 
 ```ts
-export function startApp(el: HTMLElement) {
+export function createPlatform({ navItems }: { navItems: NavItem[] }) {
   const router = new Router();
   const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
     auth: {
@@ -191,38 +201,59 @@ export function startApp(el: HTMLElement) {
     enforceAuthRoute,
     isOfflineMode: config.isOfflineMode,
   });
-  const store = new TodoStore(powersync);
   // …
+  return {
+    config,
+    router,
+    db: powersync,
+    navigate: (path: string) => {
+      router.navigate(path);
+    },
+    session: {
+      login: (email: string, password: string) => authService.login(email, password),
+      userId: () => authService.session?.user.id ?? null,
+    },
+    shell: {
+      auth,
+      enforceAuthRoute,
+      mountSync: (target: HTMLElement) =>
+        SyncController(target, { powersync, isOfflineMode: config.isOfflineMode }),
+      layouts: {
+        app: (target: HTMLElement) => SidebarLayout(target, { router, navItems, authService }),
+        login: LoginLayout,
+      },
+    },
+  };
+}
 ```
 
-The second half hands those services to the UI. Look at what each page
-receives. `LoginPage` gets a `login` callback, not the Supabase client.
-`MyTodosPage` gets the `store` and a `getUserId` function, not the whole auth
-service:
+The platform returns narrow handles, not the raw services. Feature code gets
+`db`, `router`, `navigate`, `config` and a small `session` object. The `shell`
+group holds what `AppRoot` needs and is spread into it. The Supabase client
+and `AuthService` never leave the platform.
+
+`main.ts` then wires the active parts. Look at what each page receives.
+`LoginPage` gets a `login` callback, not the Supabase client. `MyTodosPage`
+gets the store and a `userId` function, not the whole auth service:
 
 ```ts
-  AppRoot(el, {
-    router,
-    auth,
-    enforceAuthRoute,
-    mountSync: (target) =>
-      SyncController(target, { powersync, isOfflineMode: config.isOfflineMode }),
-    layouts: {
-      app: (target) => SidebarLayout(target, { router, navItems: NAV_ITEMS, authService }),
-      login: LoginLayout,
-    },
+export function startApp(el: HTMLElement) {
+  const platform = createPlatform({ navItems: NAV_ITEMS });
+  const { config, db, navigate, session } = platform;
+
+  const todoStore = new TodoStore(db);
+
+  return AppRoot(el, {
+    router: platform.router,
+    ...platform.shell,
     pages: {
       login: (target) =>
         LoginPage(target, {
-          login: (email, password) => authService.login(email, password),
+          login: session.login,
           initialEmail: config.devEmail,
           initialPassword: config.devPassword,
         }),
-      todos: (target) =>
-        MyTodosPage(target, {
-          store,
-          getUserId: () => authService.session?.user.id ?? null,
-        }),
+      todos: (target) => MyTodosPage(target, { store: todoStore, getUserId: session.userId }),
       docs: (target, docId) => DocsPage(target, { docId, navigate }),
       notFound: NotFoundPage,
     },
@@ -237,8 +268,12 @@ Why go to this trouble?
 - **No hidden singletons.** Pages and components never import the router,
   the Supabase client or the PowerSync database directly. If a component
   needs something, you can see it in its parameter list.
-- **One place to read.** To understand how the app is wired together, you
-  only have to read this one file.
+- **Two short files to read.** `platform.ts` shows the infrastructure and
+  `main.ts` shows how features are wired. Neither has to be scrolled past
+  while working on the other.
+- **Not a container.** `createPlatform` is a plain function that returns an
+  object. There is no registry or runtime lookup, so everything stays
+  type-checked.
 
 All environment variables are read in one small module,
 `app/src/lib/config.ts`. Do not read `import.meta.env` anywhere else:
@@ -529,7 +564,7 @@ export function createSyncLifecycle(sync: SyncControls) {
 The `connectedUserId` check matters. Supabase fires `SIGNED_IN` often, for
 example when the tab regains focus. Calling `powersync.connect()` every time
 would open extra sync connections, so the lifecycle connects once per user.
-On `SIGNED_OUT` it calls `reset`, which `main.ts` maps to
+On `SIGNED_OUT` it calls `reset`, which `platform.ts` maps to
 `powersync.disconnectAndClear()`. That wipes the local database, so the next
 person who signs in on the same browser cannot see the previous user's data.
 
@@ -758,7 +793,7 @@ style.
 
 Sometimes a component deep in the tree needs data that lives near the root.
 The sync status indicator in the sidebar footer is the example here: it needs
-the PowerSync status, but the PowerSync database is created in `main.ts`.
+the PowerSync status, but the PowerSync database is created in `platform.ts`.
 Passing `powersync` down through the layout, the sidebar and the footer would
 couple all of them to something they do not use.
 
@@ -1006,7 +1041,8 @@ a list and presses Enter.
 
 - **Wire dependencies in `main.ts`.** Pass callbacks or narrow interfaces
   (often written as `Pick<Service, "method">`) to pages and components. Do not
-  import runtime singletons.
+  import runtime singletons. Infrastructure belongs in `platform.ts`; expose
+  narrow handles from it rather than raw services.
 - **Return a `Dispose`** from every mount that owns listeners, subscriptions
   or async work. Dispose children before their parent. In async code, check a
   `disposed` flag before rendering.

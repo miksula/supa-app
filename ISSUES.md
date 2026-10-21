@@ -175,7 +175,7 @@ other errors.
 
 **Severity:** High · **Effort:** S · **Area:** Sync
 
-**Where:** [main.ts](./app/src/lib/main.ts#L38-L40), [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts), [Sidebar.ts](./app/src/lib/shell/Sidebar.ts#L189-L203), [AuthService.ts](./app/src/lib/auth/AuthService.ts#L65-L72)
+**Where:** [platform.ts](./app/src/lib/platform.ts#L48-L55), [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts), [Sidebar.ts](./app/src/lib/shell/Sidebar.ts#L189-L203), [AuthService.ts](./app/src/lib/auth/AuthService.ts#L65-L72)
 
 **Problem.** Every `SIGNED_OUT` event resets sync:
 
@@ -484,7 +484,7 @@ them.
 - [ ] **Finnish-only UI.** `<html lang="fi">` and hard-coded Finnish strings, with no i18n layer. Default to English, or add a small message catalog.
 - [ ] **`/settings` leads to the 404 page.** The nav item at [navConfig.ts](./app/src/lib/nav/navConfig.ts#L30) has no route.
 - [ ] **Empty docs pages.** [get-started.md](./packages/docs/get-started.md), [tutorials.md](./packages/docs/tutorials.md) and [changelog.md](./packages/docs/changelog.md) contain only a heading but appear in the docs nav.
-- [ ] **Unused Kysely `db`.** [client.ts](./app/src/lib/sync/client.ts#L19) returns a Kysely-wrapped `db`, but [main.ts](./app/src/lib/main.ts#L31) only uses `powersync`. Either use it in `TodoStore` or drop `@powersync/kysely-driver`.
+- [ ] **Unused Kysely `db`.** [client.ts](./app/src/lib/sync/client.ts#L19) returns a Kysely-wrapped `db`, but [platform.ts](./app/src/lib/platform.ts#L44) only uses `powersync`. Either use it in `TodoStore` or drop `@powersync/kysely-driver`.
 - [ ] **`VITE_OFFLINE_MODE` is misleading.** It is a "no backend" dev switch that disables auth, sync and session persistence. It is not offline support. Rename it, for example to `VITE_UI_ONLY`.
 - [ ] **README claims `npm run check` matches CI.** It doesn't: [CI](./.github/workflows/ci.yml) no longer runs `oxfmt --check` ([README.md](./README.md#L61-L63)). Restore the step or fix the README.
 - [ ] **Lockfile and package manager.** CI runs `bun install`, `bun.lock` is git-ignored by `*.lock` ([.gitignore](./.gitignore#L3)), and the only committed lockfile is `package-lock.json`. Pick one package manager, commit its lockfile, and use a frozen install in CI.
