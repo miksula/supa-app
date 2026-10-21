@@ -83,7 +83,8 @@ supa-app/
 │       └── css/         Tailwind, design tokens and base styles
 ├── packages/
 │   ├── router/          Client-side router (workspace package)
-│   └── docs/            These Markdown docs (workspace package)
+│   ├── docs/            These Markdown docs (workspace package)
+│   └── oxlint-plugin/   Project-specific oxlint rules (workspace package)
 ├── stack/
 │   ├── supabase/        Supabase config, SQL migrations and seed data
 │   └── powersync/       PowerSync service config and sync streams
@@ -1057,11 +1058,25 @@ a list and presses Enter.
 - **Read environment variables only in `config.ts`**, and never put the
   Supabase secret key in the browser app.
 
+Some of these conventions are enforced by oxlint. The rules live in the
+`packages/oxlint-plugin` workspace package (`recommended.json`), which the root
+`.oxlintrc.json` extends:
+
+- `no-restricted-imports` blocks runtime imports of the Supabase, PowerSync and
+  router packages from `src/pages/`, `src/lib/shell/` and `main.ts`. It also
+  blocks importing the infrastructure modules (`AuthService`, `AuthController`,
+  `authGuard`, the connector, `syncLifecycle`, `SyncController`,
+  `sync/client.ts`) anywhere except `platform.ts` and tests. Type-only imports
+  are allowed.
+- `supa/no-import-meta-env-outside-config` is a custom rule in the same package.
+  JS plugins are an alpha oxlint feature, so keep the plugin small.
+
 ## Testing and quality checks
 
-Run `npm run check` before you push. It runs oxlint, the `oxfmt` format
-check, strict TypeScript, knip (unused files, exports and dependencies) and
-the Vitest unit tests. CI runs the same steps except the format check.
+Run `npm run check` before you push. It runs oxlint, the style convention
+checker (`npm run lint:styles`, see `packages/docs/styling.md`), the `oxfmt`
+format check, strict TypeScript, knip (unused files, exports and dependencies)
+and the Vitest unit tests. CI runs the same steps except the format check.
 
 Tests sit next to the code they test, as `*.test.ts` files. Because
 dependencies are injected, most tests are small Node tests that pass in fakes.

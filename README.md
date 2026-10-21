@@ -59,7 +59,8 @@ To work on the UI without a running backend, use
 [stack/README.md](stack/README.md) for more details.
 
 Before pushing, run `npm run check`. It runs the same steps as CI
-(`.github/workflows/ci.yml`): oxlint, `oxfmt --check`, `tsc` (strict), knip
+(`.github/workflows/ci.yml`): oxlint, the style convention checker
+(`npm run lint:styles`), `oxfmt --check`, `tsc` (strict), knip
 (unused files, exports and dependencies) and the Vitest unit tests
 (`*.test.ts` next to the code they test).
 
@@ -70,6 +71,7 @@ Before pushing, run `npm run check`. It runs the same steps as CI
 - `stack/powersync/` — PowerSync service, Docker setup, and user-scoped sync
   configuration.
 - `packages/router/` — shared client-side router workspace package.
+- `packages/oxlint-plugin/` — project-specific oxlint rules (workspace package).
 
 ## How the pieces work together
 

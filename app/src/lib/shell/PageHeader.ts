@@ -73,7 +73,7 @@ export function PageHeader(el: HTMLElement, router: RouteSource): Dispose {
             </nav>
           </div>
 
-          <div class="header-actions" data-slot="header-actions"></div>
+          <div class="header-actions"></div>
         </header>
       `,
       el,

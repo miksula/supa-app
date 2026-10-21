@@ -1,4 +1,5 @@
 {
+  "extends": ["./packages/oxlint-plugin/recommended.json"],
   "rules": {
     "no-unused-vars": [
       "error",

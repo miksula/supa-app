@@ -18,25 +18,24 @@ export const SidebarLayout = (
       <div
         class="sidebar-layout group/sidebar-wrapper"
         data-component="sidebar-layout"
-        data-slot="sidebar-wrapper"
         data-state="${state}"
       >
         <div
-          class="group peer"
+          class="layout-sidebar group peer"
           data-slot="sidebar"
           data-state="${state}"
           data-collapsible="${collapsible}"
           data-variant="inset"
           data-side="left"
         >
-          <div data-slot="sidebar-gap"></div>
-          <div data-slot="sidebar-container">
-            <aside data-slot="sidebar-inner"></aside>
+          <div class="layout-sidebar-gap"></div>
+          <div class="layout-sidebar-container">
+            <aside class="layout-sidebar-inner"></aside>
           </div>
         </div>
-        <main data-slot="page">
-          <div data-slot="header"></div>
-          <div data-slot="content"></div>
+        <main class="layout-page">
+          <div class="layout-header" data-slot="header"></div>
+          <div class="layout-content" data-slot="content"></div>
         </main>
       </div>
     `,

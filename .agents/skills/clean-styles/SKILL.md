@@ -101,6 +101,7 @@ In Vanilla JS and Lit mount functions where no framework DevTools component tree
   - **Console Debugging & E2E Testing:** Provides a clean, unambiguous hook (`document.querySelector('[data-component="sidebar"]')`) without coupling to styling classes.
   - **Resilient `@scope` Anchor:** Serves as a dual selector target alongside the class name: `@scope (.sidebar, [data-component="sidebar"])`.
 - **Rule:** Use `data-component="<name>"` **only on the root boundary node**. Do not propagate `data-*` attributes down to internal child nodes—use clean, scoped classes (`.sidebar-header`, `.menu-link`) for all internal elements.
+- **`data-slot` is for TypeScript only:** A `data-slot="<name>"` attribute marks a mount target that a `.ts` file finds with `querySelector('[data-slot="<name>"]')` (e.g. a layout's content outlet). **Never select it in CSS.** Give the same element a semantic class (`.layout-content`) and style that. Add `data-slot` only when TypeScript actually queries it.
 
 ---
 
@@ -153,8 +154,24 @@ Handle `:hover`, `:active`, `:focus-visible`, and state modifiers (`.-is-open`, 
 - For toggles and accordions, apply a modifier class (`.-is-open`) in JS and animate/rotate in CSS.
 
 ### Step 6: Validate Light & Dark Themes and Build
-1. Inspect the CSS for any raw `--nd-*` or `--nl-*` tokens and replace with semantic tokens.
-2. Run the build to verify zero CSS or TypeScript syntax errors:
+1. Run the deterministic style checker from the repository root and fix every reported violation (or, if a finding is intentional, say so rather than editing the baseline silently):
+   ```bash
+   npm run lint:styles
+   ```
+   [checkStyles.js](../../../scripts/checkStyles.js) reads CSS with lightningcss, `html` templates with oxc-parser and resolves Tailwind classes with Tailwind's own design system. It enforces:
+
+   | Rule | Skill rule |
+   |---|---|
+   | `scope-required` | Every component stylesheet wraps its rules in `@scope` (§4) |
+   | `no-palette-token`, `undefined-token`, `no-hardcoded-color` | Semantic tokens only; every `var(--x)` must be defined (§3) |
+   | `no-scope-child-combinator` | No brittle `:scope >` chains (§4) |
+   | `max-nesting` | At most 3 nested style levels (§6) |
+   | `no-layout-utility`, `long-class-string` | No layout utilities on non-leaf elements; at most 6 utilities per element (§2) |
+   | `no-data-slot-selector`, `data-component-not-root` | No `[data-slot]` in CSS (it is a TypeScript mount target only); `data-component` only on the template root (§7) |
+
+   Existing violations are recorded in `scripts/checkStyles.baseline.json`, so only new ones fail. When you fix a baselined violation, run `npm run lint:styles:baseline` to shrink the baseline.
+2. Inspect the CSS for any raw `--nd-*` or `--nl-*` tokens and replace with semantic tokens.
+3. Run the build to verify zero CSS or TypeScript syntax errors:
    ```bash
    npm --prefix app run build
    ```

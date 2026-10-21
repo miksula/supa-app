@@ -74,7 +74,7 @@ authentication and remote sync while keeping the local database available.
   `src/css/` contains shared tokens, Tailwind and base styles.
 - `@packages/router` and `@packages/docs` are workspace packages in
   `../packages/`; the root `package.json` defines the workspaces and
-  convenience scripts (`lint`, `fmt`, `type-check`, `test`, `knip`, `check`, `schema:generate`,
+  convenience scripts (`lint`, `lint:styles`, `fmt`, `type-check`, `test`, `knip`, `check`, `schema:generate`,
   `stack:up`/`stack:down`).
 
 The router package has no import-time listener or shared instance. It uses one

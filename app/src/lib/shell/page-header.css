@@ -82,8 +82,7 @@
     gap: calc(var(--spacing) * 2);
   }
 
-  .sidebar-trigger,
-  [data-slot="sidebar-trigger"] {
+  .sidebar-trigger {
     display: flex;
     align-items: center;
     justify-content: center;

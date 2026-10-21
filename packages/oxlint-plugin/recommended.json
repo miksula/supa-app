@@ -1,0 +1,76 @@
+{
+  "jsPlugins": ["./index.js"],
+  "rules": {
+    "supa/no-import-meta-env-outside-config": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": [
+              "**/AuthService.ts",
+              "**/AuthController.ts",
+              "**/authGuard.ts",
+              "**/SupabasePowerSyncConnector.ts",
+              "**/syncLifecycle.ts",
+              "**/SyncController.ts",
+              "**/sync/client.ts"
+            ],
+            "allowTypeImports": true,
+            "message": "Infrastructure is created only in app/src/lib/platform.ts. Take what you need as a dependency (type-only imports are fine)."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["app/src/pages/**", "app/src/lib/shell/**", "app/src/lib/main.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "@supabase/supabase-js",
+                "allowTypeImports": true,
+                "message": "Pages, shell and main.ts must not use the Supabase SDK at runtime. Receive a narrow handle from createPlatform()."
+              },
+              {
+                "name": "@powersync/web",
+                "allowTypeImports": true,
+                "message": "Pages, shell and main.ts must not use the PowerSync SDK at runtime. Receive `db` from createPlatform()."
+              },
+              {
+                "name": "@packages/router",
+                "allowTypeImports": true,
+                "message": "Do not import the router at runtime. Receive `router` or `navigate` as a dependency."
+              }
+            ],
+            "patterns": [
+              {
+                "group": [
+                  "**/AuthService.ts",
+                  "**/AuthController.ts",
+                  "**/authGuard.ts",
+                  "**/SupabasePowerSyncConnector.ts",
+                  "**/syncLifecycle.ts",
+                  "**/SyncController.ts",
+                  "**/sync/client.ts"
+                ],
+                "allowTypeImports": true,
+                "message": "Infrastructure is created only in app/src/lib/platform.ts. Take what you need as a dependency (type-only imports are fine)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["app/src/lib/platform.ts", "**/*.test.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
+}

@@ -17,6 +17,8 @@ jobs:
       - run: bun install
       - name: Lint
         run: bunx oxlint
+      - name: Style conventions
+        run: node scripts/checkStyles.js
       - name: Type-check
         run: bunx tsc --noEmit -p app/tsconfig.json
       - name: Unused code (knip)

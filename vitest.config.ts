@@ -7,7 +7,7 @@ export default defineConfig({
     alias: { "@": fileURLToPath(new URL("./app/src/lib", import.meta.url)) },
   },
   test: {
-    include: ["app/src/**/*.test.ts", "packages/**/*.test.ts"],
+    include: ["app/src/**/*.test.ts", "packages/**/*.test.ts", "scripts/**/*.test.js"],
     environment: "node",
     restoreMocks: true,
   },

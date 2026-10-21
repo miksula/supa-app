@@ -466,6 +466,28 @@ Leave terminal content elements (`<span>`, `<app-icon>`) with focused utilities:
 
 ---
 
+## Automated Style Checks with `scripts/checkStyles.js`
+
+The conventions above are checked by `npm run lint:styles` (part of `npm run check` and CI):
+
+- **Component CSS** (`app/src/**/*.css` except `app/src/css/`): `@scope` is present, no
+  palette tokens or literal colors (shadows excepted), every `var(--token)` is defined,
+  no `:scope >` chains, nesting stays within 3 levels, and no `[data-slot]` selectors
+  (`data-slot` is only a mount target for `querySelector` in TypeScript, so style a
+  semantic class instead).
+- **`html` templates in `.ts` files**: no layout utilities (position, inset, margin,
+  padding, size, gap, flex or grid structure) on non-leaf elements, at most 6 utilities per
+  element, and `data-component` only on the root element.
+- Tailwind classes are resolved with Tailwind's design system, so variants (`md:p-2`) and
+  arbitrary values (`w-[12rem]`) are understood. Classes with `${...}` parts are skipped.
+
+Violations that existed when the checker was introduced are listed in
+`scripts/checkStyles.baseline.json`. Only new violations fail. After fixing old ones, run
+`npm run lint:styles:baseline` to shrink the baseline. Its dependencies (`@tailwindcss/node`,
+`lightningcss`, `oxc-parser`) are pinned because the design system API is marked unstable.
+
+---
+
 ## Token Usage and Consistency Audit (Current Status)
 
 Because the styling system is a work in progress, an automated audit of the codebase was
