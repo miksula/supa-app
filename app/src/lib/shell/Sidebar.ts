@@ -4,7 +4,8 @@ import type { Dispose, RouteSource } from "@/types.ts";
 import type { NavItem } from "@/nav/navConfig.ts";
 import "@/ui/AppIcon.ts";
 import type { AuthService } from "@/auth/AuthService.ts";
-import { SidebarFooter } from "./SidebarFooter.ts";
+import { ThemeSwitcher } from "./ThemeSwitcher.ts";
+import { SyncStatusIndicator } from "./SyncStatusIndicator.ts";
 import type { Session } from "@supabase/supabase-js";
 
 const normalizePath = (path: string): string => path.replace(/\/+$/, "") || "/";
@@ -153,18 +154,27 @@ export function Sidebar(
             <app-icon name="logout" size="16"></app-icon>
             ${isLoggingOut ? "Signing out..." : "Sign out"}
           </button>
-          <div class="account-menu-footer"></div>
+          <div class="account-menu-footer">
+            <div data-slot="theme-switcher"></div>
+            <div data-slot="sync-status"></div>
+          </div>
         </div>
       `,
       account,
     );
 
-    const accountFooter = account.querySelector<HTMLElement>(".account-menu-footer");
-    if (!accountFooter) {
+    const themeOutlet = account.querySelector<HTMLElement>('[data-slot="theme-switcher"]');
+    const syncOutlet = account.querySelector<HTMLElement>('[data-slot="sync-status"]');
+    if (!themeOutlet || !syncOutlet) {
       throw new Error("Unable to mount sidebar account menu: footer container is missing");
     }
 
-    disposeAccountFooter = SidebarFooter(accountFooter);
+    const disposeTheme = ThemeSwitcher(themeOutlet);
+    const disposeSync = SyncStatusIndicator(syncOutlet);
+    disposeAccountFooter = () => {
+      disposeTheme();
+      disposeSync();
+    };
   };
 
   const toggleAccountMenu = () => {

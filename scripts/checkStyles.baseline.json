@@ -12,7 +12,5 @@
   "app/src/pages/docs/index.ts|no-layout-utility|<div> uses layout utility \"h-4\" (height). Move it to the scoped stylesheet.": 3,
   "app/src/pages/docs/index.ts|no-layout-utility|<div> uses layout utility \"w-full\" (width). Move it to the scoped stylesheet.": 2,
   "app/src/pages/docs/index.ts|no-layout-utility|<div> uses layout utility \"w-5/6\" (width). Move it to the scoped stylesheet.": 1,
-  "app/src/pages/docs/index.ts|no-layout-utility|<div> uses layout utility \"w-4/6\" (width). Move it to the scoped stylesheet.": 1,
-  "app/src/pages/my-todos/index.ts|no-layout-utility|<div> uses layout utility \"flex-col\" (flex-direction). Move it to the scoped stylesheet.": 1,
-  "app/src/pages/my-todos/index.ts|no-layout-utility|<div> uses layout utility \"h-full\" (height). Move it to the scoped stylesheet.": 1
+  "app/src/pages/docs/index.ts|no-layout-utility|<div> uses layout utility \"w-4/6\" (width). Move it to the scoped stylesheet.": 1
 }

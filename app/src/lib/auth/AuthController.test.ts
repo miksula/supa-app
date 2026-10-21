@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Session } from "@supabase/supabase-js";
 import type { AuthService } from "./AuthService.ts";
-import { AuthController } from "./AuthController.ts";
+import { createAuthController } from "./AuthController.ts";
 
 function setup(isOfflineMode = false) {
   const authService = {
@@ -16,7 +16,7 @@ function setup(isOfflineMode = false) {
     handle: vi.fn().mockResolvedValue(undefined),
   };
   const enforceAuthRoute = vi.fn().mockReturnValue(false);
-  const controller = new AuthController({
+  const controller = createAuthController({
     authService,
     router,
     syncLifecycle,

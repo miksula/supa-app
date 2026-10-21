@@ -71,19 +71,6 @@ export class AuthService {
     this.updateSession(null);
   }
 
-  async getSession() {
-    const {
-      data: { session },
-      error,
-    } = await this.client.auth.getSession();
-
-    if (error) {
-      throw error;
-    }
-
-    return session;
-  }
-
   onAuthStateChange(callback: (event: AuthChangeEvent, session: Session | null) => void) {
     return this.client.auth.onAuthStateChange((event, session) => {
       this.updateSession(session);

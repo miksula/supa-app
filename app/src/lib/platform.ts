@@ -11,7 +11,7 @@ import { Router } from "@packages/router";
 import { createClient } from "@supabase/supabase-js";
 import { config } from "./config.ts";
 import { AuthService } from "./auth/AuthService.ts";
-import { AuthController } from "./auth/AuthController.ts";
+import { createAuthController } from "./auth/AuthController.ts";
 import { createAuthGuard } from "./auth/authGuard.ts";
 import { createPowerSync } from "./sync/client.ts";
 import { SupabasePowerSyncConnector } from "./sync/SupabasePowerSyncConnector.ts";
@@ -41,7 +41,7 @@ export function createPlatform({ navItems }: PlatformOptions) {
   const enforceAuthRoute = createAuthGuard(authService, router, { disabled: config.isOfflineMode });
 
   // Local-first sync infrastructure: local SQLite (PowerSync) & backend connector
-  const { powersync } = createPowerSync();
+  const powersync = createPowerSync();
   const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
 
   // Sync lifecycle: connect on login and clean up local data on logout
@@ -55,7 +55,7 @@ export function createPlatform({ navItems }: PlatformOptions) {
   });
 
   // Auth controller: coordinates auth events with route navigation and sync lifecycle
-  const auth = new AuthController({
+  const auth = createAuthController({
     authService,
     router,
     syncLifecycle,

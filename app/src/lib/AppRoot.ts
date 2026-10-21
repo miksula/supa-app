@@ -1,8 +1,14 @@
 import type { AppRouter, LayoutFactory, Mount } from "@/types.ts";
 import { createLayoutManager } from "./layoutManager.ts";
-import { createRoutes, type AppPages } from "./routes.ts";
 
 type LayoutName = "app" | "login";
+
+type AppPages = {
+  login: Mount;
+  todos: Mount;
+  docs: Mount<string>;
+  notFound: Mount;
+};
 
 type AppDependencies = {
   router: Pick<AppRouter, "get" | "navigate">;
@@ -19,22 +25,31 @@ export function AppRoot(el: HTMLElement, dependencies: AppDependencies) {
   const layoutManager = createLayoutManager(el);
   let disposed = false;
 
-  for (const route of createRoutes(pages)) {
-    router.get(route.path, (context) => {
-      if (disposed || enforceAuthRoute(context.path.split("?")[0])) return;
+  const canActivate = (path: string) => !disposed && !enforceAuthRoute(path.split("?")[0]);
+  const show = (layout: LayoutName, page: Mount, transition?: boolean) => {
+    layoutManager.show({ page, layout: layouts[layout], transition });
+  };
 
-      if ("redirect" in route) {
-        router.navigate(route.redirect);
-        return;
-      }
-
-      layoutManager.show({
-        page: route.resolve(context),
-        layout: layouts[route.layout],
-        transition: route.transition,
-      });
-    });
-  }
+  router.get("/", (ctx) => {
+    if (canActivate(ctx.path)) router.navigate("/my-todos");
+  });
+  router.get("/my-todos", (ctx) => {
+    if (canActivate(ctx.path)) show("app", pages.todos);
+  });
+  router.get("/docs", (ctx) => {
+    if (canActivate(ctx.path)) router.navigate("/docs/introduction");
+  });
+  router.get("/docs/:id", (ctx) => {
+    if (!canActivate(ctx.path)) return;
+    const id = ctx.param("id") as string;
+    show("app", (target) => pages.docs(target, id));
+  });
+  router.get("/auth", (ctx) => {
+    if (canActivate(ctx.path)) show("login", pages.login, true);
+  });
+  router.get("/*", (ctx) => {
+    if (canActivate(ctx.path)) show("app", pages.notFound);
+  });
 
   void auth.bootstrap();
 

@@ -14,7 +14,6 @@
     "@packages/docs": "^0.0.0",
     "@packages/router": "^0.0.0",
     "@powersync/common": "2.3.1",
-    "@powersync/kysely-driver": "^2.0.2",
     "@powersync/web": "2.4.2",
     "@supabase/supabase-js": "2.117.2",
     "lit": "^3.3.3",

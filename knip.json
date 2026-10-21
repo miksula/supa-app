@@ -7,7 +7,6 @@
     },
     "app": {
       "project": ["src/**/*.ts"],
-      "ignore": ["src/lib/ui/AppLink.ts"],
       "ignoreDependencies": ["@journeyapps/wa-sqlite", "tailwindcss"]
     },
     "packages/*": {}

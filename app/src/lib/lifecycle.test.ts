@@ -8,7 +8,8 @@ import { AppRoot } from "./AppRoot.ts";
 import { createLayoutManager } from "./layoutManager.ts";
 import { SidebarLayout } from "./shell/SidebarLayout.ts";
 import { Sidebar } from "./shell/Sidebar.ts";
-import { SidebarFooter } from "./shell/SidebarFooter.ts";
+import { ThemeSwitcher } from "./shell/ThemeSwitcher.ts";
+import { SyncStatusIndicator } from "./shell/SyncStatusIndicator.ts";
 import { getInitialOpenState, saveOpenState } from "./shell/sidebarState.ts";
 import { initializeTheme, resolveColorScheme } from "./theme/theme.ts";
 import { dispatchData, onAction } from "./events.ts";
@@ -309,21 +310,19 @@ describe("shell disposal", () => {
     localStorage.setItem("color-scheme", "dark");
     initializeTheme();
     const target = createTarget();
-    const dispose = SidebarFooter(target);
+    const dispose = ThemeSwitcher(target);
     disposers.push(dispose);
     expect(target.querySelector('[aria-pressed="true"]')?.textContent?.trim()).toBe("Dark");
     target.querySelector<HTMLButtonElement>(".theme-btn")!.click();
     expect(document.documentElement.style.colorScheme).toBe("light");
     expect(localStorage.getItem("color-scheme")).toBe("light");
-    expect(localStorage.getItem("light-theme")).toBe("newyork");
     dispose();
     document.documentElement.style.colorScheme = "";
     initializeTheme();
     expect(document.documentElement.style.colorScheme).toBe("light");
-    expect(document.documentElement.dataset.theme).toBe("newyork");
   });
 
-  it("pulls sync status from the child requester without rerendering theme controls", () => {
+  it("pulls sync status from the child requester", () => {
     const target = createTarget();
     const status = { connected: true, connecting: false, uploading: false, downloading: false };
     let requester!: EventTarget;
@@ -333,12 +332,10 @@ describe("shell disposal", () => {
         dispatchData(requester, "syncStatus", status);
       }),
     );
-    disposers.push(SidebarFooter(target));
-    const themeButton = target.querySelector(".theme-btn");
+    disposers.push(SyncStatusIndicator(target));
     expect(target.querySelector('[role="status"]')?.textContent).toContain("Synced");
     dispatchData(requester, "syncStatus", { ...status, uploading: true });
     expect(target.querySelector('[role="status"]')?.textContent).toContain("Syncing...");
-    expect(target.querySelector(".theme-btn")).toBe(themeButton);
   });
 
   it("persists sidebar state without cookies and tolerates unavailable storage", () => {
@@ -358,27 +355,29 @@ describe("shell disposal", () => {
     expect(() => saveOpenState(false)).not.toThrow();
   });
 
-  it("removes the footer's media, mutation and data listeners", () => {
-    const target = createTarget();
+  it("removes the theme media and sync data listeners on dispose", () => {
+    const themeTarget = createTarget();
+    const syncTarget = createTarget();
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     vi.spyOn(window, "matchMedia").mockReturnValue(media);
     const removeMedia = vi.spyOn(media, "removeEventListener");
-    const disconnect = vi.spyOn(MutationObserver.prototype, "disconnect");
-    const dispose = SidebarFooter(target);
-    const syncTarget = target.querySelector<HTMLElement>('[data-slot="sync-status"]')!;
+    const disposeTheme = ThemeSwitcher(themeTarget);
+    const disposeSync = SyncStatusIndicator(syncTarget);
     const removeData = vi.spyOn(syncTarget, "removeEventListener");
-    disposers.push(dispose);
-    dispose();
-    dispose();
+    disposers.push(disposeTheme, disposeSync);
+    disposeTheme();
+    disposeTheme();
+    disposeSync();
+    disposeSync();
     dispatchData(syncTarget, "syncStatus", {
       connected: true,
       connecting: false,
       uploading: false,
       downloading: false,
     });
-    expect(target.textContent).toBe("");
+    expect(themeTarget.textContent).toBe("");
+    expect(syncTarget.textContent).toBe("");
     expect(removeMedia).toHaveBeenCalledWith("change", expect.any(Function));
-    expect(disconnect).toHaveBeenCalledTimes(1);
     expect(removeData).toHaveBeenCalledWith("syncStatus", expect.any(Function));
   });
 
@@ -468,12 +467,11 @@ describe("shell disposal", () => {
     };
     const removeDocument = vi.spyOn(document, "removeEventListener");
     const removeWindow = vi.spyOn(window, "removeEventListener");
-    const disconnect = vi.spyOn(MutationObserver.prototype, "disconnect");
 
     for (let cycle = 0; cycle < 2; cycle++) {
       const layout = SidebarLayout(target, { router, navItems: [], authService });
       expect(router.addRouteListener).toHaveBeenCalledTimes((cycle + 1) * 2);
-      expect(target.querySelector(".sidebar-footer")).not.toBeNull();
+      expect(target.querySelector(".account-menu-footer")).not.toBeNull();
       layout.dispose!();
       expect(router.removeRouteListener).toHaveBeenCalledTimes((cycle + 1) * 2);
       expect(target.textContent).toBe("");
@@ -482,7 +480,6 @@ describe("shell disposal", () => {
     for (const [listener] of router.addRouteListener.mock.calls) {
       expect(router.removeRouteListener).toHaveBeenCalledWith(listener);
     }
-    expect(disconnect).toHaveBeenCalledTimes(2);
     expect(removeDocument).toHaveBeenCalledWith("click", expect.any(Function));
     expect(removeDocument).toHaveBeenCalledWith("keydown", expect.any(Function));
     expect(removeWindow).toHaveBeenCalledWith("keydown", expect.any(Function));
