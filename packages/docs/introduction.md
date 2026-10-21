@@ -97,8 +97,7 @@ Inside `app/src/lib/` code is grouped by concern:
   lifecycle, shell layouts) behind `createPlatform()`.
 - `main.ts`: the composition root for the actively developed parts: stores,
   pages and navigation.
-- `AppRoot.ts`, `routes.ts`, `layoutManager.ts`: route registration and page
-  swapping.
+- `AppRoot.ts`, `layoutManager.ts`: route registration and page swapping.
 - `auth/`: sign-in state, the route guard and the startup sequence.
 - `sync/`: the local database, its schema, the backend connector and sync
   status.
@@ -184,7 +183,7 @@ export function createPlatform({ navItems }: { navItems: NavItem[] }) {
     },
   });
   const authService = new AuthService(supabase);
-  const { powersync } = createPowerSync();
+  const powersync = createPowerSync();
   const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
   const enforceAuthRoute = createAuthGuard(authService, router, { disabled: config.isOfflineMode });
   const syncLifecycle = createSyncLifecycle({
@@ -195,7 +194,7 @@ export function createPlatform({ navItems }: { navItems: NavItem[] }) {
       if (!config.isOfflineMode) await powersync.disconnectAndClear({ clearLocal: true });
     },
   });
-  const auth = new AuthController({
+  const auth = createAuthController({
     authService,
     router,
     syncLifecycle,
@@ -322,48 +321,36 @@ component styles built on top of this contract.
 
 ### 4. Routes, layouts and page swapping
 
-The route table in `app/src/lib/routes.ts` is plain data. Each route either
-redirects or names a layout and the page to mount inside it:
-
-```ts
-export function createRoutes(pages: AppPages): AppRoute[] {
-  return [
-    { path: "/", redirect: "/my-todos" },
-    { path: "/my-todos", layout: "app", resolve: () => pages.todos },
-    { path: "/docs", redirect: "/docs/introduction" },
-    {
-      path: "/docs/:id",
-      layout: "app",
-      resolve: (context) => {
-        const id = context.param("id") as string;
-        return (target) => pages.docs(target, id);
-      },
-    },
-    { path: "/auth", layout: "login", transition: true, resolve: () => pages.login },
-    { path: "/*", layout: "app", resolve: () => pages.notFound },
-  ];
-}
-```
-
 `AppRoot` in `app/src/lib/AppRoot.ts` registers each route with the router.
 For every navigation it first asks the auth guard whether the user may see
-the page, then hands the page to the layout manager:
+the page, then either redirects or hands the page to the layout manager:
 
 ```ts
-for (const route of createRoutes(pages)) {
-  router.get(route.path, (context) => {
-    if (disposed || enforceAuthRoute(context.path.split("?")[0])) return;
-    if ("redirect" in route) {
-      router.navigate(route.redirect);
-      return;
-    }
-    layoutManager.show({
-      page: route.resolve(context),
-      layout: layouts[route.layout],
-      transition: route.transition,
-    });
-  });
-}
+const canActivate = (path: string) => !disposed && !enforceAuthRoute(path.split("?")[0]);
+const show = (layout: LayoutName, page: Mount, transition?: boolean) => {
+  layoutManager.show({ page, layout: layouts[layout], transition });
+};
+
+router.get("/", (ctx) => {
+  if (canActivate(ctx.path)) router.navigate("/my-todos");
+});
+router.get("/my-todos", (ctx) => {
+  if (canActivate(ctx.path)) show("app", pages.todos);
+});
+router.get("/docs", (ctx) => {
+  if (canActivate(ctx.path)) router.navigate("/docs/introduction");
+});
+router.get("/docs/:id", (ctx) => {
+  if (!canActivate(ctx.path)) return;
+  const id = ctx.param("id") as string;
+  show("app", (target) => pages.docs(target, id));
+});
+router.get("/auth", (ctx) => {
+  if (canActivate(ctx.path)) show("login", pages.login, true);
+});
+router.get("/*", (ctx) => {
+  if (canActivate(ctx.path)) show("app", pages.notFound);
+});
 
 void auth.bootstrap();
 ```
@@ -441,7 +428,7 @@ Notice that it returns `true` ("stop rendering") while auth is not ready yet.
 Nothing is drawn until the app knows whether a user is signed in, so the login
 page never flashes on screen for a user who is already signed in.
 
-**`AuthController`** (`app/src/lib/auth/AuthController.ts`) runs the startup
+**`createAuthController`** (`app/src/lib/auth/AuthController.ts`) runs the startup
 sequence and connects auth events to the rest of the app:
 
 ```ts
@@ -519,22 +506,19 @@ the browser:
 
 ```ts
 export function createPowerSync() {
-  const powersync = new PowerSyncDatabase({
+  return new PowerSyncDatabase({
     database: {
       dbFilename: "supa-app.db",
       vfs: WASQLiteVFS.OPFSCoopSyncVFS,
     },
     schema: AppSchema,
   });
-
-  return { powersync, db: wrapPowerSyncWithKysely<Database>(powersync) };
 }
 ```
 
 `OPFSCoopSyncVFS` stores the database in the Origin Private File System and
-lets several browser tabs share it. The function also returns a typed Kysely
-query builder (`db`). The current code uses plain SQL strings through
-`powersync` instead, but `db` is available if you prefer typed queries.
+lets several browser tabs share it. Queries use SQL strings through the
+`PowerSyncDatabase` instance.
 
 #### When to connect: `syncLifecycle`
 
@@ -719,9 +703,9 @@ Three details here are typical of local-first code:
   `todos.list_id`, but PowerSync's local tables have no foreign keys. Deleting
   the todos first keeps the local data correct immediately, even offline.
 
-#### `MyTodos`: consuming the watch
+#### `MyTodosPage`: consuming the watch
 
-`MyTodos` (`app/src/pages/my-todos/MyTodos.ts`) reads the watch with a
+`MyTodosPage` (`app/src/pages/my-todos/index.ts`) reads the watch with a
 `for await` loop. An `AbortController` ties the query's lifetime to the
 page's lifetime:
 
@@ -1106,7 +1090,7 @@ tests do not cover CSS or responsive layout, so check those in a real browser.
 
 1. Create `app/src/pages/<name>/index.ts` that exports a mount function
    returning `Dispose`.
-2. Add the page to the `AppPages` type and the route table in `routes.ts`.
+2. Add the page to `AppPages` and register its route in `app/src/lib/AppRoot.ts`.
 3. Bind its dependencies in the `pages` object in `main.ts`.
 4. If it needs a sidebar entry, add one to `app/src/lib/nav/navConfig.ts`.
 

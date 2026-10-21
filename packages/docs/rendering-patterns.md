@@ -453,10 +453,10 @@ Notice the synergy here:
 - The card shell is imperative, protecting active typing and focus states.
 - The inner items container (`mountedTodoList`) delegates to `TodoList` (Pattern 1), getting the best of both worlds!
 
-### Managing controllers from the parent: `MyTodos`
+### Managing controllers from the parent: `MyTodosPage`
 
-How does the parent reconcile these controllers when data changes? In `app/src/pages/my-todos/MyTodos.ts`,
-`MyTodos` maintains a `Map<string, TodoListCardController>` keyed by list ID:
+How does the parent reconcile these controllers when data changes? In `app/src/pages/my-todos/index.ts`,
+`MyTodosPage` maintains a `Map<string, TodoListCardController>` keyed by list ID:
 
 ```ts
 const cardControllers = new Map<string, TodoListCardController>();
@@ -619,55 +619,6 @@ use it declaratively:
 When attributes change in HTML or properties change in JavaScript, `LitElement`'s reactive
 lifecycle automatically schedules an asynchronous re-render.
 
-### Real-world example: `<app-link>`
-
-`<app-link>` (`app/src/lib/ui/AppLink.ts`) is another example:
-
-```ts
-import "./app-link.css";
-import { html, LitElement } from "lit";
-
-class AppLink extends LitElement {
-  static override properties = {
-    text: { type: String },
-    to: { type: String },
-    active: { type: Boolean },
-    navigate: { attribute: false },
-  };
-
-  public text = "";
-  public to = "/";
-  public active = false;
-  public navigate?: (path: string) => void;
-
-  protected override createRenderRoot() {
-    return this; // Light DOM: styles flow in naturally
-  }
-
-  override render() {
-    return html`
-      <a
-        class="app-link"
-        href="${this.to}"
-        @click="${this.handleClick}"
-        aria-current="${this.active ? "page" : "false"}"
-      >
-        ${this.text}
-      </a>
-    `;
-  }
-
-  private handleClick = (event: Event) => {
-    if (this.navigate) {
-      event.preventDefault();
-      this.navigate(this.to);
-    }
-  };
-}
-
-customElements.define("app-link", AppLink);
-```
-
 ### Why `createRenderRoot() { return this; }`?
 
 By default, `LitElement` attaches a Shadow Root to isolate markup and CSS. While useful for
@@ -687,15 +638,15 @@ properties) while preserving seamless integration with project-wide CSS variable
   - Lifecycle hooks (`connectedCallback`, `disconnectedCallback`, `willUpdate`).
   - Scheduling renders when properties change.
 - **The consumer owns:**
-  - Placing `<app-icon>` or `<app-link>` into the markup or template.
-  - Setting attributes or binding dynamic properties (`.navigate=${...}`).
+  - Placing `<app-icon>` into the markup or template.
+  - Setting attributes or binding dynamic properties.
 
 ### When to use this pattern
 
 Use a reactive `LitElement` when:
 
 - Creating small, reusable atomic UI primitives used across multiple pages and templates.
-- You want an ergonomic HTML tag (`<app-icon>`, `<app-link>`).
+- You want an ergonomic HTML tag (`<app-icon>`).
 - The component's state is strictly driven by public properties or attributes.
 
 ---
@@ -704,7 +655,7 @@ Use a reactive `LitElement` when:
 
 | Concern                      | 1. Mounted Lit function               | 2. Imperative component (Controller)     | 3. Reactive `LitElement`                     |
 | :--------------------------- | :------------------------------------ | :--------------------------------------- | :------------------------------------------- |
-| **Example in app**           | `TodoList`, `SyncStatusIndicator`     | `TodoListCard`                           | `AppIcon`, `AppLink`                         |
+| **Example in app**           | `TodoList`, `SyncStatusIndicator`     | `TodoListCard`                           | `AppIcon`                                    |
 | **Host element**             | Provided by caller                    | Provided by caller                       | Created by browser (`<tag-name>`)            |
 | **DOM ownership**            | Lit declarative `render()`            | Manual DOM creation & cached nodes       | Lit declarative `render()`                   |
 | **State**                    | Parent props or closure variables     | Component closure variables              | Reactive `static properties`                 |

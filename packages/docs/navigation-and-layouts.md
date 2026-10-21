@@ -6,12 +6,11 @@ This guide explains how routing, layouts, and page mounting work in the applicat
 
 ## Architecture Overview
 
-Navigation in this application is intentionally lightweight and decoupled from heavy framework dependencies. It relies on four key components:
+Navigation in this application is intentionally lightweight and decoupled from heavy framework dependencies. It relies on three key components:
 
 1. **Router (`@packages/router`)**: A minimal client-side hash/path router managing URL history and route patterns.
-2. **Route Definitions (`app/src/lib/routes.ts`)**: Pure configuration mapping URL paths to layout names, transitions, and page resolvers.
-3. **Layout Manager (`app/src/lib/layoutManager.ts`)**: Controls the layout shell lifecycle, slots page content, and manages native View Transitions.
-4. **App Root (`app/src/lib/AppRoot.ts`), Platform (`app/src/lib/platform.ts`) & Composition Root (`app/src/lib/main.ts`)**: The platform creates the stable infrastructure and layouts; `main.ts` wires data stores and page factories into `AppRoot` via Dependency Inversion.
+2. **Layout Manager (`app/src/lib/layoutManager.ts`)**: Controls the layout shell lifecycle, slots page content, and manages native View Transitions.
+3. **App Root (`app/src/lib/AppRoot.ts`), Platform (`app/src/lib/platform.ts`) & Composition Root (`app/src/lib/main.ts`)**: `AppRoot` registers routes and guards; the platform creates stable infrastructure and layouts; `main.ts` wires data stores and page factories into `AppRoot` via Dependency Inversion.
 
 ```
 URL Change
@@ -48,35 +47,44 @@ export type Mount<Props = void> = (el: HTMLElement, props: Props) => Dispose | v
 - When a page mounts, it renders into an existing container element and returns a cleanup callback (`Dispose`).
 - When navigating away, the `LayoutManager` invokes `dispose()` to teardown event listeners, database subscriptions, and timers.
 
-### 2. Route Definitions (`routes.ts`)
+### 2. Route Registration (`AppRoot.ts`)
 
-Routes are declared declaratively via `createRoutes(pages: AppPages)`:
+Routes are registered directly on the router in `AppRoot` (`app/src/lib/AppRoot.ts`):
 
 ```ts
-export function createRoutes(pages: AppPages): AppRoute[] {
-  return [
-    { path: "/", redirect: "/my-todos" },
-    { path: "/my-todos", layout: "app", resolve: () => pages.todos },
-    {
-      path: "/docs/:id",
-      layout: "app",
-      resolve: (context) => {
-        const id = context.param("id") as string;
-        return (target) => pages.docs(target, id);
-      },
-    },
-    { path: "/auth", layout: "login", transition: true, resolve: () => pages.login },
-    { path: "/*", layout: "app", resolve: () => pages.notFound },
-  ];
-}
+const canActivate = (path: string) => !disposed && !enforceAuthRoute(path.split("?")[0]);
+const show = (layout: LayoutName, page: Mount, transition?: boolean) => {
+  layoutManager.show({ page, layout: layouts[layout], transition });
+};
+
+router.get("/", (ctx) => {
+  if (canActivate(ctx.path)) router.navigate("/my-todos");
+});
+router.get("/my-todos", (ctx) => {
+  if (canActivate(ctx.path)) show("app", pages.todos);
+});
+router.get("/docs", (ctx) => {
+  if (canActivate(ctx.path)) router.navigate("/docs/introduction");
+});
+router.get("/docs/:id", (ctx) => {
+  if (!canActivate(ctx.path)) return;
+  const id = ctx.param("id") as string;
+  show("app", (target) => pages.docs(target, id));
+});
+router.get("/auth", (ctx) => {
+  if (canActivate(ctx.path)) show("login", pages.login, true);
+});
+router.get("/*", (ctx) => {
+  if (canActivate(ctx.path)) show("app", pages.notFound);
+});
 ```
 
-Each route specifies:
+Each route handler checks `canActivate(ctx.path)` (which enforces disposal state and the auth guard), then either redirects or calls `show(layout, page, transition)`:
 
 - `path`: URL pattern, including parameters (e.g. `:id`) or wildcards (`/*`).
 - `layout`: Name of the layout shell (`"app"` | `"login"`).
 - `transition`: (Optional) Whether to trigger native cross-document/view transitions when navigating to this route.
-- `resolve`: Returns a `Mount` function for the matching page, with URL parameters passed if needed.
+- `page`: A `Mount` function for the matching page, with URL parameters passed if needed.
 
 ### 3. Layout Persistence & View Transitions
 
@@ -89,7 +97,7 @@ The `LayoutManager` preserves the active layout shell when moving between routes
 
 ## How to Add a New Page
 
-Adding a new page involves four steps:
+Adding a new page involves three steps:
 
 ### Step 1: Create the Page Component
 
@@ -121,35 +129,26 @@ export function SettingsPage(el: HTMLElement, props?: SettingsPageProps): Dispos
 }
 ```
 
-### Step 2: Register the Page in `AppPages` (`app/src/lib/routes.ts`)
+### Step 2: Register the Page and Route in `AppRoot` (`app/src/lib/AppRoot.ts`)
 
-Add the page key and mount signature to `AppPages`:
+Add the page key to `AppPages` and register its route on `router`:
 
 ```ts
-export type AppPages = {
+type AppPages = {
   login: Mount;
   todos: Mount;
   docs: Mount<string>;
   notFound: Mount;
   settings: Mount; // <-- Add new page here
 };
+
+// Inside AppRoot:
+router.get("/settings", (ctx) => {
+  if (canActivate(ctx.path)) show("app", pages.settings);
+});
 ```
 
-### Step 3: Add the Route Definition (`app/src/lib/routes.ts`)
-
-Add the route entry in `createRoutes`:
-
-```ts
-export function createRoutes(pages: AppPages): AppRoute[] {
-  return [
-    // ...
-    { path: "/settings", layout: "app", resolve: () => pages.settings },
-    // ...
-  ];
-}
-```
-
-### Step 4: Inject the Page Factory in `main.ts` (`app/src/lib/main.ts`)
+### Step 3: Inject the Page Factory in `main.ts` (`app/src/lib/main.ts`)
 
 In `startApp`, provide the page factory inside the `pages` object:
 
@@ -205,10 +204,10 @@ export const MinimalLayout: LayoutFactory = (container: HTMLElement): LayoutInst
 
 ### Step 2: Register the Layout Name
 
-Update the `LayoutName` type in both `app/src/lib/routes.ts` and `app/src/lib/AppRoot.ts`:
+Update the `LayoutName` type in `app/src/lib/AppRoot.ts`:
 
 ```ts
-// app/src/lib/routes.ts & app/src/lib/AppRoot.ts
+// app/src/lib/AppRoot.ts
 type LayoutName = "app" | "login" | "minimal";
 ```
 
@@ -231,12 +230,12 @@ return {
 };
 ```
 
-Now any route can use `layout: "minimal"` in `createRoutes`.
+Now any route in `AppRoot` can pass `"minimal"` to `show("minimal", pages.somePage)`.
 
 ---
 
 ## Summary of Best Practices
 
 - **Always return a cleanup function**: Ensure pages and layouts return `() => void` so subscriptions, DOM nodes, and listeners do not leak.
-- **Do not import concrete pages into `AppRoot`**: Keep `AppRoot` and `routes.ts` agnostic of concrete page implementations. Wire page dependencies centrally in `main.ts` (Composition Root) and infrastructure and layouts in `platform.ts`.
+- **Do not import concrete pages into `AppRoot`**: Keep `AppRoot` agnostic of concrete page implementations. Wire page dependencies centrally in `main.ts` (Composition Root) and infrastructure and layouts in `platform.ts`.
 - **Use `router.navigate(path)` for programmatic navigation**: For button clicks or form submissions, invoke `router.navigate("/path")` rather than mutating `window.location` directly.
