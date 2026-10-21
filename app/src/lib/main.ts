@@ -3,7 +3,6 @@
  * Supabase, PowerSync) and wires them into layouts and pages. Everything else
  * receives what it needs as arguments, so it can be tested with plain fakes.
  */
-
 import { Router } from "@packages/router";
 import { createClient } from "@supabase/supabase-js";
 import { AppRoot } from "./AppRoot.ts";

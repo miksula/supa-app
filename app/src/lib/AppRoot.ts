@@ -27,24 +27,42 @@ export function AppRoot(
   const layoutManager = createLayoutManager(el);
   let disposed = false;
 
-  const route = (path: string, handler: (ctx: RouteContext) => void) => {
-    router.get(path, (ctx) => {
-      if (!disposed && !guardRoute(ctx.path.split("?")[0])) handler(ctx);
+  const route = (path: string, handler: (context: RouteContext) => void) => {
+    router.get(path, function handlePath(context) {
+      if (!disposed && !guardRoute(context.path.split("?")[0])) handler(context);
     });
   };
-  const showPage = (layout: LayoutName, page: Mount, transition?: boolean) => {
-    layoutManager.show({ page, layout: layouts[layout], transition });
+  const showPage = (page: Mount, options?: { layout?: LayoutName; transition?: boolean }) => {
+    layoutManager.show({
+      page,
+      layout: layouts[options?.layout ?? "app"],
+      transition: options?.transition,
+    });
+  };
+  const redirectTo = (path: string) => {
+    router.navigate(path);
   };
 
-  route("/", () => router.navigate("/my-todos"));
-  route("/my-todos", () => showPage("app", pages.todos));
-  route("/docs", () => router.navigate("/docs/introduction"));
-  route("/docs/:id", (ctx) => {
-    const id = ctx.param("id") as string;
-    showPage("app", (target) => pages.docs(target, id));
+  // Define app routes here
+  route("/", function () {
+    redirectTo("/my-todos");
   });
-  route("/auth", () => showPage("login", pages.login, true));
-  route("/*", () => showPage("app", pages.notFound));
+  route("/my-todos", function () {
+    showPage(pages.todos);
+  });
+  route("/docs", function () {
+    redirectTo("/docs/introduction");
+  });
+  route("/docs/:id", function (context) {
+    const id = context.param("id") as string;
+    showPage((target) => pages.docs(target, id));
+  });
+  route("/auth", function () {
+    showPage(pages.login, { layout: "login", transition: true });
+  });
+  route("/*", function () {
+    showPage(pages.notFound);
+  });
 
   return () => {
     if (disposed) return;
