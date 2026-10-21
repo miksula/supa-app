@@ -23,8 +23,8 @@
     min-height: calc(var(--spacing) * 40);
     padding: calc(var(--spacing) * 4);
     border-radius: var(--radius-xl);
-    background-color: color-mix(in oklab, var(--surface-raised) 50%, transparent);
-    color: var(--main-text);
+    background-color: var(--surface-translucent);
+    color: var(--text-primary);
   }
 
   .card-header {
@@ -61,7 +61,7 @@
     white-space: nowrap;
 
     &:focus-visible {
-      outline: 2px solid var(--outline-color);
+      outline: var(--focus-ring);
       outline-offset: 2px;
     }
   }
@@ -72,7 +72,7 @@
     flex: 1;
     padding: 0 0 calc(var(--spacing) * 1);
     border: 0;
-    border-bottom: 1px solid var(--main-border);
+    border-bottom: 1px solid var(--border-strong);
     background: transparent;
     color: inherit;
     font: inherit;
@@ -83,7 +83,7 @@
     }
 
     &:focus-visible {
-      border-bottom-color: var(--outline-color);
+      border-bottom-color: var(--focus-ring-color);
     }
   }
 
@@ -94,18 +94,18 @@
     justify-content: center;
     padding: calc(var(--spacing) * 0.5);
     border: 0;
-    border-radius: calc(var(--radius) * 0.6);
+    border-radius: var(--radius-control);
     background: transparent;
-    color: var(--muted-foreground);
+    color: var(--text-muted);
     cursor: pointer;
 
     &:hover {
-      background-color: var(--button-active-bg);
-      color: var(--highlight-text);
+      background-color: var(--control-hover-bg);
+      color: var(--status-danger);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--outline-color);
+      outline: var(--focus-ring);
       outline-offset: 2px;
     }
   }
@@ -135,17 +135,17 @@
     align-items: center;
     gap: calc(var(--spacing) * 2);
     padding-block: var(--spacing);
-    border-bottom: 1px solid var(--main-border-light);
+    border-bottom: 1px solid var(--border-subtle);
     cursor: pointer;
   }
 
   .todo-item-checkbox {
     flex-shrink: 0;
     cursor: pointer;
-    accent-color: var(--sidebar-primary);
+    accent-color: var(--accent-primary);
 
     &:focus-visible {
-      outline: 2px solid var(--outline-color);
+      outline: var(--focus-ring);
       outline-offset: 2px;
     }
   }
@@ -156,7 +156,7 @@
     font-size: 0.875rem;
 
     .todo-item.-is-done & {
-      color: var(--disabled-text);
+      color: var(--text-disabled);
       text-decoration: line-through;
     }
   }
@@ -170,7 +170,7 @@
     width: 100%;
     padding: var(--spacing) calc(var(--spacing) * 7) var(--spacing) 0;
     border: 0;
-    border-bottom: 1px solid var(--main-border-light);
+    border-bottom: 1px solid var(--border-subtle);
     background: transparent;
     color: inherit;
     font: inherit;
@@ -178,11 +178,11 @@
     outline: 0;
 
     &:focus-visible {
-      border-bottom-color: var(--outline-color);
+      border-bottom-color: var(--focus-ring-color);
     }
 
     &::placeholder {
-      color: var(--muted-foreground);
+      color: var(--text-muted);
     }
   }
 

@@ -44,7 +44,7 @@ export function DocsPage(
             <div class="docs-page not-found" data-component="docs-page">
               <div class="p-6 max-w-4xl mx-auto">
                 <h1 class="text-2xl font-bold mb-2">Documentation not found</h1>
-                <p class="text-sm text-(--muted-foreground) mb-4">
+                <p class="text-sm text-(--text-muted) mb-4">
                   No documentation was found for:
                   <code class="px-1.5 py-0.5 rounded bg-(--surface-raised)">${docId}</code>
                 </p>

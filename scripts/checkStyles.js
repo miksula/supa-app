@@ -217,7 +217,7 @@ export function checkCss({ file, code, tokens }) {
         report(
           currentLoc(),
           "no-hardcoded-color",
-          "Use a semantic color token such as var(--main-text) instead of a literal color.",
+          "Use a semantic color token such as var(--text-primary) instead of a literal color.",
         );
       },
     },

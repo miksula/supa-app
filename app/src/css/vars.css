@@ -10,13 +10,8 @@
   }
 
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --radius: 0.625rem;
   --white: var(--color-white, #fff);
   --black: var(--color-black, #000);
-  --red: var(--color-red-600);
-  --green: var(--color-green-600);
-  --blue: var(--color-blue-400);
-  --blue-primary: lab(36.9089% 35.0961 -85.6872);
 
   /*
    * Neutral Light/Dark Bridge Tokens (--nl/--nd)
@@ -51,28 +46,41 @@
   --nd-900: var(--color-newyork-900);
   --nd-950: var(--color-newyork-950);
 
-  --muted: light-dark(var(--nl-200), var(--nd-700));
-  --main-bg: light-dark(var(--nl-50), var(--nd-850));
+  /* Surfaces */
+  --surface-page: light-dark(var(--nl-50), var(--nd-850));
   --surface-card: light-dark(var(--nl-card), var(--nd-950));
   --surface-raised: light-dark(var(--nl-raised), var(--nd-800));
-  --header-bg: light-dark(var(--nl-card), var(--nd-900));
-
-  --sidebar-primary: var(--blue-primary);
-  --main-text: light-dark(var(--nl-900), var(--nd-50));
-  --header-text: light-dark(var(--nl-700), var(--nd-200));
-  --disabled-text: light-dark(var(--nl-300), var(--nd-600));
-  --main-border: light-dark(var(--nl-300), var(--nd-700));
-  --main-border-light: light-dark(var(--nl-200), var(--nd-700));
-  --muted-foreground: light-dark(var(--nl-500), var(--nd-400));
-
-  --button-text: light-dark(var(--nl-700), var(--nd-200));
-  --button-bg: light-dark(var(--nl-card), transparent);
-  --button-active-text: light-dark(var(--nl-950), var(--color-white));
-  --button-active-bg: light-dark(var(--nl-200), var(--nd-800));
-
-  --error-text: light-dark(var(--color-red-600), var(--color-red-400));
-  --highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
-  --button-highlight-text: light-dark(var(--color-red-600), var(--color-red-400));
-  --outline-color: light-dark(var(--color-blue-500), var(--color-blue-400));
+  --surface-translucent: color-mix(in oklab, var(--surface-raised) 50%, transparent);
   --avatar-bg: light-dark(var(--nl-700), var(--nd-700));
+
+  /* Text / Foreground */
+  --text-primary: light-dark(var(--nl-900), var(--nd-50));
+  --text-muted: light-dark(var(--nl-500), var(--nd-400));
+  --text-disabled: light-dark(var(--nl-300), var(--nd-600));
+  --text-on-accent: var(--white);
+
+  /* Borders & Focus */
+  --border-strong: light-dark(var(--nl-300), var(--nd-700));
+  --border-subtle: light-dark(var(--nl-200), var(--nd-700));
+  --focus-ring-color: light-dark(var(--color-blue-500), var(--color-blue-400));
+  --focus-ring: 2px solid var(--focus-ring-color);
+
+  /* Interactive Controls */
+  --control-hover-bg: light-dark(var(--nl-200), var(--nd-800));
+  --control-hover-text: light-dark(var(--nl-950), var(--color-white));
+
+  /* Accent & Status */
+  --accent-primary: lab(36.9089% 35.0961 -85.6872);
+  --status-danger: light-dark(var(--color-red-600), var(--color-red-400));
+  --status-success: light-dark(var(--color-green-600), var(--color-green-400));
+
+  /* Radii */
+  --radius: 0.625rem;
+  --radius-control: calc(var(--radius) * 0.6);
+  --radius-item: calc(var(--radius) * 0.8);
+  --radius-panel: calc(var(--radius) * 1.4);
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-normal: 150ms;
 }

@@ -14,7 +14,7 @@
     align-items: center;
     justify-content: space-between;
     border-radius: var(--radius-xl);
-    background-color: color-mix(in oklab, var(--surface-raised) 50%, transparent);
+    background-color: var(--surface-translucent);
     padding-inline: calc(var(--spacing) * 4);
   }
 
@@ -31,25 +31,25 @@
     border: 0;
     cursor: pointer;
     transition:
-      transform 150ms ease,
-      color 120ms ease,
-      background-color 120ms ease;
+      transform var(--duration-normal) ease,
+      color var(--duration-fast) ease,
+      background-color var(--duration-fast) ease;
 
     &:focus-visible {
-      outline: 2px solid var(--outline-color);
+      outline: var(--focus-ring);
       outline-offset: 2px;
     }
   }
 
   .navigation-button {
     padding: calc(var(--spacing) * 0.5);
-    border-radius: calc(var(--radius) * 0.6);
+    border-radius: var(--radius-control);
     background: transparent;
-    color: var(--muted-foreground);
+    color: var(--text-muted);
 
     &:hover {
-      background-color: var(--button-active-bg);
-      color: var(--button-active-text);
+      background-color: var(--control-hover-bg);
+      color: var(--control-hover-text);
     }
 
     &:disabled {
@@ -63,12 +63,12 @@
     padding: calc(var(--spacing) * 1.5);
     border: 1px solid transparent;
     border-radius: 1rem;
-    background-color: var(--button-active-bg);
-    color: var(--button-active-text);
+    background-color: var(--control-hover-bg);
+    color: var(--control-hover-text);
 
     &:hover {
-      border-color: color-mix(in oklab, var(--main-border-light) 50%, transparent);
-      background-color: color-mix(in oklab, var(--button-active-bg) 95%, white);
+      border-color: color-mix(in oklab, var(--border-subtle) 50%, transparent);
+      background-color: color-mix(in oklab, var(--control-hover-bg) 95%, var(--white));
     }
   }
 

@@ -5,7 +5,7 @@
     min-height: 100dvh;
     height: 100dvh;
     width: 100%;
-    background-color: var(--main-bg);
+    background-color: var(--surface-page);
     position: relative;
     box-sizing: border-box;
     overflow-x: hidden;
@@ -18,7 +18,7 @@
     height: 100%;
     flex-shrink: 0;
     box-sizing: border-box;
-    color: var(--main-text);
+    color: var(--text-primary);
     transition: margin-inline-start 200ms ease;
   }
 
@@ -35,7 +35,7 @@
     min-width: 0;
     flex-direction: column;
     background-color: var(--surface-card);
-    border-radius: calc(var(--radius) * 1.4);
+    border-radius: var(--radius-panel);
     overflow: hidden;
     margin: calc(var(--spacing) * 2);
     margin-inline-start: 0;

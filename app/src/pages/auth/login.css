@@ -6,8 +6,8 @@
     width: 100%;
     max-width: var(--container-sm, 24rem);
     padding: calc(var(--spacing) * 6);
-    border-radius: calc(var(--radius) * 1.4);
-    color: var(--main-text);
+    border-radius: var(--radius-panel);
+    color: var(--text-primary);
   }
 
   .login-header {
@@ -26,7 +26,7 @@
   }
 
   .login-description {
-    color: var(--muted-foreground);
+    color: var(--text-muted);
     font-size: var(--text-sm);
     line-height: var(--text-sm--line-height, 1.4);
     margin: 0;
@@ -46,7 +46,7 @@
     gap: calc(var(--spacing) * 1.5);
 
     &:has(.form-input:user-invalid) .form-label {
-      color: var(--error-text);
+      color: var(--status-danger);
     }
   }
 
@@ -55,39 +55,39 @@
     font-size: var(--text-sm);
     font-weight: var(--font-weight-medium);
     line-height: 1.375;
-    transition: color 150ms ease;
+    transition: color var(--duration-normal) ease;
   }
 
   .form-input {
     width: 100%;
-    color: var(--main-text);
+    color: var(--text-primary);
     background: transparent;
     font-size: 0.9375rem;
     line-height: 1.5;
     border: 0;
-    border-bottom: 1px solid var(--main-border-light);
+    border-bottom: 1px solid var(--border-subtle);
     border-radius: 0;
     padding-block: calc(var(--spacing) * 1);
     padding-inline: 0;
     outline: 0;
     transition:
-      border-bottom-color 150ms ease,
-      color 150ms ease;
+      border-bottom-color var(--duration-normal) ease,
+      color var(--duration-normal) ease;
 
     &:focus-visible {
-      border-bottom-color: var(--main-border);
+      border-bottom-color: var(--border-strong);
     }
 
     &:user-invalid,
     &:user-invalid:focus-visible {
-      border-bottom-color: var(--error-text);
-      color: var(--error-text);
+      border-bottom-color: var(--status-danger);
+      color: var(--status-danger);
     }
   }
 
   .login-status {
     min-height: 1.25rem;
-    color: var(--error-text);
+    color: var(--status-danger);
     font-size: var(--text-sm);
     text-align: center;
     margin: 0;
@@ -102,33 +102,33 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    background-color: var(--button-active-bg);
-    color: var(--button-active-text);
+    background-color: var(--control-hover-bg);
+    color: var(--control-hover-text);
     font-size: var(--text-sm);
     font-weight: var(--font-weight-medium);
     border: 0;
-    border-radius: calc(var(--radius) * 0.8);
+    border-radius: var(--radius-item);
     padding-block: calc(var(--spacing) * 2);
     cursor: pointer;
     outline: 2px solid transparent;
     outline-offset: 2px;
     transition:
-      opacity 150ms ease,
-      outline-color 150ms ease,
-      background-color 150ms ease;
+      opacity var(--duration-normal) ease,
+      outline-color var(--duration-normal) ease,
+      background-color var(--duration-normal) ease;
 
     &:hover:not(:disabled) {
       opacity: 0.9;
     }
 
     &:focus-visible {
-      outline: 2px solid var(--outline-color);
+      outline: var(--focus-ring);
     }
 
     &:disabled {
       cursor: not-allowed;
       opacity: 0.5;
-      color: var(--disabled-text);
+      color: var(--text-disabled);
     }
   }
 }

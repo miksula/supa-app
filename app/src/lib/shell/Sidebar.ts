@@ -79,7 +79,7 @@ export function Sidebar(
           </a>
           <div class="sidebar-brand-text">
             <span class="truncate text-sm font-medium">Local First</span>
-            <span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
+            <span class="truncate text-xs text-(--text-muted)">Supabase</span>
           </div>
         </div>
 

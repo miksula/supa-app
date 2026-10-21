@@ -21,7 +21,7 @@
   .header-separator {
     width: 1px;
     height: calc(var(--spacing) * 3.5);
-    background-color: var(--main-border-light);
+    background-color: var(--border-subtle);
     margin: 0 0.85rem 0 0.5rem;
     visibility: visible;
   }
@@ -51,20 +51,20 @@
   }
 
   .breadcrumb-link {
-    color: var(--muted-foreground);
+    color: var(--text-muted);
     text-decoration: none;
-    transition: color 120ms ease;
+    transition: color var(--duration-fast) ease;
 
     &:hover {
-      color: var(--main-text);
+      color: var(--text-primary);
     }
   }
 
   .breadcrumb-page {
-    color: var(--muted-foreground);
+    color: var(--text-muted);
 
     &.-is-current {
-      color: var(--main-text);
+      color: var(--text-primary);
       font-weight: 400;
     }
   }
@@ -72,7 +72,7 @@
   .breadcrumb-separator {
     display: inline-flex;
     align-items: center;
-    color: var(--muted-foreground);
+    color: var(--text-muted);
     user-select: none;
   }
 
@@ -90,24 +90,23 @@
     height: calc(var(--spacing) * 7);
     padding: 0;
     border: 0;
-    border-radius: calc(var(--radius) * 0.6);
+    border-radius: var(--radius-control);
     background: transparent;
-    /* color: var(--muted-foreground); */
-    color: var(--button-active-text);
+    color: var(--control-hover-text);
     cursor: pointer;
     flex-shrink: 0;
     transition:
-      transform 150ms ease,
-      color 120ms ease,
-      background-color 120ms ease;
+      transform var(--duration-normal) ease,
+      color var(--duration-fast) ease,
+      background-color var(--duration-fast) ease;
 
     &:hover {
-      color: var(--button-active-text);
-      background-color: var(--button-active-bg);
+      color: var(--control-hover-text);
+      background-color: var(--control-hover-bg);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--outline-color);
+      outline: var(--focus-ring);
       outline-offset: 2px;
     }
   }

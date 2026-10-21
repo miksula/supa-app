@@ -4,39 +4,39 @@
     display: flex;
     gap: 0.375rem;
     padding: calc(var(--spacing) * 3);
-    border-bottom: 1px solid var(--main-border-light);
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   :scope > .label {
-    color: var(--muted-foreground);
+    color: var(--text-muted);
     font-size: var(--text-xs);
   }
 
   :scope > .theme-btn {
     background: transparent;
-    border: 1px solid var(--main-border);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius-sm, 0.25rem);
-    color: var(--muted-foreground);
+    color: var(--text-muted);
     cursor: pointer;
     font: inherit;
     font-size: var(--text-xs);
     line-height: 1.25;
     padding: 0.125rem 0.5rem;
     transition:
-      color 120ms ease,
-      border-color 120ms ease,
-      background-color 120ms ease;
+      color var(--duration-fast) ease,
+      border-color var(--duration-fast) ease,
+      background-color var(--duration-fast) ease;
   }
 
   :scope > .theme-btn:hover {
-    border-color: var(--main-text);
-    color: var(--main-text);
+    border-color: var(--text-primary);
+    color: var(--text-primary);
   }
 
   :scope > .theme-btn.-is-active {
-    background-color: var(--button-active-bg);
-    border-color: var(--button-active-text);
-    color: var(--button-active-text);
+    background-color: var(--control-hover-bg);
+    border-color: var(--control-hover-text);
+    color: var(--control-hover-text);
     font-weight: var(--font-weight-medium, 500);
   }
 }

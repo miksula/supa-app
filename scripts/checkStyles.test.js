@@ -16,8 +16,8 @@ describe("checkCss", () => {
   it("accepts a clean scoped stylesheet", () => {
     const violations = css(`
       @scope (.card, [data-component="card"]) {
-        :scope { color: var(--main-text); background: var(--surface-card); border-radius: var(--radius); }
-        .card-title { color: var(--muted-foreground); &:hover { color: var(--button-active-text); } }
+        :scope { color: var(--text-primary); background: var(--surface-card); border-radius: var(--radius); }
+        .card-title { color: var(--text-muted); &:hover { color: var(--control-hover-text); } }
         .card-shadow { box-shadow: 0 1px 2px rgb(0 0 0 / 0.1); border-color: currentcolor; background: transparent; }
       }
     `);
@@ -25,13 +25,13 @@ describe("checkCss", () => {
   });
 
   it("reports a stylesheet without @scope", () => {
-    expect(rules(css(`.card { color: var(--main-text); }`))).toContain("scope-required");
+    expect(rules(css(`.card { color: var(--text-primary); }`))).toContain("scope-required");
   });
 
   it("reports style rules outside @scope", () => {
     const violations = css(`
-      @scope (.card) { :scope { color: var(--main-text); } }
-      .stray { color: var(--main-text); }
+      @scope (.card) { :scope { color: var(--text-primary); } }
+      .stray { color: var(--text-primary); }
     `);
     expect(violations).toMatchObject([
       { rule: "scope-required", line: 3, message: "Style rule is outside @scope." },
@@ -54,7 +54,7 @@ describe("checkCss", () => {
           padding: var(--local);
           color: var(--does-not-exist);
           margin: var(--also-missing, 4px);
-          border-color: var(--main-border);
+          border-color: var(--border-strong);
           gap: var(--spacing);
           rotate: var(--tw-rotate-x);
         }
@@ -76,15 +76,17 @@ describe("checkCss", () => {
   });
 
   it("reports :scope child combinators with the rule's line", () => {
-    const violations = css(`@scope (.card) {\n  :scope > .header { color: var(--main-text); }\n}`);
+    const violations = css(
+      `@scope (.card) {\n  :scope > .header { color: var(--text-primary); }\n}`,
+    );
     expect(violations).toMatchObject([{ rule: "no-scope-child-combinator", line: 2 }]);
   });
 
   it("reports [data-slot] selectors in all forms", () => {
     const violations = css(`@scope (.card) {
-  [data-slot="header"] { color: var(--main-text); }
-  .a[data-slot="b"] .c { color: var(--main-text); }
-  &:has([data-slot]) { color: var(--main-text); }
+  [data-slot="header"] { color: var(--text-primary); }
+  .a[data-slot="b"] .c { color: var(--text-primary); }
+  &:has([data-slot]) { color: var(--text-primary); }
 }`);
     expect(violations).toMatchObject([
       { rule: "no-data-slot-selector", line: 2 },
@@ -95,12 +97,12 @@ describe("checkCss", () => {
 
   it("reports selectors nested deeper than 3 levels", () => {
     const tooDeep = css(`
-      @scope (.a) { .l1 { .l2 { .l3 { .l4 { color: var(--main-text); } } } } }
+      @scope (.a) { .l1 { .l2 { .l3 { .l4 { color: var(--text-primary); } } } } }
     `);
     expect(rules(tooDeep)).toEqual(["max-nesting"]);
 
     const allowed = css(`
-      @scope (.a) { .l1 { &:hover { :scope.-is-open & { color: var(--main-text); } } } }
+      @scope (.a) { .l1 { &:hover { :scope.-is-open & { color: var(--text-primary); } } } }
     `);
     expect(allowed).toEqual([]);
   });

@@ -1,7 +1,7 @@
 @scope (.sidebar-footer) {
   :scope {
     align-items: center;
-    color: var(--muted-foreground);
+    color: var(--text-muted);
     display: flex;
     font-size: var(--text-xs);
     gap: 0.75rem;

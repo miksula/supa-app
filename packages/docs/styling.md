@@ -72,18 +72,31 @@ component belongs to one of three strict tiers of responsibility:
 ```css
 @scope (.todo-list-card, [data-component="todo-list-card"]) {
   :scope {
+    position: absolute;
+    top: 0;
+    left: 0;
     display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding-inline: calc(var(--spacing) * 2);
+    min-height: calc(var(--spacing) * 40);
+    will-change: transform;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .card-inner {
+    display: flex;
+    flex: 1;
     flex-direction: column;
     gap: calc(var(--spacing) * 3);
     min-height: calc(var(--spacing) * 40);
     padding: calc(var(--spacing) * 4);
     border-radius: var(--radius-xl);
-    background-color: color-mix(in oklab, var(--surface-raised) 50%, transparent);
-    color: var(--main-text);
-
-    &[hidden] {
-      display: none;
-    }
+    background-color: var(--surface-translucent);
+    color: var(--text-primary);
   }
   /* … */
 }
@@ -107,7 +120,7 @@ component belongs to one of three strict tiers of responsibility:
 
 - **Elements**: Terminal text and icon elements only (`<span>`, `<app-icon>`, `<p>`).
 - **Owned properties**: Local typography and content-contained visuals only
-  (`truncate`, `text-sm`, `text-xs`, `font-medium`, `size-4`, `text-(--muted-foreground)`).
+  (`truncate`, `text-sm`, `text-xs`, `font-medium`, `size-4`, `text-(--text-muted)`).
 - **Strict Rule**: Leaf utilities must never dictate external layout, margins, or positioning
   relative to sibling elements.
 - **Example** (from `app/src/lib/shell/Sidebar.ts`):
@@ -115,7 +128,7 @@ component belongs to one of three strict tiers of responsibility:
 ```html
 <div class="sidebar-brand-text">
   <span class="truncate text-sm font-medium">Local First</span>
-  <span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
+  <span class="truncate text-xs text-(--text-muted)">Supabase</span>
 </div>
 ```
 
@@ -201,13 +214,13 @@ Tokens are defined in `app/src/css/vars.css` and use native CSS variables.
         │
         ▼
 3. Semantic Bridge Tokens (light-dark())
-   --main-bg: light-dark(var(--nl-50), var(--nd-850));
-   --main-text: light-dark(var(--nl-900), var(--nd-50));
+   --surface-page: light-dark(var(--nl-50), var(--nd-850));
+   --text-primary: light-dark(var(--nl-900), var(--nd-50));
 ```
 
 - **Never consume `--nl-*` or `--nd-*` palette tokens directly in component stylesheets.**
-- **Always consume high-level semantic tokens** (`var(--main-text)`, `var(--main-bg)`,
-  `var(--button-active-bg)`).
+- **Always consume high-level semantic tokens** (`var(--text-primary)`, `var(--surface-page)`,
+  `var(--control-hover-bg)`).
 
 Because components consume only semantic tokens, changing a theme or switching color schemes
 requires zero changes to component CSS files.
@@ -216,66 +229,68 @@ requires zero changes to component CSS files.
 
 ## Comprehensive Semantic Token Reference
 
-Below is the complete catalog of semantic design tokens defined in `app/src/css/vars.css`:
+Tokens in `app/src/css/vars.css` follow a category-first naming convention
+(`--<category>-<role>`) so that tokens group naturally by CSS property domain:
 
-### 1. Text and foreground tokens
+### 1. Surface and background tokens (`--surface-*`)
 
-| Token                     | Light mode value           | Dark mode value            | Purpose / Typical usage                                                               |
-| :------------------------ | :------------------------- | :------------------------- | :------------------------------------------------------------------------------------ |
-| `--main-text`             | `--nl-900` (deep charcoal) | `--nd-50` (soft off-white) | Primary reading text, headings, input text, and default body content.                 |
-| `--header-text`           | `--nl-700`                 | `--nd-200`                 | Section headers and subtle titles.                                                    |
-| `--muted-foreground`      | `--nl-500`                 | `--nd-400`                 | Secondary labels, timestamps, captions, placeholder text, and muted icons.            |
-| `--disabled-text`         | `--nl-300`                 | `--nd-600`                 | Disabled buttons, disabled form fields, and completed/struck-through todo items.      |
-| `--error-text`            | `--color-red-600`          | `--color-red-400`          | Form validation errors (`:user-invalid`), error banners, and error status indicators. |
-| `--highlight-text`        | `--color-red-600`          | `--color-red-400`          | Hover color for destructive actions (e.g. Delete list button).                        |
-| `--button-highlight-text` | `--color-red-600`          | `--color-red-400`          | Destructive button label and icon highlights.                                         |
+| Token                   | Light mode value                                              | Dark mode value | Purpose / Typical usage                                                               |
+| :---------------------- | :------------------------------------------------------------ | :-------------- | :------------------------------------------------------------------------------------ |
+| `--surface-page`        | `--nl-50`                                                     | `--nd-850`      | Global page viewport background (`body` and root layout containers).                  |
+| `--surface-card`        | `--nl-card` (`--nl-50`)                                       | `--nd-950`      | Primary content surface: main page views, card containers, and code blocks (`pre`).   |
+| `--surface-raised`      | `--nl-raised` (`--nl-50`)                                     | `--nd-800`      | Elevated surfaces: dropdown menus (account menu), blockquotes, and inline code pills. |
+| `--surface-translucent` | `color-mix(in oklab, var(--surface-raised) 50%, transparent)` | _(same)_        | Semi-transparent card and toolbar surfaces (`my-todos.css`, `todo-list-card.css`).    |
+| `--avatar-bg`           | `--nl-700`                                                    | `--nd-700`      | User avatar badge background in the sidebar account trigger.                          |
 
-### 2. Surface and background tokens
+### 2. Text and foreground tokens (`--text-*`)
 
-| Token              | Light mode value          | Dark mode value | Purpose / Typical usage                                                                                  |
-| :----------------- | :------------------------ | :-------------- | :------------------------------------------------------------------------------------------------------- |
-| `--main-bg`        | `--nl-50`                 | `--nd-850`      | Global page viewport background (`body` and root containers).                                            |
-| `--surface-card`   | `--nl-card` (`--nl-50`)   | `--nd-950`      | Primary content surface: main page views, card containers, and code blocks (`pre`).                      |
-| `--surface-raised` | `--nl-raised` (`--nl-50`) | `--nd-800`      | Elevated surfaces: dropdown menus (account menu), floating toolbars, blockquotes, and inline code pills. |
-| `--header-bg`      | `--nl-card`               | `--nd-900`      | Top application header bars and sticky navigation headers.                                               |
+| Token              | Light mode value           | Dark mode value            | Purpose / Typical usage                                                          |
+| :----------------- | :------------------------- | :------------------------- | :------------------------------------------------------------------------------- |
+| `--text-primary`   | `--nl-900` (deep charcoal) | `--nd-50` (soft off-white) | Primary reading text, headings, input text, and default body content.            |
+| `--text-muted`     | `--nl-500`                 | `--nd-400`                 | Secondary labels, timestamps, captions, placeholder text, and muted icons.       |
+| `--text-disabled`  | `--nl-300`                 | `--nd-600`                 | Disabled buttons, disabled form fields, and completed/struck-through todo items. |
+| `--text-on-accent` | `var(--white)`             | `var(--white)`             | High-contrast text and icons on solid accent or avatar backgrounds.              |
 
-### 3. Border and divider tokens
+### 3. Border and focus tokens (`--border-*`, `--focus-*`)
 
-| Token                 | Light mode value | Dark mode value | Purpose / Typical usage                                                                        |
-| :-------------------- | :--------------- | :-------------- | :--------------------------------------------------------------------------------------------- |
-| `--main-border`       | `--nl-300`       | `--nd-700`      | Primary borders: container outlines, card borders, input focus states, and table borders.      |
-| `--main-border-light` | `--nl-200`       | `--nd-700`      | Subtle internal dividers: list item separators, header bottom borders, and menu section lines. |
+| Token                | Light mode value                    | Dark mode value    | Purpose / Typical usage                                                                        |
+| :------------------- | :---------------------------------- | :----------------- | :--------------------------------------------------------------------------------------------- |
+| `--border-strong`    | `--nl-300`                          | `--nd-700`         | Primary borders: container outlines, card borders, input focus states, and table borders.      |
+| `--border-subtle`    | `--nl-200`                          | `--nd-700`         | Subtle internal dividers: list item separators, header bottom borders, and menu section lines. |
+| `--focus-ring-color` | `--color-blue-500`                  | `--color-blue-400` | High-visibility focus ring color for keyboard navigation (`:focus-visible`).                   |
+| `--focus-ring`       | `2px solid var(--focus-ring-color)` | _(same)_           | Standard `:focus-visible` outline shorthand used across interactive controls.                  |
 
-### 4. Interactive and button tokens
+### 4. Interactive control tokens (`--control-*`)
 
-| Token                  | Light mode value   | Dark mode value      | Purpose / Typical usage                                                                       |
-| :--------------------- | :----------------- | :------------------- | :-------------------------------------------------------------------------------------------- |
-| `--button-bg`          | `--nl-card`        | `transparent`        | Default button background.                                                                    |
-| `--button-text`        | `--nl-700`         | `--nd-200`           | Default button text color.                                                                    |
-| `--button-active-bg`   | `--nl-200`         | `--nd-800`           | Background when hovered, pressed, or active (navigation links, icon buttons, submit buttons). |
-| `--button-active-text` | `--nl-950`         | `var(--color-white)` | Text and icon color on hovered/active buttons and selected menu items.                        |
-| `--outline-color`      | `--color-blue-500` | `--color-blue-400`   | High-visibility focus ring color for keyboard navigation (`:focus-visible`).                  |
+| Token                  | Light mode value | Dark mode value      | Purpose / Typical usage                                                                       |
+| :--------------------- | :--------------- | :------------------- | :-------------------------------------------------------------------------------------------- |
+| `--control-hover-bg`   | `--nl-200`       | `--nd-800`           | Background when hovered, pressed, or active (navigation links, icon buttons, submit buttons). |
+| `--control-hover-text` | `--nl-950`       | `var(--color-white)` | Text and icon color on hovered/active buttons and selected menu items.                        |
 
-### 5. Brand and specialty tokens
+### 5. Accent, status, and primitive helper tokens
 
-| Token               | Resolved value                                      | Purpose / Typical usage                                                                                            |
-| :------------------ | :-------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
-| `--sidebar-primary` | `lab(36.9089% 35.0961 -85.6872)` (`--blue-primary`) | Brand blue accent: sidebar brand logo badge, checkbox `accent-color`, markdown link color, blockquote callout bar. |
-| `--avatar-bg`       | `light-dark(var(--nl-700), var(--nd-700))`          | User avatar badge background in the sidebar footer.                                                                |
-| `--green`           | `var(--color-green-600)`                            | Successful sync indicator status dot (`.sync-status.-is-connected`).                                               |
-| `--red`             | `var(--color-red-600)`                              | Error sync indicator status dot (`.sync-status.-is-error`).                                                        |
-| `--white`           | `var(--color-white, #fff)`                          | Explicit pure white (used for icons on solid brand backgrounds and dark button active text).                       |
-| `--black`           | `var(--color-black, #000)`                          | Explicit pure black (used in `color-mix()` shadow calculations).                                                   |
+| Token              | Light mode value                 | Dark mode value     | Purpose / Typical usage                                                                                            |
+| :----------------- | :------------------------------- | :------------------ | :----------------------------------------------------------------------------------------------------------------- |
+| `--accent-primary` | `lab(36.9089% 35.0961 -85.6872)` | _(same)_            | Brand blue accent: sidebar brand logo badge, checkbox `accent-color`, markdown link color, blockquote callout bar. |
+| `--status-danger`  | `--color-red-600`                | `--color-red-400`   | Form validation errors (`:user-invalid`), destructive action hover states, and error status indicators.            |
+| `--status-success` | `--color-green-600`              | `--color-green-400` | Successful sync indicator status dot (`.sync-status.-is-connected`).                                               |
+| `--white`          | `var(--color-white, #fff)`       | _(same)_            | Explicit pure white primitive (used for `--text-on-accent` and `color-mix()` highlights).                          |
+| `--black`          | `var(--color-black, #000)`       | _(same)_            | Explicit pure black primitive (used in `color-mix()` shadow calculations).                                         |
 
-### 6. Geometry, spacing, and typography tokens
+### 6. Geometry, spacing, typography, and motion tokens
 
-| Token         | Value                                           | Purpose / Typical usage                                                                                |
-| :------------ | :---------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
-| `--spacing`   | `0.25rem` (4px)                                 | The atomic spacing unit. Always calculate margins, padding, and gaps using `calc(var(--spacing) * N)`. |
-| `--radius`    | `0.625rem` (10px)                               | Default corner radius for inputs, buttons, and inner containers.                                       |
-| `--radius-sm` | `0.25rem` (4px)                                 | Small corner radius for theme switcher buttons and inline tags.                                        |
-| `--radius-xl` | `0.75rem` (12px)                                | Larger corner radius for cards and toolbars.                                                           |
-| `--font-sans` | `"Geist", ui-sans-serif, system-ui, sans-serif` | Application font stack.                                                                                |
+| Token               | Value                                           | Purpose / Typical usage                                                                                |
+| :------------------ | :---------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| `--spacing`         | `0.25rem` (4px)                                 | The atomic spacing unit. Always calculate margins, padding, and gaps using `calc(var(--spacing) * N)`. |
+| `--radius`          | `0.625rem` (10px)                               | Default corner radius for inputs, buttons, and inner containers.                                       |
+| `--radius-control`  | `calc(var(--radius) * 0.6)` (6px)               | Compact corner radius for small icon buttons and triggers.                                             |
+| `--radius-item`     | `calc(var(--radius) * 0.8)` (8px)               | Corner radius for menu links, sidebar headers, and form submit buttons.                                |
+| `--radius-panel`    | `calc(var(--radius) * 1.4)` (14px)              | Outer panel corner radius for main layout cards and auth containers.                                   |
+| `--radius-sm`       | `0.25rem` (4px, Tailwind `@theme`)              | Small corner radius for theme switcher buttons and inline tags.                                        |
+| `--radius-xl`       | `0.75rem` (12px, Tailwind `@theme`)             | Larger corner radius for cards and toolbars.                                                           |
+| `--duration-fast`   | `120ms`                                         | Fast interactive color/background transition duration.                                                 |
+| `--duration-normal` | `150ms`                                         | Standard transform/opacity/validation transition duration.                                             |
+| `--font-sans`       | `"Geist", ui-sans-serif, system-ui, sans-serif` | Application font stack.                                                                                |
 
 ---
 
@@ -308,8 +323,8 @@ In `app/src/css/vars.css`:
   }
 
   /* All semantic tokens use light-dark() */
-  --main-bg: light-dark(var(--nl-50), var(--nd-850));
-  --main-text: light-dark(var(--nl-900), var(--nd-50));
+  --surface-page: light-dark(var(--nl-50), var(--nd-850));
+  --text-primary: light-dark(var(--nl-900), var(--nd-50));
   /* … */
 }
 ```
@@ -350,8 +365,8 @@ In this project, components use **clean semantic state modifier classes** (`.-is
 /* Scoped CSS */
 .menu-toggle {
   transition:
-    transform 150ms ease,
-    color 120ms ease;
+    transform var(--duration-normal) ease,
+    color var(--duration-fast) ease;
 
   &.-is-open {
     transform: rotate(90deg);
@@ -395,7 +410,7 @@ In this project, components use **clean semantic state modifier classes** (`.-is
 
   /* Highlight label when the contained input is invalid AFTER user interaction */
   &:has(.form-input:user-invalid) .form-label {
-    color: var(--error-text);
+    color: var(--status-danger);
   }
 }
 
@@ -403,8 +418,8 @@ In this project, components use **clean semantic state modifier classes** (`.-is
   /* Only shows error styling once the user has interacted with the field */
   &:user-invalid,
   &:user-invalid:focus-visible {
-    border-bottom-color: var(--error-text);
-    color: var(--error-text);
+    border-bottom-color: var(--status-danger);
+    color: var(--status-danger);
   }
 }
 ```
@@ -452,8 +467,8 @@ The script uses `@tailwindcss/node` to generate clean CSS:
 Paste the generated output into your scoped component stylesheet and replace raw colors
 with semantic tokens:
 
-- Replace raw colors with `var(--main-text)`, `var(--main-border)`, `var(--button-active-bg)`.
-- Replace raw radius values with `var(--radius)`.
+- Replace raw colors with `var(--text-primary)`, `var(--border-strong)`, `var(--control-hover-bg)`.
+- Replace raw radius values with `var(--radius)`, `var(--radius-control)`, `var(--radius-item)`, or `var(--radius-panel)`.
 - Keep spacing aligned to `calc(var(--spacing) * N)`.
 
 ### Step 4: Keep leaf elements in Tailwind
@@ -500,7 +515,7 @@ conducted to measure consistency and document current patterns:
 2. **Consistent spacing grid**: All layout containers consistently calculate coordinates and
    dimensions using multiples of `--spacing` (`calc(var(--spacing) * 2)`, `calc(var(--spacing) * 4)`).
 3. **Robust keyboard accessibility**: Focusable controls across all stylesheets consistently
-   apply `outline: 2px solid var(--outline-color); outline-offset: 2px;` on `:focus-visible`.
+   apply `outline: var(--focus-ring); outline-offset: 2px;` on `:focus-visible`.
 4. **Scoped CSS coverage**: Shell elements, auth pages, docs viewers, and todo lists all use
    native `@scope` isolation.
 
@@ -511,11 +526,8 @@ As you maintain and add components, keep these refinements in mind:
 - **Shadow definitions**: `app/src/lib/shell/sidebar-layout.css` currently uses raw `rgb(0 0 0 / 0.1)`
   for shadows. Prefer `color-mix(in srgb, var(--black) 12%, transparent)` (as seen in `sidebar.css`)
   or Tailwind's `--shadow-sm` / `--shadow-lg` tokens.
-- **Color keywords in `color-mix`**: In `app/src/pages/my-todos/my-todos.css`, the action button
-  uses `color-mix(in oklab, var(--button-active-bg) 95%, white)`. Use `var(--white)` instead
-  of the raw keyword `white` for design token consistency.
 - **Radius consistency**: In `my-todos.css`, an action button uses hardcoded `border-radius: 1rem`.
-  Prefer semantic tokens like `var(--radius-xl)` or `calc(var(--radius) * 1.4)`.
+  Prefer semantic tokens like `var(--radius-xl)` or `var(--radius-panel)`.
 - **Typography scaling**: Some component stylesheets have direct pixel/rem values like
   `font-size: 0.875rem` (which corresponds to `var(--text-sm)`). Prefer Tailwind's font-size
   tokens or inline leaf utilities.
@@ -533,8 +545,8 @@ Before committing a new component or modifying existing styles, verify:
 - [ ] **Dual scope selector**: Does the stylesheet start with `@scope (.<name>, [data-component="<name>"])`?
 - [ ] **Root boundary attribute**: Does the template's root container have both `class="<name>"` and `data-component="<name>"`?
 - [ ] **All-or-Nothing rule**: Did you avoid splitting styles between Tailwind and CSS on the same element?
-- [ ] **Semantic tokens used**: Did you use `var(--main-text)`, `var(--main-bg)`, etc., and avoid raw `--nl-*` / `--nd-*` or hex colors?
+- [ ] **Semantic tokens used**: Did you use `var(--text-primary)`, `var(--surface-page)`, etc., and avoid raw `--nl-*` / `--nd-*` or hex colors?
 - [ ] **Spacing on the grid**: Are paddings and gaps calculated with `calc(var(--spacing) * N)`?
-- [ ] **Focus rings**: Do interactive elements have `:focus-visible { outline: 2px solid var(--outline-color); }`?
+- [ ] **Focus rings**: Do interactive elements have `:focus-visible { outline: var(--focus-ring); }`?
 - [ ] **Flat selectors**: Did you follow the 2+1 nesting rule inside `@scope` and avoid deep DOM nesting chains?
 - [ ] **Clean formatting**: Did you run `npm run fmt` (or `npx oxfmt`) on the stylesheet?

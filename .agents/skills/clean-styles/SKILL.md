@@ -13,7 +13,7 @@ Apply this skill when:
 - A component's template is cluttered with bloated, multi-line Tailwind `class` strings (e.g., > 5–6 utilities).
 - An element uses complex Tailwind variants that simulate CSS selectors (e.g., `group-data-[...]:...`, `peer-hover:...`, `[&>svg]:...`, `data-[state=open]:...`).
 - A component has specificity conflicts where a CSS stylesheet overrides inline Tailwind classes (e.g., `.font-medium` overridden by a stylesheet's `font-weight: 400`).
-- Hardcoded palette tokens (e.g., `--nd-*` or `--nl-*`) are used instead of semantic design tokens (`light-dark()`, `var(--main-text)`, `var(--muted-foreground)`).
+- Hardcoded palette tokens (e.g., `--nd-*` or `--nl-*`) are used instead of semantic design tokens (`light-dark()`, `var(--text-primary)`, `var(--text-muted)`).
 - Refactoring pasted component library markup (e.g., shadcn/ui or Tailwind UI) into the project's native `@scope` architecture.
 
 ---
@@ -42,19 +42,20 @@ Divide component elements into three strict tiers of responsibility:
 
 - **Tier 3: Leaf Elements (Inline Tailwind Utilities):**
   - **Elements:** Terminal content elements only (`<span>`, `<app-icon>`, `<p>`).
-  - **Owned Properties:** Local typography and content-contained visuals only (`truncate`, `text-sm`, `text-xs`, `font-medium`, `size-4`, `text-(--muted-foreground)`).
+  - **Owned Properties:** Local typography and content-contained visuals only (`truncate`, `text-sm`, `text-xs`, `font-medium`, `size-4`, `text-(--text-muted)`).
   - **Strict Rule:** Leaf utilities must never dictate external layout, margins, or positioning relative to siblings.
 
 ### 3. Consume Semantic Tokens, Not Palette Tokens
-In this project's design system (`app/src/css/vars.css`):
+In this project's design system (`app/src/css/vars.css`), tokens follow the `--<category>-<role>` convention:
 - **Never hardcode dark or light palette tokens directly** in component stylesheets (e.g., avoid `var(--nd-800)` or `var(--nl-200)`).
 - **Always use semantic bridge tokens** that automatically adapt to light and dark modes:
-  - Text: `var(--main-text)`, `var(--muted-foreground)`, `var(--disabled-text)`
-  - Backgrounds: `var(--main-bg)`, `var(--surface-card)`, `var(--surface-raised)`
-  - Interactive / Buttons: `var(--button-active-bg)`, `var(--button-active-text)`, `var(--button-text)`
-  - Borders: `var(--main-border)`, `var(--main-border-light)`
-  - Spacing & Radii: `var(--radius)`, `var(--spacing)`
-  - Highlights / Focus: `var(--outline-color)`, `var(--sidebar-primary)`
+  - Surfaces: `var(--surface-page)`, `var(--surface-card)`, `var(--surface-raised)`, `var(--surface-translucent)`
+  - Text: `var(--text-primary)`, `var(--text-muted)`, `var(--text-disabled)`, `var(--text-on-accent)`
+  - Borders & Focus: `var(--border-strong)`, `var(--border-subtle)`, `var(--focus-ring-color)`, `var(--focus-ring)`
+  - Interactive Controls: `var(--control-hover-bg)`, `var(--control-hover-text)`
+  - Accent & Status: `var(--accent-primary)`, `var(--status-danger)`, `var(--status-success)`
+  - Spacing & Radii: `var(--spacing)`, `var(--radius)`, `var(--radius-control)`, `var(--radius-item)`, `var(--radius-panel)`
+  - Motion: `var(--duration-fast)`, `var(--duration-normal)`
 
 ### 4. Resilient Scoping with Native `@scope`
 - Scope stylesheets using the component class name and optional component attribute:
@@ -138,19 +139,19 @@ For each identified container element:
    }
    ```
 3. Paste the generated CSS into the scoped block in `app/src/**/<component>.css`.
-4. Replace hardcoded colors with semantic design tokens (`var(--main-text)`, `var(--button-active-bg)`, `var(--main-border)`).
+4. Replace hardcoded colors with semantic design tokens (`var(--text-primary)`, `var(--control-hover-bg)`, `var(--border-strong)`).
 5. Nest state modifiers (`&.-is-open`) and pseudo-classes (`&:hover`, `&:focus-visible`) following the **2+1 nesting rule**.
 
 ### Step 4: Keep Leaf Nodes Clean
 Leave leaf elements (`<span>`, `<app-icon>`) with focused Tailwind utilities:
 ```html
 <span class="truncate text-sm font-medium">Local First</span>
-<span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
+<span class="truncate text-xs text-(--text-muted)">Supabase</span>
 ```
 
 ### Step 5: Implement Interactive States and Modifiers
 Handle `:hover`, `:active`, `:focus-visible`, and state modifiers (`.-is-open`, `.-is-active`):
-- Wire `:hover` and `:focus-visible` states using semantic tokens (`var(--button-active-bg)`, `var(--outline-color)`).
+- Wire `:hover` and `:focus-visible` states using semantic tokens (`var(--control-hover-bg)`, `var(--focus-ring)`).
 - For toggles and accordions, apply a modifier class (`.-is-open`) in JS and animate/rotate in CSS.
 
 ### Step 6: Validate Light & Dark Themes and Build
@@ -241,7 +242,7 @@ Handle `:hover`, `:active`, `:focus-visible`, and state modifiers (`.-is-open`, 
     </a>
     <div class="sidebar-brand-text">
       <span class="truncate text-sm font-medium">Local First</span>
-      <span class="truncate text-xs text-(--muted-foreground)">Supabase</span>
+      <span class="truncate text-xs text-(--text-muted)">Supabase</span>
     </div>
   </div>
 
@@ -270,7 +271,7 @@ Handle `:hover`, `:active`, `:focus-visible`, and state modifiers (`.-is-open`, 
     display: flex;
     flex-direction: column;
     height: 100%;
-    color: var(--main-text);
+    color: var(--text-primary);
   }
 
   .sidebar-header {
@@ -286,8 +287,8 @@ Handle `:hover`, `:active`, `:focus-visible`, and state modifiers (`.-is-open`, 
     width: 2rem;
     height: 2rem;
     border-radius: var(--radius);
-    background-color: var(--sidebar-primary);
-    color: var(--white);
+    background-color: var(--accent-primary);
+    color: var(--text-on-accent);
   }
 
   .menu-link {
@@ -296,18 +297,18 @@ Handle `:hover`, `:active`, `:focus-visible`, and state modifiers (`.-is-open`, 
     gap: 0.5rem;
     width: 100%;
     padding: 0.375rem 0.5rem;
-    border-radius: calc(var(--radius) * 0.8);
-    color: var(--main-text);
+    border-radius: var(--radius-item);
+    color: var(--text-primary);
     text-decoration: none;
-    transition: background-color 120ms ease, color 120ms ease;
+    transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
 
     &:hover {
-      background-color: var(--button-active-bg);
-      color: var(--button-active-text);
+      background-color: var(--control-hover-bg);
+      color: var(--control-hover-text);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--outline-color);
+      outline: var(--focus-ring);
       outline-offset: 2px;
     }
   }
@@ -322,15 +323,18 @@ Handle `:hover`, `:active`, `:focus-visible`, and state modifiers (`.-is-open`, 
     width: 1.25rem;
     height: 1.25rem;
     border: 0;
-    border-radius: calc(var(--radius) * 0.6);
+    border-radius: var(--radius-control);
     background: transparent;
-    color: var(--muted-foreground);
+    color: var(--text-muted);
     cursor: pointer;
-    transition: transform 150ms ease, color 120ms ease, background-color 120ms ease;
+    transition:
+      transform var(--duration-normal) ease,
+      color var(--duration-fast) ease,
+      background-color var(--duration-fast) ease;
 
     &:hover {
-      color: var(--button-active-text);
-      background-color: var(--button-active-bg);
+      color: var(--control-hover-text);
+      background-color: var(--control-hover-bg);
     }
 
     &.-is-open {

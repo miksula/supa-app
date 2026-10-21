@@ -108,7 +108,7 @@ export function SettingsPage(el: HTMLElement, props?: SettingsPageProps): Dispos
     html`
       <div class="settings-page p-6 max-w-4xl mx-auto">
         <h1 class="text-2xl font-bold">Settings</h1>
-        <p class="text-muted-foreground mt-2">Manage your preferences.</p>
+        <p class="text-(--text-muted) mt-2">Manage your preferences.</p>
       </div>
     `,
     el,
