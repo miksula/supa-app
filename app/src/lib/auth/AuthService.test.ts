@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Session, SupabaseClient } from "@supabase/supabase-js";
+import type { AuthChangeEvent, Session, SupabaseClient } from "@supabase/supabase-js";
 import { AuthService } from "./AuthService.ts";
 
 function setup() {
@@ -10,14 +10,15 @@ function setup() {
     signOut: vi.fn().mockResolvedValue({ error: null }),
     onAuthStateChange: vi.fn<SupabaseClient["auth"]["onAuthStateChange"]>(),
   };
-  const client = { auth } as unknown as SupabaseClient;
-  return { session, auth, client, service: new AuthService(client) };
+  const service = new AuthService({ auth } as unknown as SupabaseClient);
+  const emit = (event: AuthChangeEvent, next: Session | null) =>
+    auth.onAuthStateChange.mock.calls[0][0](event, next);
+  return { session, auth, service, emit };
 }
 
 describe("AuthService", () => {
   it("initializes once using the injected client", async () => {
-    const { service, client, auth, session } = setup();
-    expect(service.client).toBe(client);
+    const { service, auth, session } = setup();
     expect(service.ready).toBe(false);
     expect(service.isAuthenticated).toBe(false);
     await service.init();
@@ -28,31 +29,50 @@ describe("AuthService", () => {
     expect(service.isAuthenticated).toBe(true);
   });
 
-  it("notifies session subscribers on login and logout, and supports unsubscribe", async () => {
-    const { service, auth, session } = setup();
+  it("subscribes to Supabase once and updates the session before notifying listeners", async () => {
+    const { service, auth, session, emit } = setup();
+    const listener = vi.fn(() => expect(service.session).toBe(session));
+    service.onAuthStateChange(listener);
+    await emit("SIGNED_IN", session);
+    expect(auth.onAuthStateChange).toHaveBeenCalledOnce();
+    expect(listener).toHaveBeenCalledExactlyOnceWith("SIGNED_IN", session);
+  });
+
+  it("waits for async listeners so Supabase awaits them too", async () => {
+    const { service, session, emit } = setup();
+    let finished = false;
+    service.onAuthStateChange(async () => {
+      await Promise.resolve();
+      finished = true;
+    });
+    await emit("SIGNED_IN", session);
+    expect(finished).toBe(true);
+  });
+
+  it("supports unsubscribe", async () => {
+    const { service, session, emit } = setup();
     const listener = vi.fn();
-    const unsubscribe = service.session$.subscribe(listener);
+    const unsubscribe = service.onAuthStateChange(listener);
+    await emit("SIGNED_IN", session);
+    unsubscribe();
+    await emit("SIGNED_OUT", null);
+    expect(listener).toHaveBeenCalledOnce();
+    expect(service.isAuthenticated).toBe(false);
+  });
+
+  it("delegates login and logout to Supabase and rethrows its errors", async () => {
+    const { service, auth } = setup();
     await service.login("user@example.com", "test-password");
     expect(auth.signInWithPassword).toHaveBeenCalledWith({
       email: "user@example.com",
       password: "test-password",
     });
-    expect(listener).toHaveBeenLastCalledWith(session);
     await service.logout();
     expect(auth.signOut).toHaveBeenCalledOnce();
-    expect(listener).toHaveBeenLastCalledWith(null);
-    expect(service.isAuthenticated).toBe(false);
-    unsubscribe();
-    await service.login("user@example.com", "test-password");
-    expect(listener).toHaveBeenCalledTimes(2);
-  });
 
-  it("updates session state before forwarding auth events", () => {
-    const { service, auth, session } = setup();
-    const listener = vi.fn(() => expect(service.session).toBe(session));
-    service.onAuthStateChange(listener);
-    auth.onAuthStateChange.mock.calls[0][0]("SIGNED_IN", session);
-    expect(listener).toHaveBeenCalledWith("SIGNED_IN", session);
+    const error = new Error("Invalid login");
+    auth.signInWithPassword.mockResolvedValue({ data: { session: null }, error });
+    await expect(service.login("user@example.com", "wrong")).rejects.toBe(error);
   });
 
   it("propagates initialization errors without marking auth ready", async () => {

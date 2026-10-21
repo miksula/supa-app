@@ -77,50 +77,46 @@
     align-items: center;
   }
 
-  .todo-list-container {
-    position: relative;
-    flex: 1;
+  /* Native scroll-snap carousel: CSS sizes and snaps the cards, Carousel.ts only drives the buttons. */
+  .todo-list-track {
+    display: flex;
     width: calc(100% + calc(var(--spacing) * 4));
     margin-inline: calc(var(--spacing) * -2);
-    min-height: calc(var(--spacing) * 40);
-    overflow: hidden;
+    min-height: calc(var(--spacing) * 70);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
     container-type: inline-size;
     container-name: todo-carousel;
-    transition: height 200ms ease-out;
-  }
-
-  .todo-list-container.-is-animated .todo-list-card {
-    transition:
-      transform 250ms ease-out,
-      opacity 250ms ease-out;
   }
 
   .todo-list-card {
-    width: 100%;
+    flex: 0 0 100%;
+    scroll-snap-align: start;
   }
 
   @container todo-carousel (min-width: 40rem) {
     .todo-list-card {
-      width: 50%;
+      flex-basis: 50%;
     }
   }
 
   @container todo-carousel (min-width: 60rem) {
     .todo-list-card {
-      width: 33.3333%;
+      flex-basis: 33.3333%;
     }
   }
 
   @container todo-carousel (min-width: 80rem) {
     .todo-list-card {
-      width: 25%;
+      flex-basis: 25%;
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .todo-list-container.-is-animated .todo-list-card,
-    .todo-list-container {
-      transition: none;
+  @media (prefers-reduced-motion: no-preference) {
+    .todo-list-track {
+      scroll-behavior: smooth;
     }
   }
 }

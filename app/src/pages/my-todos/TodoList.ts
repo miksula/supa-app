@@ -4,11 +4,20 @@ import "@/ui/AppIcon.ts";
 import type { Todo } from "./TodoStore.ts";
 
 export type TodoListOptions = {
-  onSubmit: (event: SubmitEvent, listId: string) => void;
-  onCompleted: (event: Event, todoId: string) => void;
+  onAddTodo: (listId: string, description: string) => Promise<unknown>;
+  onToggleTodo: (todoId: string, completed: boolean) => Promise<unknown>;
 };
 
-function TodoItem(todo: Todo, onCompleted: TodoListOptions["onCompleted"]) {
+function TodoItem(todo: Todo, onToggleTodo: TodoListOptions["onToggleTodo"]) {
+  const toggle = (event: Event) => {
+    const checkbox = event.currentTarget as HTMLInputElement;
+    const completed = checkbox.checked;
+    onToggleTodo(todo.id, completed).catch((error: unknown) => {
+      checkbox.checked = !completed;
+      console.error("Failed to update todo completion", error);
+    });
+  };
+
   return html`
     <li class="todo-item ${todo.completed ? "-is-done" : ""}" data-key="${todo.id}">
       <label class="todo-item-row">
@@ -16,7 +25,7 @@ function TodoItem(todo: Todo, onCompleted: TodoListOptions["onCompleted"]) {
           type="checkbox"
           class="todo-item-checkbox"
           .checked=${Boolean(todo.completed)}
-          @change=${(event: Event) => onCompleted(event, todo.id)}
+          @change=${toggle}
         />
         <span class="todo-item-label">${todo.description}</span>
       </label>
@@ -24,13 +33,28 @@ function TodoItem(todo: Todo, onCompleted: TodoListOptions["onCompleted"]) {
   `;
 }
 
-function TodoInput(listId: string, onSubmit: TodoListOptions["onSubmit"]) {
+function TodoInput(listId: string, onAddTodo: TodoListOptions["onAddTodo"]) {
+  const submit = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const input = form.elements.namedItem("description") as HTMLInputElement;
+    const description = input.value.trim();
+
+    if (!description) {
+      input.focus();
+      return;
+    }
+
+    try {
+      await onAddTodo(listId, description);
+      form.reset();
+    } catch (error) {
+      console.error("Failed to create todo", error);
+    }
+  };
+
   return html`
-    <form
-      class="todo-input"
-      data-key="todo-input-${listId}"
-      @submit=${(event: SubmitEvent) => onSubmit(event, listId)}
-    >
+    <form class="todo-input" data-key="todo-input-${listId}" @submit=${submit}>
       <input
         type="text"
         name="description"
@@ -63,10 +87,10 @@ export function TodoList(
         ${repeat(
           list.items,
           (todo) => todo.id,
-          (todo) => TodoItem(todo, options.onCompleted),
+          (todo) => TodoItem(todo, options.onToggleTodo),
         )}
       </ul>
-      ${TodoInput(list.id, options.onSubmit)}
+      ${TodoInput(list.id, options.onAddTodo)}
     `,
     el,
   );

@@ -14,7 +14,6 @@ export const LoginLayout: LayoutFactory = (container: HTMLElement): LayoutInstan
 
   const slot = container.querySelector<HTMLElement>('[data-slot="page"]')!;
   return {
-    element: container.firstElementChild as HTMLElement,
     contentSlot: slot,
     dispose: () => render(nothing, container),
   };

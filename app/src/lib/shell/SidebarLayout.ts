@@ -1,13 +1,13 @@
 import { html, nothing, render } from "lit";
 import "./sidebar-layout.css";
 import type { LayoutInstance } from "../types.ts";
-import { Sidebar } from "./Sidebar.ts";
+import { Sidebar, type SidebarDependencies } from "./Sidebar.ts";
 import { PageHeader } from "./PageHeader.ts";
 import { getInitialOpenState, saveOpenState } from "./sidebarState.ts";
 
 export const SidebarLayout = (
   container: HTMLElement,
-  dependencies: Parameters<typeof Sidebar>[1],
+  dependencies: SidebarDependencies,
 ): LayoutInstance => {
   let isOpen = getInitialOpenState();
   const state = isOpen ? "expanded" : "collapsed";
@@ -72,7 +72,6 @@ export const SidebarLayout = (
   window.addEventListener("keydown", handleKeyDown);
 
   return {
-    element: container.firstElementChild as HTMLElement,
     contentSlot: slot,
     dispose: () => {
       container.removeEventListener("click", handleClick);

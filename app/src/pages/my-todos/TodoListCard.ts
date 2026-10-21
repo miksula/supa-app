@@ -6,8 +6,8 @@ import { TodoList, type TodoListOptions } from "./TodoList.ts";
 import type { TodoListData } from "./TodoStore.ts";
 
 export type TodoListCardOptions = TodoListOptions & {
-  onRename: (listId: string, name: string) => Promise<void>;
-  onDelete: (listId: string) => Promise<void>;
+  onRename: (listId: string, name: string) => Promise<unknown>;
+  onDelete: (listId: string) => Promise<unknown>;
 };
 
 export type TodoListCardController = {
@@ -161,8 +161,8 @@ export function TodoListCard(
     mountedTitleButton.textContent = list.name || "...";
     if (!editing) mountedTitleInput.value = currentName();
     TodoList(mountedTodoList, list, {
-      onSubmit: options.onSubmit,
-      onCompleted: options.onCompleted,
+      onAddTodo: options.onAddTodo,
+      onToggleTodo: options.onToggleTodo,
     });
   }
 

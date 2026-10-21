@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { createAuthGuard, type GuardAuth } from "./authGuard.ts";
 
-function setup(auth: GuardAuth, options?: { disabled?: boolean }) {
+function setup(auth: GuardAuth) {
   const nav = { navigate: vi.fn() };
-  return { nav, guard: createAuthGuard(auth, nav, options) };
+  return { nav, guard: createAuthGuard(auth, nav) };
 }
 
 describe("createAuthGuard", () => {
@@ -29,13 +29,6 @@ describe("createAuthGuard", () => {
       }
     },
   );
-
-  it("does nothing when disabled (offline mode)", () => {
-    const { nav, guard } = setup({ ready: false, isAuthenticated: false }, { disabled: true });
-
-    expect(guard("/my-todos")).toBe(false);
-    expect(nav.navigate).not.toHaveBeenCalled();
-  });
 
   it("reads auth state on every call", () => {
     const auth = { ready: true, isAuthenticated: false };

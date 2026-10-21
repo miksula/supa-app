@@ -93,10 +93,8 @@ supa-app/
 
 Inside `app/src/lib/` code is grouped by concern:
 
-- `platform.ts`: stable infrastructure (router, Supabase, auth, PowerSync, sync
-  lifecycle, shell layouts) behind `createPlatform()`.
-- `main.ts`: the composition root for the actively developed parts: stores,
-  pages and navigation.
+- `main.ts`: the composition root. It creates the router, Supabase, auth,
+  PowerSync, sync lifecycle, stores, layouts and pages, and wires them together.
 - `AppRoot.ts`, `layoutManager.ts`: route registration and page swapping.
 - `auth/`: sign-in state, the route guard and the startup sequence.
 - `sync/`: the local database, its schema, the backend connector and sync
@@ -105,7 +103,7 @@ Inside `app/src/lib/` code is grouped by concern:
   status indicator).
 - `ui/`, `theme/`, `nav/`: small reusable elements, theming and navigation
   data.
-- `events.ts`, `types.ts`: shared event helpers and the mount contract.
+- `types.ts`: the mount contract and shared router and layout types.
 
 Imports use the `@/` alias for `app/src/lib`, for example
 `import type { Dispose } from "@/types.ts"`. The alias is configured in
@@ -156,109 +154,86 @@ app:
 </body>
 ```
 
-### 2. Composition root: `platform.ts` and `main.ts`
+### 2. Composition root: `main.ts`
 
-Long-lived objects are created in two places, and everything else receives
+Long-lived objects are created in one place, and everything else receives
 what it needs as arguments. This is dependency injection without a framework,
-and it is the most important convention in the code base. The wiring is split
-by how often it changes:
+and it is the most important convention in the code base.
 
-- `createPlatform` in `app/src/lib/platform.ts` holds the **stable
-  infrastructure**: router, Supabase client, auth, PowerSync, sync lifecycle
-  and the shell layouts. You rarely touch it once it works.
-- `startApp` in `app/src/lib/main.ts` is the **composition root** for the
-  parts that change often: data stores, pages and navigation. It imports no
-  SDK. Adding a feature normally means editing only this file.
-
-The platform builds the services:
-
-```ts
-export function createPlatform({ navItems }: { navItems: NavItem[] }) {
-  const router = new Router();
-  const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
-    auth: {
-      persistSession: !config.isOfflineMode,
-      autoRefreshToken: !config.isOfflineMode,
-      detectSessionInUrl: !config.isOfflineMode,
-    },
-  });
-  const authService = new AuthService(supabase);
-  const powersync = createPowerSync();
-  const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
-  const enforceAuthRoute = createAuthGuard(authService, router, { disabled: config.isOfflineMode });
-  const syncLifecycle = createSyncLifecycle({
-    connect: async () => {
-      if (!config.isOfflineMode) await powersync.connect(connector);
-    },
-    reset: async () => {
-      if (!config.isOfflineMode) await powersync.disconnectAndClear({ clearLocal: true });
-    },
-  });
-  const auth = createAuthController({
-    authService,
-    router,
-    syncLifecycle,
-    enforceAuthRoute,
-    isOfflineMode: config.isOfflineMode,
-  });
-  // …
-  return {
-    config,
-    router,
-    db: powersync,
-    navigate: (path: string) => {
-      router.navigate(path);
-    },
-    session: {
-      login: (email: string, password: string) => authService.login(email, password),
-      userId: () => authService.session?.user.id ?? null,
-    },
-    shell: {
-      auth,
-      enforceAuthRoute,
-      mountSync: (target: HTMLElement) =>
-        SyncController(target, { powersync, isOfflineMode: config.isOfflineMode }),
-      layouts: {
-        app: (target: HTMLElement) => SidebarLayout(target, { router, navItems, authService }),
-        login: LoginLayout,
-      },
-    },
-  };
-}
-```
-
-The platform returns narrow handles, not the raw services. Feature code gets
-`db`, `router`, `navigate`, `config` and a small `session` object. The `shell`
-group holds what `AppRoot` needs and is spread into it. The Supabase client
-and `AuthService` never leave the platform.
-
-`main.ts` then wires the active parts. Look at what each page receives.
-`LoginPage` gets a `login` callback, not the Supabase client. `MyTodosPage`
-gets the store and a `userId` function, not the whole auth service:
+`startApp` in `app/src/lib/main.ts` is the **composition root**. It is the only
+place that creates concrete services (router, Supabase client, `AuthService`,
+PowerSync, the sync-status source and the data stores) and wires them into
+layouts and pages:
 
 ```ts
 export function startApp(el: HTMLElement) {
-  const platform = createPlatform({ navItems: NAV_ITEMS });
-  const { config, db, navigate, session } = platform;
+  const offline = config.isOfflineMode;
 
-  const todoStore = new TodoStore(db);
+  const router = new Router();
+  const navigate = (path: string) => {
+    router.navigate(path);
+  };
+  const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
+    auth: { persistSession: !offline, autoRefreshToken: !offline, detectSessionInUrl: !offline },
+  });
+  const authService = new AuthService(supabase);
+  const powersync = createPowerSync();
+  const syncStatus = createSyncStatusSource(powersync);
+  const todoStore = new TodoStore(powersync);
 
-  return AppRoot(el, {
-    router: platform.router,
-    ...platform.shell,
+  // Offline mode has no backend: every route is open and sync never starts.
+  const guardRoute = offline ? () => false : createAuthGuard(authService, router);
+
+  const dispose = AppRoot(el, {
+    router,
+    guardRoute,
+    layouts: {
+      app: (target) =>
+        SidebarLayout(target, { router, navItems: NAV_ITEMS, authService, syncStatus }),
+      login: LoginLayout,
+    },
     pages: {
       login: (target) =>
         LoginPage(target, {
-          login: session.login,
+          login: (email, password) => authService.login(email, password),
           initialEmail: config.devEmail,
           initialPassword: config.devPassword,
         }),
-      todos: (target) => MyTodosPage(target, { store: todoStore, getUserId: session.userId }),
+      todos: (target) =>
+        MyTodosPage(target, {
+          store: todoStore,
+          getUserId: () => authService.session?.user.id ?? null,
+        }),
       docs: (target, docId) => DocsPage(target, { docId, navigate }),
       notFound: NotFoundPage,
     },
   });
+  // …
 }
+```
+
+Look at what each page receives. `LoginPage` gets a `login` callback, not the
+Supabase client. `MyTodosPage` gets the store and a `getUserId` function, not
+the whole auth service. The Supabase client never leaves `main.ts`.
+
+Offline mode is decided once, here. The guard above lets every route through,
+and the end of `startApp` either renders the current route straight away or,
+online, creates the connector and sync lifecycle and starts the auth bootstrap:
+
+```ts
+// Routes are registered above; now render the current one.
+if (offline) {
+  router.check();
+} else {
+  const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
+  const syncLifecycle = createSyncLifecycle({
+    connect: () => powersync.connect(connector),
+    reset: () => powersync.disconnectAndClear({ clearLocal: true }),
+  });
+  void bootstrapAuth({ authService, router, syncLifecycle, guardRoute });
+}
+
+return dispose;
 ```
 
 Why go to this trouble?
@@ -268,12 +243,11 @@ Why go to this trouble?
 - **No hidden singletons.** Pages and components never import the router,
   the Supabase client or the PowerSync database directly. If a component
   needs something, you can see it in its parameter list.
-- **Two short files to read.** `platform.ts` shows the infrastructure and
-  `main.ts` shows how features are wired. Neither has to be scrolled past
-  while working on the other.
-- **Not a container.** `createPlatform` is a plain function that returns an
-  object. There is no registry or runtime lookup, so everything stays
-  type-checked.
+- **One short file to read.** `main.ts` shows every service the app creates
+  and how features are wired to them. Adding a feature normally means editing
+  only this file and `AppRoot.ts`.
+- **Not a container.** `startApp` is a plain function. There is no registry or
+  runtime lookup, so everything stays type-checked.
 
 All environment variables are read in one small module,
 `app/src/lib/config.ts`. Do not read `import.meta.env` anywhere else:
@@ -322,38 +296,35 @@ component styles built on top of this contract.
 ### 4. Routes, layouts and page swapping
 
 `AppRoot` in `app/src/lib/AppRoot.ts` registers each route with the router.
-For every navigation it first asks the auth guard whether the user may see
-the page, then either redirects or hands the page to the layout manager:
+It receives only `router`, `guardRoute`, `layouts` and `pages`. A small `route`
+helper first asks the route guard whether the page may render, then the
+handler either redirects or hands the page to the layout manager:
 
 ```ts
-const canActivate = (path: string) => !disposed && !enforceAuthRoute(path.split("?")[0]);
-const show = (layout: LayoutName, page: Mount, transition?: boolean) => {
+const route = (path: string, handler: (ctx: RouteContext) => void) => {
+  router.get(path, (ctx) => {
+    if (!disposed && !guardRoute(ctx.path.split("?")[0])) handler(ctx);
+  });
+};
+const showPage = (layout: LayoutName, page: Mount, transition?: boolean) => {
   layoutManager.show({ page, layout: layouts[layout], transition });
 };
 
-router.get("/", (ctx) => {
-  if (canActivate(ctx.path)) router.navigate("/my-todos");
-});
-router.get("/my-todos", (ctx) => {
-  if (canActivate(ctx.path)) show("app", pages.todos);
-});
-router.get("/docs", (ctx) => {
-  if (canActivate(ctx.path)) router.navigate("/docs/introduction");
-});
-router.get("/docs/:id", (ctx) => {
-  if (!canActivate(ctx.path)) return;
+route("/", () => router.navigate("/my-todos"));
+route("/my-todos", () => showPage("app", pages.todos));
+route("/docs", () => router.navigate("/docs/introduction"));
+route("/docs/:id", (ctx) => {
   const id = ctx.param("id") as string;
-  show("app", (target) => pages.docs(target, id));
+  showPage("app", (target) => pages.docs(target, id));
 });
-router.get("/auth", (ctx) => {
-  if (canActivate(ctx.path)) show("login", pages.login, true);
-});
-router.get("/*", (ctx) => {
-  if (canActivate(ctx.path)) show("app", pages.notFound);
-});
-
-void auth.bootstrap();
+route("/auth", () => showPage("login", pages.login, true));
+route("/*", () => showPage("app", pages.notFound));
 ```
+
+`AppRoot` only registers routes; it does not render anything by itself. Once
+it returns, `main.ts` triggers the first render: directly with `router.check()`
+in offline mode, or through `bootstrapAuth` online (see section 2).
+Its returned `Dispose` disposes the layout manager.
 
 The layout manager in `app/src/lib/layoutManager.ts` is where the mount
 contract is enforced. It disposes the current page, replaces the layout only
@@ -393,57 +364,79 @@ click handler. For navigation from code, call `router.navigate(path)`.
 Authentication is split into three small pieces, each with one job.
 
 **`AuthService`** (`app/src/lib/auth/AuthService.ts`) wraps the Supabase
-client. It remembers the current session and lets other code subscribe to
-session changes through `session$`. The sidebar uses that subscription to
-show the signed-in user's account menu.
-
-**`createAuthGuard`** (`app/src/lib/auth/authGuard.ts`) is a pure function
-that decides whether the current path must redirect:
+client, which stays private. It subscribes to Supabase's `onAuthStateChange`
+once, in its constructor, caches the current session so it can be read
+synchronously, and fans each event out to its own listeners:
 
 ```ts
-return function enforceAuthRoute(path: string): boolean {
-  if (options.disabled) {
+constructor(private readonly client: SupabaseClient) {
+  client.auth.onAuthStateChange(async (event, session) => {
+    this.currentSession = session;
+    await Promise.all([...this.listeners].map((listener) => listener(event, session)));
+  });
+}
+// …
+/** Subscribe to session changes. Returns an unsubscribe function. */
+onAuthStateChange(listener: AuthStateListener) {
+  this.listeners.add(listener);
+  return () => {
+    this.listeners.delete(listener);
+  };
+}
+```
+
+`login()` and `logout()` do not touch the cached session themselves: Supabase
+emits `SIGNED_IN` or `SIGNED_OUT`, and that single subscription updates it. The
+sidebar registers a listener with `authService.onAuthStateChange` to show the
+signed-in user's account menu. `ready` is a read-only getter that becomes
+`true` once `init()` has read the stored session.
+
+**`createAuthGuard`** (`app/src/lib/auth/authGuard.ts`) is a pure function
+that decides whether the current path must redirect. It returns a
+`RouteGuard`, which returns `true` when the route must not render:
+
+```ts
+export function createAuthGuard(auth: GuardAuth, nav: GuardNavigator): RouteGuard {
+  return function guardRoute(path) {
+    if (!auth.ready) {
+      return true;
+    }
+
+    if (!auth.isAuthenticated && path !== "/auth") {
+      nav.navigate("/auth");
+      return true;
+    }
+
+    if (auth.isAuthenticated && path === "/auth") {
+      nav.navigate("/");
+      return true;
+    }
+
     return false;
-  }
-
-  if (!auth.ready) {
-    return true;
-  }
-
-  if (!auth.isAuthenticated && path !== "/auth") {
-    nav.navigate("/auth");
-    return true;
-  }
-
-  if (auth.isAuthenticated && path === "/auth") {
-    nav.navigate("/");
-    return true;
-  }
-
-  return false;
-};
+  };
+}
 ```
 
 Notice that it returns `true` ("stop rendering") while auth is not ready yet.
 Nothing is drawn until the app knows whether a user is signed in, so the login
 page never flashes on screen for a user who is already signed in.
 
-**`createAuthController`** (`app/src/lib/auth/AuthController.ts`) runs the startup
-sequence and connects auth events to the rest of the app:
+**`bootstrapAuth`** (`app/src/lib/auth/bootstrapAuth.ts`) runs the startup
+sequence in online mode and connects auth events to the rest of the app.
+`main.ts` calls it after `AppRoot` has registered the routes:
 
 ```ts
 try {
   await authService.init();
 
-  // Single auth subscription, fanned out to sync and the route guard.
   authService.onAuthStateChange(async (event, session) => {
-    await syncLifecycle.handle(event, session);
-    enforceAuthRoute(router.path);
+    await syncLifecycle.handleAuthEvent(event, session);
+    guardRoute(router.path);
   });
 
   await syncLifecycle.start(authService.session);
 
-  if (!enforceAuthRoute(router.path)) {
+  if (!guardRoute(router.path)) {
     router.check();
   }
 } catch (error) {
@@ -523,8 +516,8 @@ lets several browser tabs share it. Queries use SQL strings through the
 #### When to connect: `syncLifecycle`
 
 `createSyncLifecycle()` in `app/src/lib/sync/syncLifecycle.ts` decides when to
-connect and when to clear. It knows nothing about routing; `AuthController`
-feeds it auth events:
+connect and when to clear. It knows nothing about routing; `bootstrapAuth`
+feeds it auth events through `handleAuthEvent(event, session)`:
 
 ```ts
 export function createSyncLifecycle(sync: SyncControls) {
@@ -549,7 +542,7 @@ export function createSyncLifecycle(sync: SyncControls) {
 The `connectedUserId` check matters. Supabase fires `SIGNED_IN` often, for
 example when the tab regains focus. Calling `powersync.connect()` every time
 would open extra sync connections, so the lifecycle connects once per user.
-On `SIGNED_OUT` it calls `reset`, which `platform.ts` maps to
+On `SIGNED_OUT` it calls `reset`, which `main.ts` maps to
 `powersync.disconnectAndClear()`. That wipes the local database, so the next
 person who signs in on the same browser cannot see the previous user's data.
 
@@ -645,7 +638,7 @@ the underlying tables change:
 
 ```ts
   watchUserLists(options?: { signal?: AbortSignal }) {
-    return this.ps.watch(
+    return this.db.watch(
       `SELECT
         lists.*,
         todos.id AS item_id,
@@ -672,7 +665,7 @@ Writes are plain SQL against the local database:
 
 ```ts
   async createTodo(todo: NewTodo) {
-    return await this.ps.execute(
+    return await this.db.execute(
       "INSERT INTO todos (id, description, list_id, created_by, created_at) VALUES (?, ?, ?, ?, ?)",
       [
         crypto.randomUUID(),
@@ -687,8 +680,8 @@ Writes are plain SQL against the local database:
   // …
 
   async deleteList(listId: string) {
-    await this.ps.execute("DELETE FROM todos WHERE list_id = ?", [listId]);
-    return await this.ps.execute("DELETE FROM lists WHERE id = ?", [listId]);
+    await this.db.execute("DELETE FROM todos WHERE list_id = ?", [listId]);
+    return await this.db.execute("DELETE FROM lists WHERE id = ?", [listId]);
   }
 ```
 
@@ -714,7 +707,7 @@ void (async () => {
   try {
     for await (const result of store.watchUserLists({ signal: abortController.signal })) {
       if (!abortController.signal.aborted) {
-        renderLists(result.array as ListWithTodoRow[]);
+        syncCards(result.array as ListWithTodoRow[]);
       }
     }
   } catch (error) {
@@ -734,7 +727,7 @@ return () => {
 
 #### Reconciling cards without losing focus
 
-You might expect `renderLists()` to simply re-render every list with Lit. It
+You might expect `syncCards()` to simply re-render every list with Lit. It
 does not, and the reason is worth understanding. A sync update can arrive
 while the user is typing a new list name. If the card were recreated, the
 input would lose focus and the user would lose their edit.
@@ -745,25 +738,18 @@ destroyed:
 
 ```ts
 lists.forEach((list, index) => {
-  let controller = cardControllers.get(list.id);
+  let card = cardsByListId.get(list.id);
 
-  if (!controller) {
-    const card = document.createElement("article");
-    controller = TodoListCard(card, list, {
-      onSubmit,
-      onCompleted,
-      onRename,
-      onDelete,
-    });
-    cardControllers.set(list.id, controller);
+  if (card) {
+    card.update(list);
   } else {
-    controller.update(list);
+    card = TodoListCard(document.createElement("article"), list, cardOptions);
+    cardsByListId.set(list.id, card);
+    if (hasRenderedLists) addedCard ??= card.element;
   }
 
-  const cardAtIndex = container?.children[index];
-  if (cardAtIndex !== controller.element) {
-    container?.insertBefore(controller.element, cardAtIndex ?? null);
-  }
+  const elementAtIndex = track.children[index] ?? null;
+  if (elementAtIndex !== card.element) track.insertBefore(card.element, elementAtIndex);
 });
 ```
 
@@ -774,46 +760,46 @@ _mounted Lit template_ that uses Lit's `repeat()` directive keyed by todo ID.
 See [Rendering patterns](./rendering-patterns.md) for when to choose which
 style.
 
-### 8. Component communication with events
+### 8. Component communication with a status source
 
-Sometimes a component deep in the tree needs data that lives near the root.
-The sync status indicator in the sidebar footer is the example here: it needs
-the PowerSync status, but the PowerSync database is created in `platform.ts`.
-Passing `powersync` down through the layout, the sidebar and the footer would
-couple all of them to something they do not use.
+Sometimes a component deep in the tree needs live data that lives near the
+root. The sync status indicator in the sidebar footer is the example here: it
+needs the PowerSync status, but the PowerSync database is created in
+`main.ts`. Passing `powersync` itself down through the layout and the sidebar
+would couple all of them to an SDK they do not use.
 
-`app/src/lib/events.ts` defines a small convention instead:
-
-- **Actions** (verbs) bubble **up** from a component to a controller.
-- **Data** (nouns) is dispatched **down**, directly on the element that asked
-  for it, and does not bubble.
-
-The indicator subscribes to `syncStatus` data on its own element, then sends a
-bubbling `loadSyncStatus` action:
+Instead, `app/src/lib/sync/syncStatus.ts` defines a small read-only interface
+and a factory that adapts PowerSync to it:
 
 ```ts
-const disposeListener = onData(el, "syncStatus", renderComponent);
-renderComponent(null);
-dispatchAction(el, "loadSyncStatus");
+/** Read-only view of the PowerSync connection state for UI components. */
+export type SyncStatusSource = {
+  current: () => SyncStatus;
+  subscribe: (listener: (status: SyncStatus) => void) => Dispose;
+};
 ```
 
-`SyncController` (`app/src/lib/sync/SyncController.ts`), mounted on the app's
-root element by `AppRoot`, catches the action, remembers who asked, and
-replies immediately. It sends the same element a fresh copy every time the
-PowerSync status changes:
+`main.ts` creates it once with `createSyncStatusSource(powersync)` and passes it
+as the `syncStatus` dependency to `SidebarLayout`, which hands it to `Sidebar`,
+which passes it to `SyncStatusIndicator(el, syncStatus)`. The indicator
+renders the current value, subscribes to changes, and unsubscribes when it is
+disposed:
 
 ```ts
-const unsubscribeLoad = onAction(el, "loadSyncStatus", (_, e) => {
-  if (e.target) {
-    requesters.add(e.target);
-    dispatchData(e.target, "syncStatus", current);
-  }
-});
+const unsubscribe = syncStatus.subscribe(renderComponent);
+renderComponent(syncStatus.current());
+
+return () => {
+  if (disposed) return;
+  disposed = true;
+  unsubscribe();
+  render(nothing, el);
+};
 ```
 
-Event names and payloads are a typed union (`ActionEvent` and `DataEvent` in
-`events.ts`). To add a new event, extend those types and TypeScript will check
-every sender and listener.
+The shell only imports the `SyncStatusSource` and `SyncStatus` types, so it
+never touches the PowerSync SDK at runtime, and a test can pass a plain fake
+object with `current` and `subscribe`.
 
 ## Backend walkthrough
 
@@ -1002,13 +988,13 @@ client_auth:
 Here is everything above in one story. A signed-in user types "Buy milk" into
 a list and presses Enter.
 
-1. The form in `TodoList` is submitted and calls the `onSubmit` handler that
-   `MyTodos` passed down.
+1. The form in `TodoList` is submitted. `TodoList` trims the text and calls
+   the `onAddTodo(listId, description)` callback that `MyTodos` passed down.
 2. `MyTodos` calls `store.createTodo()`, which runs an `INSERT` against local
    SQLite. It completes almost instantly, with or without a network.
 3. PowerSync records a `PUT` operation in the upload queue. At the same time
    the `watch()` query notices that `todos` changed and yields new rows.
-   `renderLists()` calls `update()` on the existing card, and the new item
+   `syncCards()` calls `update()` on the existing card, and the new item
    appears on screen.
 4. When the device is online, the SDK calls `uploadData()`. The connector
    sends the operation to `process_powersync_crud`, which runs as the user.
@@ -1026,8 +1012,8 @@ a list and presses Enter.
 
 - **Wire dependencies in `main.ts`.** Pass callbacks or narrow interfaces
   (often written as `Pick<Service, "method">`) to pages and components. Do not
-  import runtime singletons. Infrastructure belongs in `platform.ts`; expose
-  narrow handles from it rather than raw services.
+  import runtime singletons. Concrete services are created only in `main.ts`;
+  pass narrow handles from there rather than raw services.
 - **Return a `Dispose`** from every mount that owns listeners, subscriptions
   or async work. Dispose children before their parent. In async code, check a
   `disposed` flag before rendering.
@@ -1047,11 +1033,11 @@ Some of these conventions are enforced by oxlint. The rules live in the
 `.oxlintrc.json` extends:
 
 - `no-restricted-imports` blocks runtime imports of the Supabase, PowerSync and
-  router packages from `src/pages/`, `src/lib/shell/` and `main.ts`. It also
-  blocks importing the infrastructure modules (`AuthService`, `AuthController`,
-  `authGuard`, the connector, `syncLifecycle`, `SyncController`,
-  `sync/client.ts`) anywhere except `platform.ts` and tests. Type-only imports
-  are allowed.
+  router packages from `src/pages/` and `src/lib/shell/`. It also blocks
+  importing the infrastructure modules (`AuthService`, `bootstrapAuth`,
+  `authGuard`, the connector, `syncLifecycle`, `syncStatus`, `sync/client.ts`)
+  anywhere except `app/src/lib/main.ts` and tests. Type-only imports are
+  allowed.
 - `supa/no-import-meta-env-outside-config` is a custom rule in the same package.
   JS plugins are an alpha oxlint feature, so keep the plugin small.
 
@@ -1072,8 +1058,8 @@ it("connects once per user across repeated SIGNED_IN events", async () => {
   const lifecycle = createSyncLifecycle(sync);
 
   await lifecycle.start(sessionFor("a"));
-  await lifecycle.handle("SIGNED_IN", sessionFor("a"));
-  await lifecycle.handle("SIGNED_IN", sessionFor("a"));
+  await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("a"));
+  await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("a"));
 
   expect(sync.connect).toHaveBeenCalledOnce();
 });
@@ -1090,7 +1076,8 @@ tests do not cover CSS or responsive layout, so check those in a real browser.
 
 1. Create `app/src/pages/<name>/index.ts` that exports a mount function
    returning `Dispose`.
-2. Add the page to `AppPages` and register its route in `app/src/lib/AppRoot.ts`.
+2. Add the page to `AppPages` and register its route with the `route` helper in
+   `app/src/lib/AppRoot.ts`.
 3. Bind its dependencies in the `pages` object in `main.ts`.
 4. If it needs a sidebar entry, add one to `app/src/lib/nav/navConfig.ts`.
 

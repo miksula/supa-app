@@ -35,7 +35,7 @@ export function createSyncLifecycle(sync: SyncControls) {
       }
     },
 
-    async handle(event: AuthChangeEvent, session: Session | null) {
+    async handleAuthEvent(event: AuthChangeEvent, session: Session | null) {
       if (event === "SIGNED_IN" && session) {
         await connectFor(session);
       } else if (event === "SIGNED_OUT") {
@@ -49,3 +49,5 @@ export function createSyncLifecycle(sync: SyncControls) {
     },
   };
 }
+
+export type SyncLifecycle = ReturnType<typeof createSyncLifecycle>;

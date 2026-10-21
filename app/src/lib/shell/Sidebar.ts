@@ -4,6 +4,7 @@ import type { Dispose, RouteSource } from "@/types.ts";
 import type { NavItem } from "@/nav/navConfig.ts";
 import "@/ui/AppIcon.ts";
 import type { AuthService } from "@/auth/AuthService.ts";
+import type { SyncStatusSource } from "@/sync/syncStatus.ts";
 import { ThemeSwitcher } from "./ThemeSwitcher.ts";
 import { SyncStatusIndicator } from "./SyncStatusIndicator.ts";
 import type { Session } from "@supabase/supabase-js";
@@ -34,17 +35,16 @@ function getUserInitials(session: Session | null) {
     : (parts[0] ?? "U").slice(0, 2).toUpperCase();
 }
 
+export type SidebarDependencies = {
+  router: RouteSource;
+  navItems: NavItem[];
+  authService: Pick<AuthService, "session" | "onAuthStateChange" | "logout">;
+  syncStatus: SyncStatusSource;
+};
+
 export function Sidebar(
   target: HTMLElement,
-  {
-    router,
-    navItems,
-    authService,
-  }: {
-    router: RouteSource;
-    navItems: NavItem[];
-    authService: Pick<AuthService, "session" | "session$" | "logout">;
-  },
+  { router, navItems, authService, syncStatus }: SidebarDependencies,
 ): Dispose {
   let disposed = false;
 
@@ -170,7 +170,7 @@ export function Sidebar(
     }
 
     const disposeTheme = ThemeSwitcher(themeOutlet);
-    const disposeSync = SyncStatusIndicator(syncOutlet);
+    const disposeSync = SyncStatusIndicator(syncOutlet, syncStatus);
     disposeAccountFooter = () => {
       disposeTheme();
       disposeSync();
@@ -224,7 +224,7 @@ export function Sidebar(
     }
   };
 
-  const disposeSessionListener = authService.session$.subscribe((session) => {
+  const disposeSessionListener = authService.onAuthStateChange((_, session) => {
     currentSession = session;
     closeAccountMenu();
     renderAccount();

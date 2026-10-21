@@ -19,9 +19,9 @@ root config.
 - `supa/no-import-meta-env-outside-config`: `import.meta.env` may only be read in
   `app/src/lib/config.ts`. Everything else uses `config`.
 - Built-in `no-restricted-imports`, configured in `recommended.json`:
-  - Pages, `lib/shell/` and `main.ts` must not import the Supabase, PowerSync or router
-    packages at runtime.
-  - Infrastructure modules (`AuthService`, `AuthController`, `authGuard`, the connector,
-    `syncLifecycle`, `SyncController`, `sync/client.ts`) may only be imported at runtime
-    by `platform.ts` and tests.
+  - Pages and `lib/shell/` must not import the Supabase, PowerSync or router packages at
+    runtime.
+  - Infrastructure modules (`AuthService`, `bootstrapAuth`, `authGuard`, the connector,
+    `syncLifecycle`, `syncStatus`, `sync/client.ts`) may only be imported at runtime by
+    `app/src/lib/main.ts` and tests.
   - Type-only imports are always allowed.

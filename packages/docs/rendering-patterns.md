@@ -92,11 +92,20 @@ import "@/ui/AppIcon.ts";
 import type { Todo } from "./TodoStore.ts";
 
 export type TodoListOptions = {
-  onSubmit: (event: SubmitEvent, listId: string) => void;
-  onCompleted: (event: Event, todoId: string) => void;
+  onAddTodo: (listId: string, description: string) => Promise<unknown>;
+  onToggleTodo: (todoId: string, completed: boolean) => Promise<unknown>;
 };
 
-function TodoItem(todo: Todo, onCompleted: TodoListOptions["onCompleted"]) {
+function TodoItem(todo: Todo, onToggleTodo: TodoListOptions["onToggleTodo"]) {
+  const toggle = (event: Event) => {
+    const checkbox = event.currentTarget as HTMLInputElement;
+    const completed = checkbox.checked;
+    onToggleTodo(todo.id, completed).catch((error: unknown) => {
+      checkbox.checked = !completed;
+      console.error("Failed to update todo completion", error);
+    });
+  };
+
   return html`
     <li class="todo-item ${todo.completed ? "-is-done" : ""}" data-key="${todo.id}">
       <label class="todo-item-row">
@@ -104,7 +113,7 @@ function TodoItem(todo: Todo, onCompleted: TodoListOptions["onCompleted"]) {
           type="checkbox"
           class="todo-item-checkbox"
           .checked=${Boolean(todo.completed)}
-          @change=${(event: Event) => onCompleted(event, todo.id)}
+          @change=${toggle}
         />
         <span class="todo-item-label">${todo.description}</span>
       </label>
@@ -112,13 +121,28 @@ function TodoItem(todo: Todo, onCompleted: TodoListOptions["onCompleted"]) {
   `;
 }
 
-function TodoInput(listId: string, onSubmit: TodoListOptions["onSubmit"]) {
+function TodoInput(listId: string, onAddTodo: TodoListOptions["onAddTodo"]) {
+  const submit = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const input = form.elements.namedItem("description") as HTMLInputElement;
+    const description = input.value.trim();
+
+    if (!description) {
+      input.focus();
+      return;
+    }
+
+    try {
+      await onAddTodo(listId, description);
+      form.reset();
+    } catch (error) {
+      console.error("Failed to create todo", error);
+    }
+  };
+
   return html`
-    <form
-      class="todo-input"
-      data-key="todo-input-${listId}"
-      @submit=${(event: SubmitEvent) => onSubmit(event, listId)}
-    >
+    <form class="todo-input" data-key="todo-input-${listId}" @submit=${submit}>
       <input
         type="text"
         name="description"
@@ -151,10 +175,10 @@ export function TodoList(
         ${repeat(
           list.items,
           (todo) => todo.id,
-          (todo) => TodoItem(todo, options.onCompleted),
+          (todo) => TodoItem(todo, options.onToggleTodo),
         )}
       </ul>
-      ${TodoInput(list.id, options.onSubmit)}
+      ${TodoInput(list.id, options.onAddTodo)}
     `,
     el,
   );
@@ -162,60 +186,50 @@ export function TodoList(
 ```
 
 Notice how `TodoList` composes smaller template helpers (`TodoItem` and `TodoInput`)
-into a single template and renders it directly into `el`. It uses Lit's `repeat` directive
+into a single template and renders it directly into `el`. It also owns its form and
+checkbox: it reads the input, resets the form on success and reverts the checkbox on
+failure, so callers receive plain data (`listId`, `description`, `completed`) instead of
+DOM events. It uses Lit's `repeat` directive
 with a key function (`(todo) => todo.id`) so Lit can efficiently add, remove, and reorder
 list items in the DOM without recreating existing nodes.
 
 ### Real-world example with cleanup: `SyncStatusIndicator`
 
 When a mounted Lit function subscribes to events or observers, it returns a `Dispose`
-function. `SyncStatusIndicator` (`app/src/lib/shell/SyncStatusIndicator.ts`) listens to
-data events and tears down both the listener and the DOM when unmounted:
+function. `SyncStatusIndicator` (`app/src/lib/shell/SyncStatusIndicator.ts`) receives a
+`SyncStatusSource`, subscribes to it, and tears down both the subscription and the DOM
+when unmounted:
 
 ```ts
 import { html, nothing, render } from "lit";
-import { dispatchAction, onData, type SyncStatusData } from "@/events.ts";
+import type { SyncStatus, SyncStatusSource } from "@/sync/syncStatus.ts";
 import type { Dispose } from "@/types.ts";
 import "./sync-status-indicator.css";
 
 // … helper functions …
 
-export function SyncStatusIndicator(el: HTMLElement): Dispose {
+export function SyncStatusIndicator(el: HTMLElement, syncStatus: SyncStatusSource): Dispose {
   let disposed = false;
-
-  const renderComponent = (status: SyncStatusData | null) => {
+  const renderComponent = (status: SyncStatus) => {
     if (disposed) return;
-    const statusClass = status
-      ? status.error || !status.connected
-        ? "-is-error"
-        : "-is-connected"
-      : "";
-
+    const statusClass = status.error || !status.connected ? "-is-error" : "-is-connected";
     render(
       html`
         <div class="sync-status ${statusClass}" role="status" aria-label="Sync status">
-          ${
-            status
-              ? html`
-                  <span class="status-indicator" aria-hidden="true"></span>
-                  ${getSyncLabel(status)}
-                `
-              : nothing
-          }
+          <span class="status-indicator" aria-hidden="true"></span>
+          ${getSyncLabel(status)}
         </div>
       `,
       el,
     );
   };
-
-  const disposeListener = onData(el, "syncStatus", renderComponent);
-  renderComponent(null);
-  dispatchAction(el, "loadSyncStatus");
+  const unsubscribe = syncStatus.subscribe(renderComponent);
+  renderComponent(syncStatus.current());
 
   return () => {
     if (disposed) return;
     disposed = true;
-    disposeListener();
+    unsubscribe();
     render(nothing, el);
   };
 }
@@ -422,8 +436,8 @@ export function TodoListCard(
 
     // Delegate inner items rendering to a mounted Lit template function!
     TodoList(mountedTodoList, list, {
-      onSubmit: options.onSubmit,
-      onCompleted: options.onCompleted,
+      onAddTodo: options.onAddTodo,
+      onToggleTodo: options.onToggleTodo,
     });
   }
 
@@ -459,53 +473,43 @@ How does the parent reconcile these controllers when data changes? In `app/src/p
 `MyTodosPage` maintains a `Map<string, TodoListCardController>` keyed by list ID:
 
 ```ts
-const cardControllers = new Map<string, TodoListCardController>();
+const cardsByListId = new Map<string, TodoListCardController>();
 
-const renderLists = (rows: ListWithTodoRow[]) => {
+const syncCards = (rows: ListWithTodoRow[]) => {
   const lists = mapTodoLists(rows);
-  listIds = lists.map((list) => list.id);
+  const currentListIds = new Set(lists.map((list) => list.id));
+  let addedCard: HTMLElement | null = null;
 
   // 1. Destroy and remove cards that no longer exist in the database
-  const activeListIds = new Set(listIds);
-  for (const [listId, controller] of cardControllers) {
-    if (!activeListIds.has(listId)) {
-      controller.destroy();
-      controller.element.remove();
-      cardControllers.delete(listId);
-    }
+  for (const [listId, card] of cardsByListId) {
+    if (!currentListIds.has(listId)) removeCard(listId, card);
   }
 
-  // 2. Add new cards or update existing ones
   lists.forEach((list, index) => {
-    let controller = cardControllers.get(list.id);
+    let card = cardsByListId.get(list.id);
 
-    if (!controller) {
-      const card = document.createElement("article");
-      controller = TodoListCard(card, list, {
-        onSubmit,
-        onCompleted,
-        onRename,
-        onDelete,
-      });
-      cardControllers.set(list.id, controller);
+    if (card) {
+      // 2. Existing card: only update data, preserving internal editing/focus state!
+      card.update(list);
     } else {
-      // Existing card: only update data, preserving internal editing/focus state!
-      controller.update(list);
+      // 3. New card: create a controller for it
+      card = TodoListCard(document.createElement("article"), list, cardOptions);
+      cardsByListId.set(list.id, card);
+      if (hasRenderedLists) addedCard ??= card.element;
     }
 
-    // 3. Keep DOM order synchronized with database order without re-creating nodes
-    const cardAtIndex = container?.children[index];
-    if (cardAtIndex !== controller.element) {
-      container?.insertBefore(controller.element, cardAtIndex ?? null);
-    }
+    // 4. Keep DOM order synchronized with database order without re-creating nodes
+    const elementAtIndex = track.children[index] ?? null;
+    if (elementAtIndex !== card.element) track.insertBefore(card.element, elementAtIndex);
   });
 
-  updatePositions();
-  updateHeight();
+  hasRenderedLists = true;
+  carousel.refresh();
+  if (addedCard) carousel.reveal(addedCard);
 };
 ```
 
-Because `container.insertBefore()` moves existing DOM nodes rather than cloning them,
+Because `track.insertBefore()` moves existing DOM nodes rather than cloning them,
 cards are reordered without losing their internal state, and browsers don't needlessly
 re-render untouched subtrees.
 
@@ -680,9 +684,9 @@ Consider how `MyTodos` and `TodoListCard` compose:
 ```text
 MyTodos (Mounted Lit template function)
   │
-  ├─ Toolbar & paging buttons (Rendered by Lit)
+  ├─ Toolbar & prev/next buttons (Rendered by Lit, driven by the Carousel controller)
   │
-  └─ Container: <div class="todo-list-container"></div> (Rendered once by Lit)
+  └─ Track: <div class="todo-list-track"></div> (Rendered once by Lit, CSS scroll-snap)
        │
        │ Managed imperatively by MyTodos via insertBefore() and Map<string, Controller>
        │
@@ -697,9 +701,9 @@ MyTodos (Mounted Lit template function)
 
 Look at the boundaries:
 
-1. `MyTodos` renders the outer shell once with Lit, creating the empty container `.todo-list-container`.
+1. `MyTodos` renders the outer shell once with Lit, creating the empty scroll-snap track `.todo-list-track`.
 2. Inside that container, `MyTodos` manages child cards **imperatively** using `TodoListCardController`.
-   Lit's template compiler never touches the `.todo-list-container` children again.
+   Lit's template compiler never touches the `.todo-list-track` children again.
 3. Each `TodoListCard` owns its header, title inputs, and delete button directly.
 4. For the todo items themselves, the card delegates to `TodoList` by rendering into a dedicated child
    slot (`.todo-list`).

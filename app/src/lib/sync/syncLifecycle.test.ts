@@ -29,8 +29,8 @@ describe("createSyncLifecycle", () => {
     const lifecycle = createSyncLifecycle(sync);
 
     await lifecycle.start(sessionFor("a"));
-    await lifecycle.handle("SIGNED_IN", sessionFor("a"));
-    await lifecycle.handle("SIGNED_IN", sessionFor("a"));
+    await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("a"));
+    await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("a"));
 
     expect(sync.connect).toHaveBeenCalledOnce();
   });
@@ -38,8 +38,8 @@ describe("createSyncLifecycle", () => {
   it("connects again when a different user signs in", async () => {
     const lifecycle = createSyncLifecycle(sync);
 
-    await lifecycle.handle("SIGNED_IN", sessionFor("a"));
-    await lifecycle.handle("SIGNED_IN", sessionFor("b"));
+    await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("a"));
+    await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("b"));
 
     expect(sync.connect).toHaveBeenCalledTimes(2);
   });
@@ -47,9 +47,9 @@ describe("createSyncLifecycle", () => {
   it("resets on sign-out and reconnects on the next sign-in", async () => {
     const lifecycle = createSyncLifecycle(sync);
 
-    await lifecycle.handle("SIGNED_IN", sessionFor("a"));
-    await lifecycle.handle("SIGNED_OUT", null);
-    await lifecycle.handle("SIGNED_IN", sessionFor("a"));
+    await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("a"));
+    await lifecycle.handleAuthEvent("SIGNED_OUT", null);
+    await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("a"));
 
     expect(sync.reset).toHaveBeenCalledOnce();
     expect(sync.connect).toHaveBeenCalledTimes(2);
@@ -59,8 +59,8 @@ describe("createSyncLifecycle", () => {
     sync.connect.mockRejectedValueOnce(new Error("offline"));
     const lifecycle = createSyncLifecycle(sync);
 
-    await lifecycle.handle("SIGNED_IN", sessionFor("a"));
-    await lifecycle.handle("SIGNED_IN", sessionFor("a"));
+    await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("a"));
+    await lifecycle.handleAuthEvent("SIGNED_IN", sessionFor("a"));
 
     expect(sync.connect).toHaveBeenCalledTimes(2);
     expect(console.error).toHaveBeenCalledOnce();
@@ -69,15 +69,17 @@ describe("createSyncLifecycle", () => {
   it("swallows reset failures", async () => {
     sync.reset.mockRejectedValueOnce(new Error("boom"));
 
-    await expect(createSyncLifecycle(sync).handle("SIGNED_OUT", null)).resolves.toBeUndefined();
+    await expect(
+      createSyncLifecycle(sync).handleAuthEvent("SIGNED_OUT", null),
+    ).resolves.toBeUndefined();
     expect(console.error).toHaveBeenCalledOnce();
   });
 
   it("ignores other auth events", async () => {
     const lifecycle = createSyncLifecycle(sync);
 
-    await lifecycle.handle("TOKEN_REFRESHED", sessionFor("a"));
-    await lifecycle.handle("USER_UPDATED", sessionFor("a"));
+    await lifecycle.handleAuthEvent("TOKEN_REFRESHED", sessionFor("a"));
+    await lifecycle.handleAuthEvent("USER_UPDATED", sessionFor("a"));
 
     expect(sync.connect).not.toHaveBeenCalled();
     expect(sync.reset).not.toHaveBeenCalled();

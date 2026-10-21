@@ -1,7 +1,9 @@
 import type { AppRouter, LayoutFactory, Mount } from "@/types.ts";
+import type { RouteGuard } from "./auth/authGuard.ts";
 import { createLayoutManager } from "./layoutManager.ts";
 
 type LayoutName = "app" | "login";
+type RouteContext = Parameters<Parameters<AppRouter["get"]>[1]>[0];
 
 type AppPages = {
   login: Mount;
@@ -10,53 +12,43 @@ type AppPages = {
   notFound: Mount;
 };
 
-type AppDependencies = {
+type AppRootDependencies = {
   router: Pick<AppRouter, "get" | "navigate">;
-  auth: { bootstrap: () => Promise<void> };
-  enforceAuthRoute: (path: string) => boolean;
-  mountSync: Mount;
+  guardRoute: RouteGuard;
   layouts: Record<LayoutName, LayoutFactory>;
   pages: AppPages;
 };
 
-export function AppRoot(el: HTMLElement, dependencies: AppDependencies) {
-  const { router, auth, enforceAuthRoute, mountSync, layouts, pages } = dependencies;
-  const disposeSync = mountSync(el);
+/** Registers the app routes and mounts each page inside its layout. */
+export function AppRoot(
+  el: HTMLElement,
+  { router, guardRoute, layouts, pages }: AppRootDependencies,
+) {
   const layoutManager = createLayoutManager(el);
   let disposed = false;
 
-  const canActivate = (path: string) => !disposed && !enforceAuthRoute(path.split("?")[0]);
-  const show = (layout: LayoutName, page: Mount, transition?: boolean) => {
+  const route = (path: string, handler: (ctx: RouteContext) => void) => {
+    router.get(path, (ctx) => {
+      if (!disposed && !guardRoute(ctx.path.split("?")[0])) handler(ctx);
+    });
+  };
+  const showPage = (layout: LayoutName, page: Mount, transition?: boolean) => {
     layoutManager.show({ page, layout: layouts[layout], transition });
   };
 
-  router.get("/", (ctx) => {
-    if (canActivate(ctx.path)) router.navigate("/my-todos");
-  });
-  router.get("/my-todos", (ctx) => {
-    if (canActivate(ctx.path)) show("app", pages.todos);
-  });
-  router.get("/docs", (ctx) => {
-    if (canActivate(ctx.path)) router.navigate("/docs/introduction");
-  });
-  router.get("/docs/:id", (ctx) => {
-    if (!canActivate(ctx.path)) return;
+  route("/", () => router.navigate("/my-todos"));
+  route("/my-todos", () => showPage("app", pages.todos));
+  route("/docs", () => router.navigate("/docs/introduction"));
+  route("/docs/:id", (ctx) => {
     const id = ctx.param("id") as string;
-    show("app", (target) => pages.docs(target, id));
+    showPage("app", (target) => pages.docs(target, id));
   });
-  router.get("/auth", (ctx) => {
-    if (canActivate(ctx.path)) show("login", pages.login, true);
-  });
-  router.get("/*", (ctx) => {
-    if (canActivate(ctx.path)) show("app", pages.notFound);
-  });
-
-  void auth.bootstrap();
+  route("/auth", () => showPage("login", pages.login, true));
+  route("/*", () => showPage("app", pages.notFound));
 
   return () => {
     if (disposed) return;
     disposed = true;
     layoutManager.dispose();
-    disposeSync?.();
   };
 }

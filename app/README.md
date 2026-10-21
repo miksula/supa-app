@@ -30,25 +30,25 @@ authentication and remote sync while keeping the local database available.
   `startApp` in [src/lib/main.ts](src/lib/main.ts).
 - [src/lib/config.ts](src/lib/config.ts) contains all app environment reads,
   including offline mode and development-only login prefill.
-- [src/lib/platform.ts](src/lib/platform.ts) creates the stable infrastructure behind
-  `createPlatform()`: an explicit `Router` instance, Supabase, auth, the local
-  database, connector, route guard, sync lifecycle and the shell layouts. It returns
-  narrow handles (`db`, `router`, `session`, `navigate`, `config`) rather than raw
-  services.
-- [src/lib/main.ts](src/lib/main.ts) is the composition root for the actively
-  developed parts. It creates the data stores and binds their dependencies to pages
-  and navigation, then passes them, together with the platform shell, to `AppRoot`.
-- [src/lib/AppRoot.ts](src/lib/AppRoot.ts) registers the application routes,
-  applies the auth guard, and starts the auth and sync-status controllers.
+- [src/lib/main.ts](src/lib/main.ts) is the single composition root. `startApp()`
+  creates an explicit `Router` instance, the Supabase client, `AuthService`, the
+  local database, the sync-status source, the data stores, the route guard, layouts
+  and pages, and passes them to `AppRoot`. Offline mode is decided here once: the
+  guard lets every route through and sync never starts. Online, it creates the
+  connector and sync lifecycle and calls `bootstrapAuth()` after the routes are
+  registered.
+- [src/lib/AppRoot.ts](src/lib/AppRoot.ts) registers the application routes and
+  applies the route guard to each of them.
   [src/lib/layoutManager.ts](src/lib/layoutManager.ts) owns page/layout
   replacement, disposal and view transitions.
 - `src/pages/` contains route-level screens (`auth/`, `docs/`, `my-todos/`,
   `not-found/`). Feature-specific modules live next to their page, e.g.
   `pages/my-todos/TodoStore.ts` reads and writes the local todo data.
 - `src/lib/` contains shared code, grouped by concern:
-  - `auth/`: `AuthService.ts` wraps an injected Supabase client created in `platform.ts`,
-    `AuthController.ts` bootstraps the session with injected dependencies, and
-    `authGuard.ts` creates the route guard. There are no auth service singletons.
+  - `auth/`: `AuthService.ts` wraps an injected Supabase client created in `main.ts`
+    and fans out its auth state changes, `bootstrapAuth.ts` restores the session and
+    starts sync with injected dependencies, and `authGuard.ts` creates the route guard.
+    There are no auth service singletons.
   - `sync/`: `client.ts` provides a factory for the PowerSync database,
     `schema.ts` is the client schema (generated with
     `npm run schema:generate`), `SupabasePowerSyncConnector.ts` supplies
@@ -58,18 +58,18 @@ authentication and remote sync while keeping the local database available.
     the queued transaction; transient failures leave it pending for retry.
     `syncLifecycle.ts` connects
     PowerSync for a signed-in user and clears local data on sign-out, and
-    `SyncController.ts` publishes sync status to the UI.
+    `syncStatus.ts` exposes a read-only `SyncStatusSource` for the UI.
   - `shell/`: layouts and app chrome (`SidebarLayout`, `Sidebar`,
     `PageHeader`, `LoginLayout`). `Sidebar`'s account menu footer mounts
-    `ThemeSwitcher` and `SyncStatusIndicator`, each owning its listeners and
-    cleanup. `sidebarState.ts` stores sidebar visibility in localStorage only;
+    `ThemeSwitcher` and `SyncStatusIndicator` (which receives the `syncStatus`
+    source), each owning its listeners and cleanup. `sidebarState.ts` stores sidebar visibility in localStorage only;
     blocked storage falls back to an open sidebar.
   - `theme/`: shared color-scheme resolution and persistence helpers, also used
     by the theme initialization script in `src/index.html`.
   - `nav/`: navigation items (`navConfig.ts`) and breadcrumbs.
   - `ui/`: small reusable elements (`<app-icon>` with the Lucide registry in
     `icons.ts`, and `app-link.css`).
-  - `events.ts` and `types.ts`: shared event and mount-function types.
+  - `types.ts`: shared mount-function, router and layout types.
 - UI is rendered with Lit. Component CSS lives beside its component module;
   `src/css/` contains shared tokens, Tailwind and base styles.
 - `@packages/router` and `@packages/docs` are workspace packages in
@@ -114,7 +114,7 @@ disposeSidebar();
 disposes a layout only when changing layouts. Route `transition` flags control
 layout-change animation, with immediate updates when reduced motion is enabled
 or the View Transition API is unavailable. Superseded transition callbacks cannot
-mount stale pages. `AppRoot` retains the manager and sync-controller disposers.
+mount stale pages. `AppRoot` retains the layout manager's disposer.
 `SidebarLayout` owns the `Sidebar` and `PageHeader` disposers; `Sidebar` owns
 its current `ThemeSwitcher` and `SyncStatusIndicator` disposers.
 Cleanup removes external listeners and subscriptions before clearing owned Lit
@@ -226,8 +226,8 @@ to run in Node. Verify responsive layouts and CSS in a real browser as well.
 When adding a screen, register its route and layout in [src/lib/AppRoot.ts](src/lib/AppRoot.ts),
 put the page in `src/pages/`, and bind its dependencies in [src/lib/main.ts](src/lib/main.ts).
 Pass callbacks, a store, or a narrow service interface to pages and components;
-do not import runtime auth, sync or router singletons into them. The platform
-([src/lib/platform.ts](src/lib/platform.ts)) creates and injects the router instance.
+do not import runtime auth, sync or router singletons into them. `main.ts` creates
+and injects the router instance.
 Keep reusable behavior in `src/lib/`. When changing synced
 tables, update the PowerSync schema and keep it aligned with the backend schema
 and sync configuration.

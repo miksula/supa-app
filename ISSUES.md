@@ -106,7 +106,7 @@ three render, and My Todos shows the local data. This also depends on [#2][2].
 
 **Severity:** High · **Effort:** S–M · **Area:** Auth
 
-**Where:** [AuthService.ts](./app/src/lib/auth/AuthService.ts#L34-L50), [AuthController.ts](./app/src/lib/auth/AuthController.ts#L39-L42), [authGuard.ts](./app/src/lib/auth/authGuard.ts#L18-L20)
+**Where:** [AuthService.ts](./app/src/lib/auth/AuthService.ts#L39-L55), [bootstrapAuth.ts](./app/src/lib/auth/bootstrapAuth.ts#L37-L40), [authGuard.ts](./app/src/lib/auth/authGuard.ts#L13-L15)
 
 **Problem.** Supabase access tokens expire after one hour by default. On boot,
 `supabase.auth.getSession()` tries to refresh an expired token. If the refresh fails
@@ -123,11 +123,11 @@ if (error) {
   throw error;
 }
 
-this.updateSession(session);
-this.ready = true;
+this.currentSession = session;
+this.initialized = true;
 ```
 
-`AuthController.bootstrap()` catches the error and navigates to `/auth`:
+`bootstrapAuth()` catches the error and navigates to `/auth`:
 
 ```ts
 } catch (error) {
@@ -166,7 +166,7 @@ In DevTools → Network request blocking, block `*/auth/v1/token*`, then reload.
 
 **Done when.** The repro above shows the user's lists with an "offline" status. Once
 the request block is removed, sync resumes without a new login. Unit tests in
-`AuthService.test.ts` and `AuthController.test.ts` cover both the retryable error and
+`AuthService.test.ts` and `bootstrapAuth.test.ts` cover both the retryable error and
 other errors.
 
 ---
@@ -175,14 +175,12 @@ other errors.
 
 **Severity:** High · **Effort:** S · **Area:** Sync
 
-**Where:** [platform.ts](./app/src/lib/platform.ts#L48-L55), [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts), [Sidebar.ts](./app/src/lib/shell/Sidebar.ts#L189-L203), [AuthService.ts](./app/src/lib/auth/AuthService.ts#L65-L72)
+**Where:** [main.ts](./app/src/lib/main.ts#L75-L78), [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts), [Sidebar.ts](./app/src/lib/shell/Sidebar.ts#L199-L213), [AuthService.ts](./app/src/lib/auth/AuthService.ts#L64-L69)
 
 **Problem.** Every `SIGNED_OUT` event resets sync:
 
 ```ts
-reset: async () => {
-  if (!config.isOfflineMode) await powersync.disconnectAndClear({ clearLocal: true });
-},
+reset: () => powersync.disconnectAndClear({ clearLocal: true }),
 ```
 
 `disconnectAndClear()` wipes the local database, **including the upload queue**. The
@@ -275,11 +273,11 @@ the recording path.
 
 **Severity:** Medium (High for shared-device apps) · **Effort:** S · **Area:** Sync/Auth
 
-**Where:** [AuthController.ts](./app/src/lib/auth/AuthController.ts#L25-L37), [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts)
+**Where:** [bootstrapAuth.ts](./app/src/lib/auth/bootstrapAuth.ts#L25-L32), [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts)
 
 **Problem.** The local DB is only cleared when the app _observes_ a `SIGNED_OUT` event.
 auth-js recovers the stored session during client construction, before
-`AuthController` subscribes. If the refresh token is rejected at that point (revoked by
+`bootstrapAuth` subscribes. If the refresh token is rejected at that point (revoked by
 a global sign-out on another device, or session time-box or inactivity limits), auth-js
 removes the session and emits `SIGNED_OUT` with no app subscriber attached. New
 subscribers only receive `INITIAL_SESSION`, which `syncLifecycle` ignores.
@@ -382,8 +380,8 @@ example Safari 18, or with both globals deleted in a test).
 
 ```ts
 async deleteList(listId: string) {
-  await this.ps.execute("DELETE FROM todos WHERE list_id = ?", [listId]);
-  return await this.ps.execute("DELETE FROM lists WHERE id = ?", [listId]);
+  await this.db.execute("DELETE FROM todos WHERE list_id = ?", [listId]);
+  return await this.db.execute("DELETE FROM lists WHERE id = ?", [listId]);
 }
 ```
 
@@ -394,7 +392,7 @@ is rejected, the server is left half-applied. Watch queries also fire twice.
 
 Templates get copied, so this pattern will spread.
 
-**Suggested fix.** Wrap both statements in `this.ps.writeTransaction(async (tx) => { … })`.
+**Suggested fix.** Wrap both statements in `this.db.writeTransaction(async (tx) => { … })`.
 
 ---
 
@@ -402,11 +400,11 @@ Templates get copied, so this pattern will spread.
 
 **Severity:** Low · **Effort:** S · **Area:** UX
 
-**Where:** [MyTodos.ts](./app/src/pages/my-todos/MyTodos.ts#L273-L285), [SyncController.ts](./app/src/lib/sync/SyncController.ts#L11), [events.ts](./app/src/lib/events.ts#L16)
+**Where:** [index.ts](./app/src/pages/my-todos/index.ts#L143-L155), [syncStatus.ts](./app/src/lib/sync/syncStatus.ts#L10)
 
 **Problem.** After the first login on a device, My Todos renders an empty list
 container until the first sync finishes. The page has no loading or empty state.
-`hasSynced` is already published on the events bus, but nothing uses it.
+`hasSynced` is already exposed through `SyncStatusSource`, but nothing uses it.
 
 **Suggested fix.** Show a loading state until `status.hasSynced` (or
 `powersync.waitForFirstSync()`), then a real empty state ("No lists yet") when there
@@ -484,7 +482,7 @@ them.
 - [ ] **Finnish-only UI.** `<html lang="fi">` and hard-coded Finnish strings, with no i18n layer. Default to English, or add a small message catalog.
 - [ ] **`/settings` leads to the 404 page.** The nav item at [navConfig.ts](./app/src/lib/nav/navConfig.ts#L30) has no route.
 - [ ] **Empty docs pages.** [get-started.md](./packages/docs/get-started.md), [tutorials.md](./packages/docs/tutorials.md) and [changelog.md](./packages/docs/changelog.md) contain only a heading but appear in the docs nav.
-- [ ] **Unused Kysely `db`.** [client.ts](./app/src/lib/sync/client.ts#L19) returns a Kysely-wrapped `db`, but [platform.ts](./app/src/lib/platform.ts#L44) only uses `powersync`. Either use it in `TodoStore` or drop `@powersync/kysely-driver`.
+- [ ] **Unused Kysely `db`.** [client.ts](./app/src/lib/sync/client.ts#L19) returns a Kysely-wrapped `db`, but [main.ts](./app/src/lib/main.ts#L38) only uses `powersync`. Either use it in `TodoStore` or drop `@powersync/kysely-driver`.
 - [ ] **`VITE_OFFLINE_MODE` is misleading.** It is a "no backend" dev switch that disables auth, sync and session persistence. It is not offline support. Rename it, for example to `VITE_UI_ONLY`.
 - [ ] **README claims `npm run check` matches CI.** It doesn't: [CI](./.github/workflows/ci.yml) no longer runs `oxfmt --check` ([README.md](./README.md#L61-L63)). Restore the step or fix the README.
 - [ ] **Lockfile and package manager.** CI runs `bun install`, `bun.lock` is git-ignored by `*.lock` ([.gitignore](./.gitignore#L3)), and the only committed lockfile is `package-lock.json`. Pick one package manager, commit its lockfile, and use a frozen install in CI.

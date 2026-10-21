@@ -5,9 +5,6 @@ export type AppRouter = import("@packages/router").RouterType;
 export type RouteSource = Pick<AppRouter, "path" | "addRouteListener" | "removeRouteListener">;
 
 export interface LayoutInstance {
-  /** Root DOM element of the layout */
-  element: HTMLElement;
-
   /** Outlet element where the current page should be mounted */
   contentSlot: HTMLElement;
 

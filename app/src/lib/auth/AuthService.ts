@@ -1,26 +1,26 @@
 import type { AuthChangeEvent, Session, SupabaseClient } from "@supabase/supabase-js";
 
-export type SessionObservable = {
-  subscribe: (listener: (session: Session | null) => void) => () => void;
-};
+export type AuthStateListener = (
+  event: AuthChangeEvent,
+  session: Session | null,
+) => void | Promise<void>;
 
+/**
+ * Wraps Supabase auth and caches the current session so it can be read
+ * synchronously (route guard, sidebar). Supabase emits an event for every
+ * session change, including after `login` and `logout`, so that single
+ * subscription is the only place the cached session is updated.
+ */
 export class AuthService {
-  readonly client: SupabaseClient;
-  readonly session$: SessionObservable;
-
-  ready = false;
   private currentSession: Session | null = null;
-  private readonly sessionListeners = new Set<(session: Session | null) => void>();
+  private initialized = false;
+  private readonly listeners = new Set<AuthStateListener>();
 
-  constructor(client: SupabaseClient) {
-    this.client = client;
-
-    this.session$ = {
-      subscribe: (listener) => {
-        this.sessionListeners.add(listener);
-        return () => this.sessionListeners.delete(listener);
-      },
-    };
+  constructor(private readonly client: SupabaseClient) {
+    client.auth.onAuthStateChange(async (event, session) => {
+      this.currentSession = session;
+      await Promise.all([...this.listeners].map((listener) => listener(event, session)));
+    });
   }
 
   get session() {
@@ -31,8 +31,13 @@ export class AuthService {
     return this.currentSession !== null;
   }
 
+  /** True once the stored session has been read. */
+  get ready() {
+    return this.initialized;
+  }
+
   async init() {
-    if (this.ready) {
+    if (this.initialized) {
       return;
     }
 
@@ -45,21 +50,15 @@ export class AuthService {
       throw error;
     }
 
-    this.updateSession(session);
-    this.ready = true;
+    this.currentSession = session;
+    this.initialized = true;
   }
 
   async login(email: string, password: string) {
-    const {
-      data: { session },
-      error,
-    } = await this.client.auth.signInWithPassword({ email, password });
-
+    const { error } = await this.client.auth.signInWithPassword({ email, password });
     if (error) {
       throw error;
     }
-
-    this.updateSession(session);
   }
 
   async logout() {
@@ -67,21 +66,13 @@ export class AuthService {
     if (error) {
       throw error;
     }
-
-    this.updateSession(null);
   }
 
-  onAuthStateChange(callback: (event: AuthChangeEvent, session: Session | null) => void) {
-    return this.client.auth.onAuthStateChange((event, session) => {
-      this.updateSession(session);
-      callback(event, session);
-    });
-  }
-
-  private updateSession(session: Session | null) {
-    this.currentSession = session;
-    for (const listener of this.sessionListeners) {
-      listener(session);
-    }
+  /** Subscribe to session changes. Returns an unsubscribe function. */
+  onAuthStateChange(listener: AuthStateListener) {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 }

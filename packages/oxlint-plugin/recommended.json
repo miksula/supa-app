@@ -9,15 +9,15 @@
           {
             "group": [
               "**/AuthService.ts",
-              "**/AuthController.ts",
+              "**/bootstrapAuth.ts",
               "**/authGuard.ts",
               "**/SupabasePowerSyncConnector.ts",
               "**/syncLifecycle.ts",
-              "**/SyncController.ts",
+              "**/syncStatus.ts",
               "**/sync/client.ts"
             ],
             "allowTypeImports": true,
-            "message": "Infrastructure is created only in app/src/lib/platform.ts. Take what you need as a dependency (type-only imports are fine)."
+            "message": "Infrastructure is created only in app/src/lib/main.ts. Take what you need as a dependency (type-only imports are fine)."
           }
         ]
       }
@@ -25,7 +25,7 @@
   },
   "overrides": [
     {
-      "files": ["app/src/pages/**", "app/src/lib/shell/**", "app/src/lib/main.ts"],
+      "files": ["app/src/pages/**", "app/src/lib/shell/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -34,12 +34,12 @@
               {
                 "name": "@supabase/supabase-js",
                 "allowTypeImports": true,
-                "message": "Pages, shell and main.ts must not use the Supabase SDK at runtime. Receive a narrow handle from createPlatform()."
+                "message": "Pages and shell must not use the Supabase SDK at runtime. Receive a narrow handle from main.ts."
               },
               {
                 "name": "@powersync/web",
                 "allowTypeImports": true,
-                "message": "Pages, shell and main.ts must not use the PowerSync SDK at runtime. Receive `db` from createPlatform()."
+                "message": "Pages and shell must not use the PowerSync SDK at runtime. Receive a store or handle from main.ts."
               },
               {
                 "name": "@packages/router",
@@ -51,15 +51,15 @@
               {
                 "group": [
                   "**/AuthService.ts",
-                  "**/AuthController.ts",
+                  "**/bootstrapAuth.ts",
                   "**/authGuard.ts",
                   "**/SupabasePowerSyncConnector.ts",
                   "**/syncLifecycle.ts",
-                  "**/SyncController.ts",
+                  "**/syncStatus.ts",
                   "**/sync/client.ts"
                 ],
                 "allowTypeImports": true,
-                "message": "Infrastructure is created only in app/src/lib/platform.ts. Take what you need as a dependency (type-only imports are fine)."
+                "message": "Infrastructure is created only in app/src/lib/main.ts. Take what you need as a dependency (type-only imports are fine)."
               }
             ]
           }
@@ -67,7 +67,7 @@
       }
     },
     {
-      "files": ["app/src/lib/platform.ts", "**/*.test.ts"],
+      "files": ["app/src/lib/main.ts", "**/*.test.ts"],
       "rules": {
         "no-restricted-imports": "off"
       }

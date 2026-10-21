@@ -1,27 +1,23 @@
 /**
- * The Composition Root File
- * Implements the Dependency Inversion Principle (DIP):
- *
- * High-level modules should not depend on low-level modules; both should depend
- * on abstractions. Details should depend on abstractions, not vice versa.
- *
- * Key benefits in this application:
- * 1. Loose coupling: UI components, layouts, and pages do not instantiate concrete
- *    SDKs or databases directly. They receive contracts, services, or stores from above.
- * 2. Testability & mockability: Business logic and UI can be tested in isolation by
- *    swapping implementations with mocks or test doubles without touching component code.
- * 3. Flexibility & maintainability: Environment-specific variations (such as offline mode
- *    disabling auth persistence and sync) are configured centrally in the platform
- *    (`platform.ts`) rather than leaking across page implementations.
- *
- * This file only wires the actively developed parts (data stores, pages, navigation).
- * Stable infrastructure (router, Supabase, auth, PowerSync, sync lifecycle, layouts)
- * lives behind `createPlatform()`.
+ * Composition root: the only place that creates concrete services (router,
+ * Supabase, PowerSync) and wires them into layouts and pages. Everything else
+ * receives what it needs as arguments, so it can be tested with plain fakes.
  */
 
+import { Router } from "@packages/router";
+import { createClient } from "@supabase/supabase-js";
 import { AppRoot } from "./AppRoot.ts";
-import { createPlatform } from "./platform.ts";
+import { config } from "./config.ts";
+import { AuthService } from "./auth/AuthService.ts";
+import { createAuthGuard } from "./auth/authGuard.ts";
+import { bootstrapAuth } from "./auth/bootstrapAuth.ts";
+import { createPowerSync } from "./sync/client.ts";
+import { SupabasePowerSyncConnector } from "./sync/SupabasePowerSyncConnector.ts";
+import { createSyncLifecycle } from "./sync/syncLifecycle.ts";
+import { createSyncStatusSource } from "./sync/syncStatus.ts";
 import { NAV_ITEMS } from "./nav/navConfig.ts";
+import { SidebarLayout } from "./shell/SidebarLayout.ts";
+import { LoginLayout } from "./shell/LoginLayout.ts";
 import { LoginPage } from "../pages/auth/index.ts";
 import { MyTodosPage } from "../pages/my-todos/index.ts";
 import { TodoStore } from "../pages/my-todos/TodoStore.ts";
@@ -29,26 +25,59 @@ import { DocsPage } from "../pages/docs/index.ts";
 import { NotFoundPage } from "../pages/not-found/index.ts";
 
 export function startApp(el: HTMLElement) {
-  const platform = createPlatform({ navItems: NAV_ITEMS });
-  const { config, db, navigate, session } = platform;
+  const offline = config.isOfflineMode;
 
-  // Data stores
-  const todoStore = new TodoStore(db);
+  const router = new Router();
+  const navigate = (path: string) => {
+    router.navigate(path);
+  };
+  const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
+    auth: { persistSession: !offline, autoRefreshToken: !offline, detectSessionInUrl: !offline },
+  });
+  const authService = new AuthService(supabase);
+  const powersync = createPowerSync();
+  const syncStatus = createSyncStatusSource(powersync);
+  const todoStore = new TodoStore(powersync);
 
-  // Inject platform shell and page factories into AppRoot
-  return AppRoot(el, {
-    router: platform.router,
-    ...platform.shell,
+  // Offline mode has no backend: every route is open and sync never starts.
+  const guardRoute = offline ? () => false : createAuthGuard(authService, router);
+
+  const dispose = AppRoot(el, {
+    router,
+    guardRoute,
+    layouts: {
+      app: (target) =>
+        SidebarLayout(target, { router, navItems: NAV_ITEMS, authService, syncStatus }),
+      login: LoginLayout,
+    },
     pages: {
       login: (target) =>
         LoginPage(target, {
-          login: session.login,
+          login: (email, password) => authService.login(email, password),
           initialEmail: config.devEmail,
           initialPassword: config.devPassword,
         }),
-      todos: (target) => MyTodosPage(target, { store: todoStore, getUserId: session.userId }),
+      todos: (target) =>
+        MyTodosPage(target, {
+          store: todoStore,
+          getUserId: () => authService.session?.user.id ?? null,
+        }),
       docs: (target, docId) => DocsPage(target, { docId, navigate }),
       notFound: NotFoundPage,
     },
   });
+
+  // Routes are registered above; now render the current one.
+  if (offline) {
+    router.check();
+  } else {
+    const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
+    const syncLifecycle = createSyncLifecycle({
+      connect: () => powersync.connect(connector),
+      reset: () => powersync.disconnectAndClear({ clearLocal: true }),
+    });
+    void bootstrapAuth({ authService, router, syncLifecycle, guardRoute });
+  }
+
+  return dispose;
 }

@@ -65,10 +65,10 @@ export const mapTodoLists = (rows: ListWithTodoRow[]): TodoListData[] => {
 };
 
 export class TodoStore {
-  constructor(private readonly ps: PowerSyncDatabase) {}
+  constructor(private readonly db: PowerSyncDatabase) {}
 
   watchUserLists(options?: { signal?: AbortSignal }) {
-    return this.ps.watch(
+    return this.db.watch(
       `SELECT
         lists.*,
         todos.id AS item_id,
@@ -92,7 +92,7 @@ export class TodoStore {
   }
 
   async createTodo(todo: NewTodo) {
-    return await this.ps.execute(
+    return await this.db.execute(
       "INSERT INTO todos (id, description, list_id, created_by, created_at) VALUES (?, ?, ?, ?, ?)",
       [
         crypto.randomUUID(),
@@ -105,23 +105,23 @@ export class TodoStore {
   }
 
   async createList(list: NewList) {
-    return await this.ps.execute(
+    return await this.db.execute(
       "INSERT INTO lists (id, name, owner_id, created_at) VALUES (?, ?, ?, ?)",
       [crypto.randomUUID(), list.name, list.ownerId, new Date().toISOString()],
     );
   }
 
   async updateListName(listId: string, name: string) {
-    return await this.ps.execute("UPDATE lists SET name = ? WHERE id = ?", [name, listId]);
+    return await this.db.execute("UPDATE lists SET name = ? WHERE id = ?", [name, listId]);
   }
 
   async deleteList(listId: string) {
-    await this.ps.execute("DELETE FROM todos WHERE list_id = ?", [listId]);
-    return await this.ps.execute("DELETE FROM lists WHERE id = ?", [listId]);
+    await this.db.execute("DELETE FROM todos WHERE list_id = ?", [listId]);
+    return await this.db.execute("DELETE FROM lists WHERE id = ?", [listId]);
   }
 
   async setTodoCompleted(todoId: string, completed: boolean, userId: string | null) {
-    return await this.ps.execute(
+    return await this.db.execute(
       "UPDATE todos SET completed = ?, completed_at = ?, completed_by = ? WHERE id = ?",
       [
         completed ? 1 : 0,

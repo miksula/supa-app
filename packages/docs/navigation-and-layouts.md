@@ -10,7 +10,7 @@ Navigation in this application is intentionally lightweight and decoupled from h
 
 1. **Router (`@packages/router`)**: A minimal client-side hash/path router managing URL history and route patterns.
 2. **Layout Manager (`app/src/lib/layoutManager.ts`)**: Controls the layout shell lifecycle, slots page content, and manages native View Transitions.
-3. **App Root (`app/src/lib/AppRoot.ts`), Platform (`app/src/lib/platform.ts`) & Composition Root (`app/src/lib/main.ts`)**: `AppRoot` registers routes and guards; the platform creates stable infrastructure and layouts; `main.ts` wires data stores and page factories into `AppRoot` via Dependency Inversion.
+3. **App Root (`app/src/lib/AppRoot.ts`) & Composition Root (`app/src/lib/main.ts`)**: `AppRoot` registers routes and applies the route guard; `main.ts` creates the infrastructure, data stores, layouts and page factories and passes them into `AppRoot` via Dependency Inversion.
 
 ```
 URL Change
@@ -18,7 +18,7 @@ URL Change
    ▼
 Router listener (AppRoot)
    │
-   ├─► Auth Guard check (enforceAuthRoute)
+   ├─► Auth Guard check (guardRoute)
    │
    ▼
 LayoutManager.show({ page, layout, transition })
@@ -52,34 +52,27 @@ export type Mount<Props = void> = (el: HTMLElement, props: Props) => Dispose | v
 Routes are registered directly on the router in `AppRoot` (`app/src/lib/AppRoot.ts`):
 
 ```ts
-const canActivate = (path: string) => !disposed && !enforceAuthRoute(path.split("?")[0]);
-const show = (layout: LayoutName, page: Mount, transition?: boolean) => {
+const route = (path: string, handler: (ctx: RouteContext) => void) => {
+  router.get(path, (ctx) => {
+    if (!disposed && !guardRoute(ctx.path.split("?")[0])) handler(ctx);
+  });
+};
+const showPage = (layout: LayoutName, page: Mount, transition?: boolean) => {
   layoutManager.show({ page, layout: layouts[layout], transition });
 };
 
-router.get("/", (ctx) => {
-  if (canActivate(ctx.path)) router.navigate("/my-todos");
-});
-router.get("/my-todos", (ctx) => {
-  if (canActivate(ctx.path)) show("app", pages.todos);
-});
-router.get("/docs", (ctx) => {
-  if (canActivate(ctx.path)) router.navigate("/docs/introduction");
-});
-router.get("/docs/:id", (ctx) => {
-  if (!canActivate(ctx.path)) return;
+route("/", () => router.navigate("/my-todos"));
+route("/my-todos", () => showPage("app", pages.todos));
+route("/docs", () => router.navigate("/docs/introduction"));
+route("/docs/:id", (ctx) => {
   const id = ctx.param("id") as string;
-  show("app", (target) => pages.docs(target, id));
+  showPage("app", (target) => pages.docs(target, id));
 });
-router.get("/auth", (ctx) => {
-  if (canActivate(ctx.path)) show("login", pages.login, true);
-});
-router.get("/*", (ctx) => {
-  if (canActivate(ctx.path)) show("app", pages.notFound);
-});
+route("/auth", () => showPage("login", pages.login, true));
+route("/*", () => showPage("app", pages.notFound));
 ```
 
-Each route handler checks `canActivate(ctx.path)` (which enforces disposal state and the auth guard), then either redirects or calls `show(layout, page, transition)`:
+The `route` helper runs a handler only when `AppRoot` has not been disposed and `guardRoute` lets the path through (the auth guard returns `true` when the route must not render). Each handler then either redirects or calls `showPage(layout, page, transition)`:
 
 - `path`: URL pattern, including parameters (e.g. `:id`) or wildcards (`/*`).
 - `layout`: Name of the layout shell (`"app"` | `"login"`).
@@ -131,7 +124,7 @@ export function SettingsPage(el: HTMLElement, props?: SettingsPageProps): Dispos
 
 ### Step 2: Register the Page and Route in `AppRoot` (`app/src/lib/AppRoot.ts`)
 
-Add the page key to `AppPages` and register its route on `router`:
+Add the page key to `AppPages` and register its route with the `route` helper:
 
 ```ts
 type AppPages = {
@@ -143,9 +136,7 @@ type AppPages = {
 };
 
 // Inside AppRoot:
-router.get("/settings", (ctx) => {
-  if (canActivate(ctx.path)) show("app", pages.settings);
-});
+route("/settings", () => showPage("app", pages.settings));
 ```
 
 ### Step 3: Inject the Page Factory in `main.ts` (`app/src/lib/main.ts`)
@@ -192,7 +183,6 @@ export const MinimalLayout: LayoutFactory = (container: HTMLElement): LayoutInst
   const contentSlot = container.querySelector<HTMLElement>('[data-slot="page"]')!;
 
   return {
-    element: container.firstElementChild as HTMLElement,
     contentSlot,
     dispose: () => {
       // Teardown layout-level event listeners or render cleanup
@@ -211,31 +201,30 @@ Update the `LayoutName` type in `app/src/lib/AppRoot.ts`:
 type LayoutName = "app" | "login" | "minimal";
 ```
 
-### Step 3: Wire the Layout in `platform.ts` (`app/src/lib/platform.ts`)
+### Step 3: Wire the Layout in `main.ts` (`app/src/lib/main.ts`)
 
-Layouts are shell infrastructure, so they are provided by `createPlatform` in the `shell.layouts` map, which `main.ts` spreads into `AppRoot`:
+In `startApp`, add the layout factory to the `layouts` map passed to `AppRoot`:
 
 ```ts
-// app/src/lib/platform.ts
-return {
+// app/src/lib/main.ts
+const dispose = AppRoot(el, {
   // ...
-  shell: {
-    // ...
-    layouts: {
-      app: (target: HTMLElement) => SidebarLayout(target, { router, navItems, authService }),
-      login: LoginLayout,
-      minimal: MinimalLayout,
-    },
+  layouts: {
+    app: (target) =>
+      SidebarLayout(target, { router, navItems: NAV_ITEMS, authService, syncStatus }),
+    login: LoginLayout,
+    minimal: MinimalLayout,
   },
-};
+  // ...
+});
 ```
 
-Now any route in `AppRoot` can pass `"minimal"` to `show("minimal", pages.somePage)`.
+Now any route in `AppRoot` can pass `"minimal"` to `showPage("minimal", pages.somePage)`.
 
 ---
 
 ## Summary of Best Practices
 
 - **Always return a cleanup function**: Ensure pages and layouts return `() => void` so subscriptions, DOM nodes, and listeners do not leak.
-- **Do not import concrete pages into `AppRoot`**: Keep `AppRoot` agnostic of concrete page implementations. Wire page dependencies centrally in `main.ts` (Composition Root) and infrastructure and layouts in `platform.ts`.
+- **Do not import concrete pages into `AppRoot`**: Keep `AppRoot` agnostic of concrete page implementations. Wire infrastructure, layouts and page dependencies centrally in `main.ts` (Composition Root).
 - **Use `router.navigate(path)` for programmatic navigation**: For button clicks or form submissions, invoke `router.navigate("/path")` rather than mutating `window.location` directly.

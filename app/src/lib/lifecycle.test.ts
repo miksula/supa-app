@@ -12,7 +12,7 @@ import { ThemeSwitcher } from "./shell/ThemeSwitcher.ts";
 import { SyncStatusIndicator } from "./shell/SyncStatusIndicator.ts";
 import { getInitialOpenState, saveOpenState } from "./shell/sidebarState.ts";
 import { initializeTheme, resolveColorScheme } from "./theme/theme.ts";
-import { dispatchData, onAction } from "./events.ts";
+import type { SyncStatus, SyncStatusSource } from "./sync/syncStatus.ts";
 import type { Dispose, RouteSource } from "./types.ts";
 
 vi.mock("@packages/docs", () => ({ getDocContent: vi.fn() }));
@@ -36,6 +36,30 @@ function createTarget() {
   return target;
 }
 
+const connectedStatus: SyncStatus = {
+  connected: true,
+  connecting: false,
+  uploading: false,
+  downloading: false,
+};
+
+function createSyncStatusSource(initial = connectedStatus) {
+  const listeners = new Set<(status: SyncStatus) => void>();
+  const unsubscribe = vi.fn();
+  const source: SyncStatusSource = {
+    current: () => initial,
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        unsubscribe();
+        listeners.delete(listener);
+      };
+    },
+  };
+  const emit = (status: SyncStatus) => listeners.forEach((listener) => listener(status));
+  return { source, emit, unsubscribe };
+}
+
 afterEach(() => {
   for (const dispose of disposers.splice(0).reverse()) dispose();
   document.body.replaceChildren();
@@ -54,13 +78,10 @@ describe("page disposal", () => {
     const guard = vi.fn(() => true);
     const page = vi.fn();
     const docs = vi.fn();
-    const disposeSync = vi.fn();
-    const layout = (element: HTMLElement) => ({ element, contentSlot: element });
+    const layout = (element: HTMLElement) => ({ contentSlot: element });
     const dispose = AppRoot(target, {
       router,
-      auth: { bootstrap: vi.fn().mockResolvedValue(undefined) },
-      enforceAuthRoute: guard,
-      mountSync: () => disposeSync,
+      guardRoute: guard,
       layouts: { app: layout, login: layout },
       pages: { todos: page, login: page, docs, notFound: page },
     });
@@ -82,7 +103,6 @@ describe("page disposal", () => {
     dispose();
     routes.get("/my-todos")({ path: "/my-todos" });
     expect(page).toHaveBeenCalledTimes(2);
-    expect(disposeSync).toHaveBeenCalledOnce();
   });
 
   it.each(["resolve", "reject"] as const)(
@@ -164,7 +184,7 @@ describe("page disposal", () => {
         render(nothing, outlet);
       };
     };
-    const layout = vi.fn((element: HTMLElement) => ({ element, contentSlot: element }));
+    const layout = vi.fn((element: HTMLElement) => ({ contentSlot: element }));
     const router = {
       get: vi.fn().mockReturnThis(),
       navigate: vi.fn(),
@@ -172,9 +192,7 @@ describe("page disposal", () => {
     };
     const dispose = AppRoot(target, {
       router,
-      auth: { bootstrap: vi.fn().mockResolvedValue(undefined) },
-      enforceAuthRoute: () => false,
-      mountSync: () => {},
+      guardRoute: () => false,
       layouts: { app: layout, login: layout },
       pages: {
         login: mountPage("login"),
@@ -216,8 +234,8 @@ describe("layout transitions", () => {
     const target = createTarget();
     const manager = createLayoutManager(target);
     disposers.push(() => manager.dispose());
-    const layout = (element: HTMLElement) => ({ element, contentSlot: element });
-    const otherLayout = (element: HTMLElement) => ({ element, contentSlot: element });
+    const layout = (element: HTMLElement) => ({ contentSlot: element });
+    const otherLayout = (element: HTMLElement) => ({ contentSlot: element });
     const pendingPage = vi.fn();
     manager.show({
       page: (element) => {
@@ -249,13 +267,12 @@ describe("layout transitions", () => {
     const manager = createLayoutManager(target);
     disposers.push(() => manager.dispose());
     const layout = (element: HTMLElement) => ({
-      element,
       contentSlot: element,
       dispose: () => {
         order.push("layout");
       },
     });
-    const otherLayout = (element: HTMLElement) => ({ element, contentSlot: element });
+    const otherLayout = (element: HTMLElement) => ({ contentSlot: element });
     manager.show({
       page: (element) => {
         element.textContent = "initial";
@@ -289,13 +306,13 @@ describe("layout transitions", () => {
       page: (element) => {
         element.textContent = "initial";
       },
-      layout: (element) => ({ element, contentSlot: element }),
+      layout: (element) => ({ contentSlot: element }),
     });
     const page = vi.fn();
     manager.show({
       page,
       transition: true,
-      layout: (element) => ({ element, contentSlot: element }),
+      layout: (element) => ({ contentSlot: element }),
     });
     expect(page).toHaveBeenCalledOnce();
     expect(start).not.toHaveBeenCalled();
@@ -322,19 +339,12 @@ describe("shell disposal", () => {
     expect(document.documentElement.style.colorScheme).toBe("light");
   });
 
-  it("pulls sync status from the child requester", () => {
+  it("renders the current sync status and follows updates", () => {
     const target = createTarget();
-    const status = { connected: true, connecting: false, uploading: false, downloading: false };
-    let requester!: EventTarget;
-    disposers.push(
-      onAction(target, "loadSyncStatus", (_, event) => {
-        requester = event.target!;
-        dispatchData(requester, "syncStatus", status);
-      }),
-    );
-    disposers.push(SyncStatusIndicator(target));
+    const { source, emit } = createSyncStatusSource();
+    disposers.push(SyncStatusIndicator(target, source));
     expect(target.querySelector('[role="status"]')?.textContent).toContain("Synced");
-    dispatchData(requester, "syncStatus", { ...status, uploading: true });
+    emit({ ...connectedStatus, uploading: true });
     expect(target.querySelector('[role="status"]')?.textContent).toContain("Syncing...");
   });
 
@@ -355,30 +365,25 @@ describe("shell disposal", () => {
     expect(() => saveOpenState(false)).not.toThrow();
   });
 
-  it("removes the theme media and sync data listeners on dispose", () => {
+  it("removes the theme media and sync status listeners on dispose", () => {
     const themeTarget = createTarget();
     const syncTarget = createTarget();
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     vi.spyOn(window, "matchMedia").mockReturnValue(media);
     const removeMedia = vi.spyOn(media, "removeEventListener");
     const disposeTheme = ThemeSwitcher(themeTarget);
-    const disposeSync = SyncStatusIndicator(syncTarget);
-    const removeData = vi.spyOn(syncTarget, "removeEventListener");
+    const syncStatus = createSyncStatusSource();
+    const disposeSync = SyncStatusIndicator(syncTarget, syncStatus.source);
     disposers.push(disposeTheme, disposeSync);
     disposeTheme();
     disposeTheme();
     disposeSync();
     disposeSync();
-    dispatchData(syncTarget, "syncStatus", {
-      connected: true,
-      connecting: false,
-      uploading: false,
-      downloading: false,
-    });
+    syncStatus.emit(connectedStatus);
     expect(themeTarget.textContent).toBe("");
     expect(syncTarget.textContent).toBe("");
     expect(removeMedia).toHaveBeenCalledWith("change", expect.any(Function));
-    expect(removeData).toHaveBeenCalledWith("syncStatus", expect.any(Function));
+    expect(syncStatus.unsubscribe).toHaveBeenCalledOnce();
   });
 
   it.each(["logout", "escape", "outside", "session"])(
@@ -393,15 +398,14 @@ describe("shell disposal", () => {
       let notifySession!: () => void;
       const authService: Parameters<typeof Sidebar>[1]["authService"] = {
         session: null,
-        session$: {
-          subscribe: (callback) => {
-            notifySession = () => callback(null);
-            return vi.fn();
-          },
+        onAuthStateChange: (listener) => {
+          notifySession = () => void listener("SIGNED_OUT", null);
+          return vi.fn();
         },
         logout: vi.fn().mockResolvedValue(undefined),
       };
-      disposers.push(Sidebar(target, { router, navItems: [], authService }));
+      const { source: syncStatus } = createSyncStatusSource();
+      disposers.push(Sidebar(target, { router, navItems: [], authService, syncStatus }));
       const trigger = target.querySelector<HTMLButtonElement>(".account-trigger")!;
       const menu = target.querySelector<HTMLElement>(".account-menu")!;
       expect(menu.hasAttribute("inert")).toBe(true);
@@ -438,10 +442,11 @@ describe("shell disposal", () => {
     };
     const authService = {
       session: null,
-      session$: { subscribe: vi.fn(() => vi.fn()) },
+      onAuthStateChange: vi.fn(() => vi.fn()),
       logout: vi.fn(),
     };
-    disposers.push(Sidebar(target, { router, navItems: [], authService }));
+    const { source: syncStatus } = createSyncStatusSource();
+    disposers.push(Sidebar(target, { router, navItems: [], authService, syncStatus }));
     target.querySelector<HTMLButtonElement>(".account-trigger")!.click();
     target.querySelector<HTMLButtonElement>(".account-menu-item")!.focus();
     const outside = document.createElement("button");
@@ -462,14 +467,15 @@ describe("shell disposal", () => {
     const unsubscribe = vi.fn();
     const authService = {
       session: null,
-      session$: { subscribe: vi.fn(() => unsubscribe) },
+      onAuthStateChange: vi.fn(() => unsubscribe),
       logout: vi.fn(),
     };
+    const { source: syncStatus } = createSyncStatusSource();
     const removeDocument = vi.spyOn(document, "removeEventListener");
     const removeWindow = vi.spyOn(window, "removeEventListener");
 
     for (let cycle = 0; cycle < 2; cycle++) {
-      const layout = SidebarLayout(target, { router, navItems: [], authService });
+      const layout = SidebarLayout(target, { router, navItems: [], authService, syncStatus });
       expect(router.addRouteListener).toHaveBeenCalledTimes((cycle + 1) * 2);
       expect(target.querySelector(".account-menu-footer")).not.toBeNull();
       layout.dispose!();
