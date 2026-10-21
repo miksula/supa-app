@@ -1155,6 +1155,8 @@ The full checklist is in `stack/README.md`. In short:
   styles in depth, with real code examples from the app.
 - [Styling and CSS](./styling.md) covers the design token system, native
   `@scope` encapsulation, and the 3-level component styling hierarchy.
+- [Cheatsheets](./cheatsheets.md) provides a quick-reference table for semantic
+  design tokens, `@theme` scales, and CSS helper scripts.
 - `README.md`, `app/README.md` and `stack/README.md` in the repository cover
   setup, architecture notes and backend workflows in more detail.
 - `TODO.md` describes the ongoing maintainability work and the reasoning

@@ -51,13 +51,56 @@ function preprocessObsidianMarkdown(markdown: string): string {
   return text;
 }
 
+const COLOR_TOKEN_PATTERN =
+  /^--(?:surface-(?:page|card|raised|translucent)|avatar-bg|text-(?:primary|muted|disabled|on-accent)|border-(?:strong|subtle)|focus-ring(?:-color)?|control-hover-(?:bg|text)|accent-primary|status-(?:danger|success)|white|black|n[ld]-(?:\d+|card|raised)|color-[a-z]+(?:-\d+)?)$/;
+
+/**
+ * Resolves a CSS color expression for an inline `<code>` snippet if it represents
+ * a semantic/palette color token or a literal CSS color value.
+ */
+function resolveSwatchColor(codeText: string): string | null {
+  const text = codeText.trim();
+
+  if (text === "--focus-ring" || text === "2px solid var(--focus-ring-color)") {
+    return "var(--focus-ring-color)";
+  }
+
+  if (COLOR_TOKEN_PATTERN.test(text)) {
+    return `var(${text})`;
+  }
+
+  const varMatch = text.match(/^var\((--[a-z0-9-]+)(?:,\s*[^)]+)?\)$/i);
+  if (varMatch && COLOR_TOKEN_PATTERN.test(varMatch[1])) {
+    return text;
+  }
+
+  if (
+    /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(text) ||
+    /^(?:lab|oklch|rgb|hsl|color-mix)\([^)]+\)$/i.test(text)
+  ) {
+    return text;
+  }
+
+  return null;
+}
+
+function decorateColorCodePills(htmlContent: string): string {
+  return htmlContent.replace(/(?<!<pre>)<code>([^<\n]+)<\/code>/g, (full, inner: string) => {
+    const swatchColor = resolveSwatchColor(inner);
+    if (!swatchColor) return full;
+    return `<code class="color-code"><span class="color-swatch" style="--swatch: ${swatchColor}" aria-hidden="true"></span>${inner}</code>`;
+  });
+}
+
 export function DocViewer(target: HTMLElement, props: DocViewerProps): Dispose {
   let disposed = false;
   const preprocessed = preprocessObsidianMarkdown(props.content);
-  const parsedHtml = marked.parse(preprocessed, {
-    gfm: true,
-    breaks: false,
-  }) as string;
+  const parsedHtml = decorateColorCodePills(
+    marked.parse(preprocessed, {
+      gfm: true,
+      breaks: false,
+    }) as string,
+  );
 
   const handleClick = (event: MouseEvent) => {
     if (disposed) return;

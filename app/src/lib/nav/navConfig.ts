@@ -21,6 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
       { title: "Rendering Patterns", url: "/docs/rendering-patterns" },
       { title: "Styling & CSS", url: "/docs/styling" },
       { title: "Navigation & Layouts", url: "/docs/navigation-and-layouts" },
+      { title: "Cheatsheets", url: "/docs/cheatsheets" },
     ],
   },
   {
