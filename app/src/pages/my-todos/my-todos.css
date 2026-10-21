@@ -1,4 +1,4 @@
-@scope (.my-todos, [data-component="my-todos"]) {
+@scope (.my-todos-page) {
   :scope {
     display: flex;
     flex: 1;

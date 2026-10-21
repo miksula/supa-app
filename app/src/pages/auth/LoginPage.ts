@@ -19,7 +19,7 @@ export function LoginPage(el: HTMLElement, props: LoginProps): Dispose {
     if (disposed) return;
     render(
       html`
-        <div class="login" data-component="login">
+        <div class="login-page" data-component="login-page">
           <header class="login-header">
             <h1 id="login-heading" class="login-title">Sign in</h1>
             <p class="login-description">Use your account email address and password.</p>

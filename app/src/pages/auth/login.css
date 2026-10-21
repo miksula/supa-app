@@ -1,4 +1,4 @@
-@scope (.login, [data-component="login"]) {
+@scope (.login-page) {
   :scope {
     display: flex;
     flex-direction: column;

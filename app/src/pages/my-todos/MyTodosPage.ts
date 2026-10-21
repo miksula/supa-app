@@ -22,7 +22,7 @@ export function MyTodosPage(el: HTMLElement, { store, getUserId }: MyTodosDepend
 
   render(
     html`
-      <div class="my-todos" data-component="my-todos">
+      <div class="my-todos-page" data-component="my-todos-page">
         <div class="toolbar">
           <div class="navigation-controls">
             <button
