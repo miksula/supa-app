@@ -21,41 +21,80 @@ export type MyTodosDependencies = {
 export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependencies): Dispose {
   const abortController = new AbortController();
   const cardControllers = new Map<string, TodoListCardController>();
-  const desktopQuery = window.matchMedia("(width >= 48rem)");
 
   let container: HTMLElement | null = null;
   let previousButton: HTMLButtonElement | null = null;
   let nextButton: HTMLButtonElement | null = null;
   let listIds: string[] = [];
-  let pageIndex = 0;
+  let carouselIndex = 0;
+  let lastObservedWidth = 0;
+  let resizeObserver: ResizeObserver | null = null;
+  let animationTimer: ReturnType<typeof setTimeout> | null = null;
   let hasReceivedListSnapshot = false;
 
-  // Provides a way to manage each card's lifecycle and maintain state.
-  // Each controller keeps its card DOM and interaction state across database updates.
-  const pageSize = () => (desktopQuery.matches ? 3 : 1);
-  const pageCount = () => Math.max(1, Math.ceil(listIds.length / pageSize()));
-
-  const updateNavigation = () => {
-    if (previousButton) previousButton.disabled = pageIndex === 0;
-    if (nextButton) nextButton.disabled = pageIndex >= pageCount() - 1;
+  const getColumns = (): number => {
+    if (!container) return 1;
+    const firstCard = container.firstElementChild as HTMLElement | null;
+    if (firstCard && firstCard.offsetWidth > 0 && container.offsetWidth > 0) {
+      return Math.max(1, Math.round(container.offsetWidth / firstCard.offsetWidth));
+    }
+    const width = container.offsetWidth;
+    if (width >= 80 * 16) return 4;
+    if (width >= 60 * 16) return 3;
+    if (width >= 40 * 16) return 2;
+    return 1;
   };
 
-  const applyPaging = () => {
-    pageIndex = Math.max(0, Math.min(pageIndex, pageCount() - 1));
-    const start = pageIndex * pageSize();
-    const end = start + pageSize();
+  const getMaxIndex = (): number => {
+    return Math.max(0, listIds.length - getColumns());
+  };
 
-    listIds.forEach((listId, index) => {
-      const card = cardControllers.get(listId);
-      if (card) card.element.hidden = index < start || index >= end;
-    });
+  const updateNavigation = () => {
+    const maxIndex = getMaxIndex();
+    if (previousButton) previousButton.disabled = carouselIndex <= 0;
+    if (nextButton) nextButton.disabled = carouselIndex >= maxIndex;
+  };
+
+  const updatePositions = () => {
+    if (!container) return;
+    const columns = getColumns();
+    const maxIndex = getMaxIndex();
+    carouselIndex = Math.max(0, Math.min(maxIndex, carouselIndex));
+
+    for (let i = 0; i < container.children.length; i++) {
+      const child = container.children[i] as HTMLElement;
+      const position = i - carouselIndex;
+
+      child.style.transform = `translateX(${position * 100}%)`;
+      child.inert = position < 0 || position >= columns;
+      child.hidden = false;
+    }
 
     updateNavigation();
   };
 
-  const seekPage = (delta: number) => {
-    pageIndex += delta;
-    applyPaging();
+  const updateHeight = () => {
+    if (!container) return;
+    let maxHeight = 280;
+
+    for (let i = 0; i < container.children.length; i++) {
+      const child = container.children[i] as HTMLElement;
+      child.style.height = "auto";
+      maxHeight = Math.max(child.offsetHeight, maxHeight);
+    }
+
+    container.style.height = `${maxHeight}px`;
+
+    for (let i = 0; i < container.children.length; i++) {
+      const child = container.children[i] as HTMLElement;
+      child.style.height = `${maxHeight}px`;
+    }
+  };
+
+  const seek = (delta: number) => {
+    const maxIndex = getMaxIndex();
+    carouselIndex = Math.max(0, Math.min(maxIndex, carouselIndex + delta));
+    updatePositions();
   };
 
   render(
@@ -66,16 +105,18 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
             <button
               class="navigation-button"
               type="button"
-              aria-label="Edellinen sivu"
-              title="Edellinen sivu"
+              data-action="previous"
+              aria-label="Previous"
+              title="Previous"
             >
               <app-icon name="previous" size="18"></app-icon>
             </button>
             <button
               class="navigation-button"
               type="button"
-              aria-label="Seuraava sivu"
-              title="Seuraava sivu"
+              data-action="next"
+              aria-label="Next"
+              title="Next"
             >
               <app-icon name="next" size="18"></app-icon>
             </button>
@@ -99,8 +140,8 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
 
   const root = el.querySelector<HTMLElement>('[data-component="my-todos"]');
   container = root?.querySelector<HTMLElement>(".todo-list-container") ?? null;
-  previousButton = root?.querySelector<HTMLButtonElement>('[aria-label="Edellinen sivu"]') ?? null;
-  nextButton = root?.querySelector<HTMLButtonElement>('[aria-label="Seuraava sivu"]') ?? null;
+  previousButton = root?.querySelector<HTMLButtonElement>('[data-action="previous"]') ?? null;
+  nextButton = root?.querySelector<HTMLButtonElement>('[data-action="next"]') ?? null;
 
   const addListButton = root?.querySelector<HTMLButtonElement>('[aria-label="Create a new list"]');
 
@@ -186,7 +227,7 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
       : -1;
 
     listIds = lists.map((list) => list.id);
-    pageIndex = Math.min(pageIndex, Math.max(0, pageCount() - 1));
+    carouselIndex = Math.min(carouselIndex, getMaxIndex());
 
     /*
       TodoListCard owns its card DOM, event listeners, and interaction state.
@@ -249,26 +290,48 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
     });
 
     if (newListIndex >= 0) {
-      pageIndex = Math.floor(newListIndex / pageSize());
+      const columns = getColumns();
+      const maxIndex = Math.max(0, listIds.length - columns);
+      carouselIndex = Math.max(0, Math.min(maxIndex, newListIndex - columns + 1));
     }
 
-    applyPaging();
+    updatePositions();
+    updateHeight();
     hasReceivedListSnapshot = true;
   };
 
-  const onMediaChange = () => {
-    const firstVisibleList = pageIndex * (desktopQuery.matches ? 3 : 1);
-    pageIndex = Math.floor(firstVisibleList / pageSize());
-    applyPaging();
+  const onResize = () => {
+    updatePositions();
+    updateHeight();
   };
 
-  previousButton.addEventListener("click", () => seekPage(-1));
-  nextButton.addEventListener("click", () => seekPage(1));
+  if (typeof ResizeObserver !== "undefined") {
+    resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === container) {
+          const width = entry.contentRect.width;
+          if (Math.abs(width - lastObservedWidth) > 1) {
+            lastObservedWidth = width;
+            onResize();
+          }
+        }
+      }
+    });
+    if (container) resizeObserver.observe(container);
+  }
+
+  previousButton.addEventListener("click", () => seek(-1));
+  nextButton.addEventListener("click", () => seek(1));
 
   addListButton.addEventListener("click", onAddList);
-  desktopQuery.addEventListener("change", onMediaChange);
+  window.addEventListener("resize", onResize);
 
-  applyPaging();
+  animationTimer = setTimeout(() => {
+    container?.classList.add("-is-animated");
+  }, 100);
+
+  updatePositions();
+  updateHeight();
 
   void (async () => {
     try {
@@ -287,7 +350,9 @@ export function MyTodos(el: HTMLElement, { store, getUserId }: MyTodosDependenci
   return () => {
     if (abortController.signal.aborted) return;
     abortController.abort();
-    desktopQuery.removeEventListener("change", onMediaChange);
+    if (animationTimer) clearTimeout(animationTimer);
+    resizeObserver?.disconnect();
+    window.removeEventListener("resize", onResize);
     for (const controller of cardControllers.values()) {
       controller.destroy();
       controller.element.remove();

@@ -72,6 +72,7 @@ export function createRoutes(pages: AppPages): AppRoute[] {
 ```
 
 Each route specifies:
+
 - `path`: URL pattern, including parameters (e.g. `:id`) or wildcards (`/*`).
 - `layout`: Name of the layout shell (`"app"` | `"login"`).
 - `transition`: (Optional) Whether to trigger native cross-document/view transitions when navigating to this route.
@@ -162,7 +163,7 @@ AppRoot(el, {
 });
 ```
 
-*(Optional)* If the page should appear in navigation, add an entry to `NAV_ITEMS` in `app/src/lib/nav/navConfig.ts` and configure breadcrumbs in `app/src/lib/nav/breadcrumb.ts`.
+_(Optional)_ If the page should appear in navigation, add an entry to `NAV_ITEMS` in `app/src/lib/nav/navConfig.ts` and configure breadcrumbs in `app/src/lib/nav/breadcrumb.ts`.
 
 ---
 
@@ -239,4 +240,3 @@ Now any route can use `layout: "minimal"` in `createRoutes`.
 - **Always return a cleanup function**: Ensure pages and layouts return `() => void` so subscriptions, DOM nodes, and listeners do not leak.
 - **Do not import concrete pages into `AppRoot`**: Keep `AppRoot` and `routes.ts` agnostic of concrete page implementations. Wire page dependencies centrally in `main.ts` (Composition Root) and infrastructure and layouts in `platform.ts`.
 - **Use `router.navigate(path)` for programmatic navigation**: For button clicks or form submissions, invoke `router.navigate("/path")` rather than mutating `window.location` directly.
-

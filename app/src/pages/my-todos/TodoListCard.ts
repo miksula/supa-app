@@ -32,21 +32,23 @@ export function TodoListCard(
 
   render(
     html`
-      <header class="card-header">
-        <h2 class="card-title">
-          <button type="button" class="card-title-button" title="Edit list name"></button>
-        </h2>
-        <input name="edit-title" type="text" class="card-title-input" aria-label="List name" />
-        <button
-          type="button"
-          class="card-delete-button"
-          title="Delete list"
-          aria-label="Delete list"
-        >
-          <app-icon name="trash" size="16"></app-icon>
-        </button>
-      </header>
-      <div class="todo-list"></div>
+      <div class="card-inner">
+        <header class="card-header">
+          <h2 class="card-title">
+            <button type="button" class="card-title-button" title="Edit list name"></button>
+          </h2>
+          <input name="edit-title" type="text" class="card-title-input" aria-label="List name" />
+          <button
+            type="button"
+            class="card-delete-button"
+            title="Delete list"
+            aria-label="Delete list"
+          >
+            <app-icon name="trash" size="16"></app-icon>
+          </button>
+        </header>
+        <div class="todo-list"></div>
+      </div>
     `,
     el,
   );

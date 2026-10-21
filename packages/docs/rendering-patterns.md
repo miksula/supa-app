@@ -500,7 +500,8 @@ const renderLists = (rows: ListWithTodoRow[]) => {
     }
   });
 
-  applyPaging();
+  updatePositions();
+  updateHeight();
 };
 ```
 

@@ -11,28 +11,16 @@ export const SidebarLayout = (
 ): LayoutInstance => {
   let isOpen = getInitialOpenState();
   const state = isOpen ? "expanded" : "collapsed";
-  const collapsible = isOpen ? "" : "offcanvas";
 
   render(
     html`
-      <div
-        class="sidebar-layout group/sidebar-wrapper"
-        data-component="sidebar-layout"
-        data-state="${state}"
-      >
-        <div
-          class="layout-sidebar group peer"
+      <div class="sidebar-layout" data-component="sidebar-layout" data-state="${state}">
+        <aside
+          class="layout-sidebar"
           data-slot="sidebar"
           data-state="${state}"
-          data-collapsible="${collapsible}"
-          data-variant="inset"
-          data-side="left"
-        >
-          <div class="layout-sidebar-gap"></div>
-          <div class="layout-sidebar-container">
-            <aside class="layout-sidebar-inner"></aside>
-          </div>
-        </div>
+          ?inert="${!isOpen}"
+        ></aside>
         <main class="layout-page">
           <div class="layout-header" data-slot="header"></div>
           <div class="layout-content" data-slot="content"></div>
@@ -44,11 +32,10 @@ export const SidebarLayout = (
 
   const wrapperEl = container.querySelector<HTMLElement>(".sidebar-layout")!;
   const sidebarEl = container.querySelector<HTMLElement>('[data-slot="sidebar"]')!;
-  const asideEl = container.querySelector<HTMLElement>("aside")!;
   const headerEl = container.querySelector<HTMLElement>('[data-slot="header"]')!;
   const slot = container.querySelector<HTMLElement>('[data-slot="content"]')!;
 
-  const disposeSidebar = Sidebar(asideEl, dependencies);
+  const disposeSidebar = Sidebar(sidebarEl, dependencies);
   const disposePageHeader = PageHeader(headerEl, dependencies.router);
 
   const updateState = (open: boolean) => {
@@ -56,7 +43,7 @@ export const SidebarLayout = (
     const nextState = open ? "expanded" : "collapsed";
     wrapperEl.setAttribute("data-state", nextState);
     sidebarEl.setAttribute("data-state", nextState);
-    sidebarEl.setAttribute("data-collapsible", open ? "" : "offcanvas");
+    sidebarEl.toggleAttribute("inert", !open);
     saveOpenState(open);
   };
 
@@ -66,7 +53,7 @@ export const SidebarLayout = (
 
   const handleClick = (e: MouseEvent) => {
     const trigger = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>(
-      'button[data-slot="sidebar-trigger"], .sidebar-trigger',
+      ".sidebar-trigger",
     );
     if (trigger) {
       e.preventDefault();

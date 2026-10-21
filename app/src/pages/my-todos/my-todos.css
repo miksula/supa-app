@@ -78,14 +78,49 @@
   }
 
   .todo-list-container {
-    display: grid;
+    position: relative;
     flex: 1;
-    grid-auto-rows: min-content;
-    gap: calc(var(--spacing) * 4);
+    width: calc(100% + calc(var(--spacing) * 4));
+    margin-inline: calc(var(--spacing) * -2);
+    min-height: calc(var(--spacing) * 40);
+    overflow: hidden;
+    container-type: inline-size;
+    container-name: todo-carousel;
+    transition: height 200ms ease-out;
+  }
 
-    /* Keep this breakpoint in sync with desktopQuery in MyTodos.ts. */
-    @media (width >= 48rem) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+  .todo-list-container.-is-animated .todo-list-card {
+    transition:
+      transform 250ms ease-out,
+      opacity 250ms ease-out;
+  }
+
+  .todo-list-card {
+    width: 100%;
+  }
+
+  @container todo-carousel (min-width: 40rem) {
+    .todo-list-card {
+      width: 50%;
+    }
+  }
+
+  @container todo-carousel (min-width: 60rem) {
+    .todo-list-card {
+      width: 33.3333%;
+    }
+  }
+
+  @container todo-carousel (min-width: 80rem) {
+    .todo-list-card {
+      width: 25%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .todo-list-container.-is-animated .todo-list-card,
+    .todo-list-container {
+      transition: none;
     }
   }
 }

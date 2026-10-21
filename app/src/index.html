@@ -1,34 +1,35 @@
 <!doctype html>
 <html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <script type="module" blocking="render">
+      import { initializeTheme } from "/lib/theme/theme.ts";
+      initializeTheme();
+    </script>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="light dark" />
-  <script type="module" blocking="render">
-    import { initializeTheme } from "/lib/theme/theme.ts";
-    initializeTheme();
-  </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+    <title>Local First - My Todos</title>
+    <meta name="description" content="SupaApp - your todo list" />
 
-  <title>Local First - My Todos</title>
-  <meta name="description" content="SupaApp - your todo list" />
+    <link rel="stylesheet" href="/css/index.css" />
+  </head>
 
-  <link rel="stylesheet" href="/css/index.css" />
-</head>
+  <body>
+    <div class="app"></div>
 
-<body>
-  <div class="app"></div>
+    <script type="module">
+      import { startApp } from "/lib/main.ts";
 
-  <script type="module">
-    import { startApp } from "/lib/main.ts";
-
-    startApp(document.querySelector("body > .app"));
-  </script>
-</body>
-
+      startApp(document.querySelector("body > .app"));
+    </script>
+  </body>
 </html>
