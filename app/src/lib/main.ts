@@ -18,11 +18,11 @@ import { createSyncStatusSource } from "./sync/syncStatus.ts";
 import { NAV_ITEMS } from "./nav/navConfig.ts";
 import { SidebarLayout } from "./shell/SidebarLayout.ts";
 import { LoginLayout } from "./shell/LoginLayout.ts";
-import { LoginPage } from "../pages/auth/index.ts";
-import { MyTodosPage } from "../pages/my-todos/index.ts";
+import { LoginPage } from "../pages/auth/LoginPage.ts";
+import { MyTodosPage } from "../pages/my-todos/MyTodosPage.ts";
 import { TodoStore } from "../pages/my-todos/TodoStore.ts";
-import { DocsPage } from "../pages/docs/index.ts";
-import { NotFoundPage } from "../pages/not-found/index.ts";
+import { DocsPage } from "../pages/docs/DocsPage.ts";
+import { NotFoundPage } from "../pages/not-found/NotFoundPage.ts";
 
 export function startApp(el: HTMLElement) {
   const offline = config.isOfflineMode;

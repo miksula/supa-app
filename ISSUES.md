@@ -400,7 +400,7 @@ Templates get copied, so this pattern will spread.
 
 **Severity:** Low · **Effort:** S · **Area:** UX
 
-**Where:** [index.ts](./app/src/pages/my-todos/index.ts#L143-L155), [syncStatus.ts](./app/src/lib/sync/syncStatus.ts#L10)
+**Where:** [MyTodosPage.ts](./app/src/pages/my-todos/MyTodosPage.ts#L143-L155), [syncStatus.ts](./app/src/lib/sync/syncStatus.ts#L10)
 
 **Problem.** After the first login on a device, My Todos renders an empty list
 container until the first sync finishes. The page has no loading or empty state.

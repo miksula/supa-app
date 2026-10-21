@@ -698,7 +698,7 @@ Three details here are typical of local-first code:
 
 #### `MyTodosPage`: consuming the watch
 
-`MyTodosPage` (`app/src/pages/my-todos/index.ts`) reads the watch with a
+`MyTodosPage` (`app/src/pages/my-todos/MyTodosPage.ts`) reads the watch with a
 `for await` loop. An `AbortController` ties the query's lifetime to the
 page's lifetime:
 
@@ -1074,7 +1074,7 @@ tests do not cover CSS or responsive layout, so check those in a real browser.
 
 ### Adding a page
 
-1. Create `app/src/pages/<name>/index.ts` that exports a mount function
+1. Create `app/src/pages/<name>/<PageName>.ts` (for example `SettingsPage.ts`) that exports a mount function
    returning `Dispose`.
 2. Add the page to `AppPages` and register its route with the `route` helper in
    `app/src/lib/AppRoot.ts`.

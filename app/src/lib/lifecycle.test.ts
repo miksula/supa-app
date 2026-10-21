@@ -2,8 +2,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { html, nothing, render } from "lit";
 import { getDocContent } from "@packages/docs";
-import { LoginPage } from "../pages/auth/index.ts";
-import { DocsPage } from "../pages/docs/index.ts";
+import { LoginPage } from "../pages/auth/LoginPage.ts";
+import { DocsPage } from "../pages/docs/DocsPage.ts";
 import { AppRoot } from "./AppRoot.ts";
 import { createLayoutManager } from "./layoutManager.ts";
 import { SidebarLayout } from "./shell/SidebarLayout.ts";

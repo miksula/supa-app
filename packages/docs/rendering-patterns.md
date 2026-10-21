@@ -469,7 +469,7 @@ Notice the synergy here:
 
 ### Managing controllers from the parent: `MyTodosPage`
 
-How does the parent reconcile these controllers when data changes? In `app/src/pages/my-todos/index.ts`,
+How does the parent reconcile these controllers when data changes? In `app/src/pages/my-todos/MyTodosPage.ts`,
 `MyTodosPage` maintains a `Map<string, TodoListCardController>` keyed by list ID:
 
 ```ts

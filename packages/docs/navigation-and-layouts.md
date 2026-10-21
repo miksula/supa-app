@@ -94,7 +94,7 @@ Adding a new page involves three steps:
 
 ### Step 1: Create the Page Component
 
-Create your page under `app/src/pages/<your-page>/index.ts` conforming to the `Mount` contract:
+Create your page under `app/src/pages/<your-page>/<YourPage>.ts` (for example `SettingsPage.ts`) conforming to the `Mount` contract:
 
 ```ts
 import { html, nothing, render } from "lit";
