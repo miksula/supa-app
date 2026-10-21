@@ -171,7 +171,7 @@ Handle `:hover`, `:active`, `:focus-visible`, and state modifiers (`.-is-open`, 
    | `no-data-slot-selector`, `data-component-not-root` | No `[data-slot]` in CSS (it is a TypeScript mount target only); `data-component` only on the template root (§7) |
 
    Existing violations are recorded in `scripts/checkStyles.baseline.json`, so only new ones fail. When you fix a baselined violation, run `npm run lint:styles:baseline` to shrink the baseline.
-2. Inspect the CSS for any raw `--nd-*` or `--nl-*` tokens and replace with semantic tokens.
+2. Inspect the CSS for any raw `--nd-*` or `--nl-*` tokens and replace with semantic tokens. To audit for scale bypasses, repeated themeable values, or unused tokens in `vars.css`, run `node scripts/findThemeCandidates.js`.
 3. Run the build to verify zero CSS or TypeScript syntax errors:
    ```bash
    npm --prefix app run build

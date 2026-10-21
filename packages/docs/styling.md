@@ -501,6 +501,12 @@ Violations that existed when the checker was introduced are listed in
 `npm run lint:styles:baseline` to shrink the baseline. Its dependencies (`@tailwindcss/node`,
 `lightningcss`, `oxc-parser`) are pinned because the design system API is marked unstable.
 
+For ad-hoc theme discovery outside CI, run `node scripts/findThemeCandidates.js` (or
+`node scripts/findThemeCandidates.js --json`). It scans component stylesheets for literal
+values that bypass existing `@theme` / `vars.css` scale tokens, repeated derived expressions
+(`calc()`, `color-mix()`), high-frequency themeable property values, and unused tokens in
+`app/src/css/vars.css`.
+
 ---
 
 ## Token Usage and Consistency Audit (Current Status)
