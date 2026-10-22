@@ -30,7 +30,6 @@ export function TodoItem(todo: Todo, onToggleTodo: TodoListOptions["onToggleTodo
       <label class="todo-item-row">
         ${getCheckIcon(Boolean(todo.completed))}
         <input
-          style="display: none;"
           type="checkbox"
           class="todo-item-checkbox"
           .checked=${Boolean(todo.completed)}

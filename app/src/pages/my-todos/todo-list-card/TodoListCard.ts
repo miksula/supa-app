@@ -173,7 +173,7 @@ export function TodoListCard(
     list = nextList;
     mountedTitleButton.textContent = list.name || "...";
     const completedCount = list.items.filter((todo) => todo.completed).length;
-    mountedCardCount.textContent = String(completedCount);
+    mountedCardCount.textContent = String(list.items.length);
     updateCompletedIcon(completedCount === list.items.length && list.items.length > 0);
     if (!editing) mountedTitleInput.value = currentName();
     TodoList(mountedTodoList, list, {

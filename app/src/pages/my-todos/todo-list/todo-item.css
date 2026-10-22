@@ -8,14 +8,22 @@
   }
 
   .todo-item-checkbox {
-    flex-shrink: 0;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    clip-path: inset(50%);
+    white-space: nowrap;
     cursor: pointer;
     accent-color: var(--accent-primary);
+  }
 
-    &:focus-visible {
-      outline: var(--focus-ring);
-      outline-offset: 2px;
-    }
+  .todo-item-row:has(.todo-item-checkbox:focus-visible) {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
   }
 
   .todo-item-label {
