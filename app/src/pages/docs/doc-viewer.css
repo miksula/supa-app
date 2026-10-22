@@ -206,8 +206,8 @@
 
     th,
     td {
-      border: 1px solid var(--border-strong);
-      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--border-subtle);
+      padding: 0.4rem 0.6rem;
       text-align: left;
     }
 

@@ -45,3 +45,57 @@ describe("DocViewer code blocks", () => {
     expect(codeBlocks[1].textContent).toBe("<b>x</b>");
   });
 });
+
+describe("DocViewer heading anchors", () => {
+  let target: HTMLElement | undefined;
+  let dispose: (() => void) | undefined;
+
+  afterEach(() => {
+    dispose?.();
+    target?.remove();
+    vi.restoreAllMocks();
+  });
+
+  it("gives headings slug ids that match in-page links", () => {
+    target = document.createElement("div");
+    document.body.append(target);
+    dispose = DocViewer(target, {
+      content: "## The life of a todo\n\n## Gotchas",
+      navigate: vi.fn(),
+    });
+
+    expect(target.querySelector("h2#the-life-of-a-todo")?.textContent).toBe("The life of a todo");
+    expect(target.querySelector("h2#gotchas")).not.toBeNull();
+  });
+
+  it("scrolls the heading matching the anchor into view", () => {
+    const scrollSpy = vi
+      .spyOn(Element.prototype, "scrollIntoView")
+      .mockImplementation(() => undefined);
+    target = document.createElement("div");
+    document.body.append(target);
+    dispose = DocViewer(target, {
+      content: "## Repository tour\n\n## Gotchas",
+      navigate: vi.fn(),
+      anchor: "gotchas",
+    });
+
+    expect(scrollSpy).toHaveBeenCalledTimes(1);
+    expect(scrollSpy.mock.contexts[0]).toBe(target.querySelector("#gotchas"));
+  });
+
+  it("does not scroll when the anchor matches no heading", () => {
+    const scrollSpy = vi
+      .spyOn(Element.prototype, "scrollIntoView")
+      .mockImplementation(() => undefined);
+    target = document.createElement("div");
+    document.body.append(target);
+    dispose = DocViewer(target, {
+      content: "## Gotchas",
+      navigate: vi.fn(),
+      anchor: "does-not-exist",
+    });
+
+    expect(scrollSpy).not.toHaveBeenCalled();
+  });
+});

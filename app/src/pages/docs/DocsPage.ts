@@ -3,6 +3,17 @@ import type { Dispose } from "@/types.ts";
 import { getDocContent } from "@packages/docs";
 import { DocViewer } from "./DocViewer.ts";
 
+/** Reads the current `#heading` from the URL; malformed escapes are ignored. */
+function readHashAnchor(): string | undefined {
+  const raw = globalThis.location.hash.slice(1);
+  if (!raw) return undefined;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return undefined;
+  }
+}
+
 export function DocsPage(
   target: HTMLElement,
   {
@@ -80,7 +91,11 @@ export function DocsPage(
 
       const docViewerOutlet = target.querySelector<HTMLElement>('[data-slot="doc-viewer-outlet"]');
       if (docViewerOutlet) {
-        disposeViewer = DocViewer(docViewerOutlet, { content, navigate });
+        disposeViewer = DocViewer(docViewerOutlet, {
+          content,
+          navigate,
+          anchor: readHashAnchor(),
+        });
       }
     })
     .catch((error: unknown) => {

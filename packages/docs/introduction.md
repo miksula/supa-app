@@ -1,10 +1,26 @@
 # Introduction
 
-Welcome to Supa App. This page is a guided tour of the code base for
-developers who are new to the project. It explains what the app does, how the
+This page is a guided tour of the code base for those who are new to the project. It explains what the app does, how the
 pieces fit together, and where to look when you need to change something.
+
 Every code snippet is taken from the real source files; `// …` marks places
 where lines were left out to keep the example short.
+
+## Table of contents
+
+- [What the app is](#what-the-app-is)
+- [The stack at a glance](#the-stack-at-a-glance)
+- [How data flows](#how-data-flows)
+- [Repository tour](#repository-tour)
+- [Running it locally](#running-it-locally)
+- [Code walkthrough](#code-walkthrough)
+- [Backend walkthrough](#backend-walkthrough)
+- [The life of a todo](#the-life-of-a-todo)
+- [Conventions to follow](#conventions-to-follow)
+- [Testing and quality checks](#testing-and-quality-checks)
+- [Common tasks](#common-tasks)
+- [Gotchas](#gotchas)
+- [Where to go next](#where-to-go-next)
 
 ## What the app is
 
@@ -284,6 +300,48 @@ host, and returns a cleanup function. The cleanup function removes event
 listeners, cancels subscriptions and clears the rendered content. Whoever
 called the mount function keeps the `Dispose` and calls it before reusing the
 host element.
+
+A minimal counter shows the whole contract in one place:
+
+```ts
+import type { Mount } from "../lib/types";
+
+export const Counter: Mount<{ start?: number }> = (el, props) => {
+  let count = props.start ?? 0;
+
+  const label = document.createElement("span");
+  const button = document.createElement("button");
+  button.textContent = "+1";
+
+  const render = () => {
+    label.textContent = `Count: ${count}`;
+  };
+  const onClick = () => {
+    count += 1;
+    render();
+  };
+
+  button.addEventListener("click", onClick);
+  el.append(label, button);
+  render();
+
+  return () => {
+    button.removeEventListener("click", onClick);
+    el.replaceChildren();
+  };
+};
+```
+
+The caller mounts the counter and keeps the returned cleanup function:
+
+```ts
+const dispose = Counter(el, { start: 5 });
+
+// later, before reusing dom `el`
+dispose?.();
+```
+
+Because the return type is `Dispose | void`, the caller uses `dispose?.()`.
 
 This replaces the component lifecycle you may know from React or Vue. If you
 forget to dispose, listeners leak, or a slow network response draws into a
@@ -1022,9 +1080,6 @@ a list and presses Enter.
 - **Keep CSS next to its component**, for example `import "./sidebar.css"` in
   `Sidebar.ts`. Component styles use `@scope` and semantic design tokens. Only
   Tailwind, tokens and base styles belong in `app/src/css/index.css`.
-- **Write UI text in Finnish.** This covers buttons, labels, `aria-label`s and
-  status messages. Documentation and user-entered content keep their original
-  language.
 - **Read environment variables only in `config.ts`**, and never put the
   Supabase secret key in the browser app.
 

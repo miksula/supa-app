@@ -25,6 +25,8 @@ hljs.registerLanguage("yaml", yaml);
 export interface DocViewerProps {
   content: string;
   navigate: (path: string) => void;
+  /** Heading id to scroll into view after rendering, taken from the URL hash. */
+  anchor?: string;
 }
 
 function escapeHtml(text: string): string {
@@ -36,11 +38,24 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#39;");
 }
 
+/** GitHub-style slug, matching the `#anchor` links written in the docs. */
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
+}
+
 /** Highlights fenced blocks whose language is registered; other blocks stay escaped plain text. */
 const markdown = new Marked({
   gfm: true,
   breaks: false,
   renderer: {
+    heading({ tokens, depth, text }) {
+      const body = this.parser.parseInline(tokens);
+      return `<h${depth} id="${slugify(text)}">${body}</h${depth}>\n`;
+    },
     code({ text, lang }) {
       const code = text.replace(/\n$/, "");
       const languageClass = lang ? ` class="language-${escapeHtml(lang)}"` : "";
@@ -171,6 +186,14 @@ export function DocViewer(target: HTMLElement, props: DocViewerProps): Dispose {
     `,
     target,
   );
+
+  if (props.anchor) {
+    const anchor = props.anchor;
+    const element = Array.from(target.querySelectorAll<HTMLElement>("[id]")).find(
+      (el) => el.id === anchor,
+    );
+    element?.scrollIntoView({ behavior: "smooth" });
+  }
 
   return () => {
     if (disposed) return;

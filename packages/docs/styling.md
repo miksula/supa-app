@@ -14,6 +14,20 @@ Every code snippet in this guide is taken directly from the real source files in
 
 ---
 
+## Table of contents
+
+- [Architecture at a glance](#architecture-at-a-glance)
+- [The 3-Level Styling Hierarchy](#the-3-level-styling-hierarchy)
+- [Component scoping with native CSS `@scope`](#component-scoping-with-native-css-scope)
+- [The Semantic Design Token System](#the-semantic-design-token-system)
+- [Comprehensive Semantic Token Reference](#comprehensive-semantic-token-reference)
+- [How Theming and `light-dark()` work](#how-theming-and-light-dark-work)
+- [Semantic State Modifiers over Tailwind Variant Soup](#semantic-state-modifiers-over-tailwind-variant-soup)
+- [Utility Extraction Workflow with `scripts/toCSS.js`](#utility-extraction-workflow-with-scriptstocssjs)
+- [Automated Style Checks with `scripts/checkStyles.js`](#automated-style-checks-with-scriptscheckstylesjs)
+- [Token Usage and Consistency Audit (Current Status)](#token-usage-and-consistency-audit-current-status)
+- [Developer Checklist for New Styles](#developer-checklist-for-new-styles)
+
 ## Architecture at a glance
 
 The styling system rests on three pillars:
@@ -532,8 +546,6 @@ As you maintain and add components, keep these refinements in mind:
 - **Shadow definitions**: `app/src/lib/shell/sidebar-layout.css` currently uses raw `rgb(0 0 0 / 0.1)`
   for shadows. Prefer `color-mix(in srgb, var(--black) 12%, transparent)` (as seen in `sidebar.css`)
   or Tailwind's `--shadow-sm` / `--shadow-lg` tokens.
-- **Radius consistency**: In `my-todos.css`, an action button uses hardcoded `border-radius: 1rem`.
-  Prefer semantic tokens like `var(--radius-xl)` or `var(--radius-panel)`.
 - **Typography scaling**: Some component stylesheets have direct pixel/rem values like
   `font-size: 0.875rem` (which corresponds to `var(--text-sm)`). Prefer Tailwind's font-size
   tokens or inline leaf utilities.

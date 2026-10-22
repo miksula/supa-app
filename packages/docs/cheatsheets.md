@@ -3,11 +3,15 @@
 Quick-reference tables for the semantic design tokens in `app/src/css/vars.css`,
 Tailwind v4 `@theme` scale tokens, and CSS helper scripts.
 
----
+## Table of contents
 
-## Semantic Token Reference (`app/src/css/vars.css`)
+- [Semantic Token Reference](#semantic-token-reference)
+- [Tailwind Scale Reference](#tailwind-scale-reference)
+- [CSS Helper Scripts Cheatsheet](#css-helper-scripts-cheatsheet)
 
-Tokens follow the `--<category>-<role>` convention so every token groups by its
+## Semantic Token Reference
+
+Tokens at `app/src/css/vars.css` follow the `--<category>-<role>` convention so every token groups by its
 CSS property domain:
 
 | Category                 | Token                   | Light Mode Value                                              | Dark Mode Value                                               | Typical Usage / Notes                                                      |
@@ -40,12 +44,9 @@ CSS property domain:
 |                          | `--spacing`             | `0.25rem` (4px)                                               | _(same)_                                                      | Atomic spacing unit (`calc(var(--spacing) * N)`)                           |
 |                          | `--font-sans`           | `"Geist", ui-sans-serif, system-ui, sans-serif`               | _(same)_                                                      | Primary application font family                                            |
 
----
+## Tailwind Scale Reference
 
-## Tailwind v4 `@theme` Scale Reference (`app/src/css/theme.css`)
-
-Common scale tokens provided by Tailwind v4 that can be referenced with `var(...)`
-in scoped component stylesheets:
+Common scale tokens `app/src/css/theme.css` provided by Tailwind v4 that can be referenced with `var(...)` in scoped component stylesheets:
 
 | Scale             | Tokens                                                                                                    | Example Values                                                 |
 | :---------------- | :-------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------- |

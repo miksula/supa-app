@@ -2,7 +2,13 @@
 
 This guide explains how routing, layouts, and page mounting work in the application, and provides step-by-step instructions for adding new pages and layouts.
 
----
+## Table of contents
+
+- [Architecture Overview](#architecture-overview)
+- [How Navigation Works](#how-navigation-works)
+- [How to Add a New Page](#how-to-add-a-new-page)
+- [How to Add a New Layout](#how-to-add-a-new-layout)
+- [Summary of Best Practices](#summary-of-best-practices)
 
 ## Architecture Overview
 
@@ -30,8 +36,6 @@ LayoutManager.show({ page, layout, transition })
    │
    └─► Mount next page into layout.contentSlot
 ```
-
----
 
 ## How Navigation Works
 
@@ -85,8 +89,6 @@ The `LayoutManager` preserves the active layout shell when moving between routes
 
 - Navigating between `/my-todos` and `/docs/introduction` retains the existing `SidebarLayout` (the sidebar and header are not destroyed or remounted). Only the inner page in `contentSlot` is replaced.
 - Navigating to `/auth` transitions across layouts (`app` -> `login`). The old layout is disposed, the new layout is mounted, and the native `document.startViewTransition()` API is used if supported and not disabled by `prefers-reduced-motion`.
-
----
 
 ## How to Add a New Page
 
@@ -155,8 +157,6 @@ AppRoot(el, {
 
 _(Optional)_ If the page should appear in navigation, add an entry to `NAV_ITEMS` in `app/src/lib/nav/navConfig.ts` and configure breadcrumbs in `app/src/lib/nav/breadcrumb.ts`.
 
----
-
 ## How to Add a New Layout
 
 Layouts provide surrounding chrome (e.g. navigation, footers, toolbars) and define a `contentSlot` element where the active page will be mounted.
@@ -220,8 +220,6 @@ const dispose = AppRoot(el, {
 ```
 
 Now any route in `AppRoot` can pass `"minimal"` to `showPage("minimal", pages.somePage)`.
-
----
 
 ## Summary of Best Practices
 

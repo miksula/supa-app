@@ -19,6 +19,16 @@ they fit together, and helps you choose the right approach when building new fea
 
 ---
 
+## Table of contents
+
+- [The bedrock: Mount and cleanup contract](#the-bedrock-mount-and-cleanup-contract)
+- [1. Mounted Lit template functions](#1-mounted-lit-template-functions)
+- [2. Imperative functional components (The Controller Pattern)](#2-imperative-functional-components-the-controller-pattern)
+- [3. Reactive `LitElement` components (Web Components)](#3-reactive-litelement-components-web-components)
+- [Pattern comparison](#pattern-comparison)
+- [The golden rule of DOM ownership](#the-golden-rule-of-dom-ownership)
+- [Quick guide: Which pattern should I choose?](#quick-guide-which-pattern-should-i-choose)
+
 ## The bedrock: Mount and cleanup contract
 
 Before looking at the component patterns, you need to understand the lifecycle contract
