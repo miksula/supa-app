@@ -34,6 +34,5 @@
 
   :scope.-is-done .todo-item-label {
     color: var(--text-disabled);
-    text-decoration: line-through;
   }
 }
