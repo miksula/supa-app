@@ -83,12 +83,15 @@ host element completely in the caller's control.
 ### Real-world example: `TodoList`
 
 `TodoList` (`app/src/pages/my-todos/TodoList.ts`) renders the interactive list of todos
-and the input form inside each todo list card:
+and the input form inside each todo list card. Its row and form templates live in their own
+modules, `TodoItem.ts` and `TodoInput.ts`, and each has a stylesheet scoped to its own root:
 
 ```ts
+import "./todo-list.css";
 import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-import "@/ui/AppIcon.ts";
+import { TodoInput } from "./TodoInput.ts";
+import { TodoItem } from "./TodoItem.ts";
 import type { Todo } from "./TodoStore.ts";
 
 export type TodoListOptions = {
@@ -96,79 +99,12 @@ export type TodoListOptions = {
   onToggleTodo: (todoId: string, completed: boolean) => Promise<unknown>;
 };
 
-function TodoItem(todo: Todo, onToggleTodo: TodoListOptions["onToggleTodo"]) {
-  const toggle = (event: Event) => {
-    const checkbox = event.currentTarget as HTMLInputElement;
-    const completed = checkbox.checked;
-    onToggleTodo(todo.id, completed).catch((error: unknown) => {
-      checkbox.checked = !completed;
-      console.error("Failed to update todo completion", error);
-    });
-  };
-
-  return html`
-    <li class="todo-item ${todo.completed ? "-is-done" : ""}" data-key="${todo.id}">
-      <label class="todo-item-row">
-        <input
-          type="checkbox"
-          class="todo-item-checkbox"
-          .checked=${Boolean(todo.completed)}
-          @change=${toggle}
-        />
-        <span class="todo-item-label">${todo.description}</span>
-      </label>
-    </li>
-  `;
-}
-
-function TodoInput(listId: string, onAddTodo: TodoListOptions["onAddTodo"]) {
-  const submit = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const input = form.elements.namedItem("description") as HTMLInputElement;
-    const description = input.value.trim();
-
-    if (!description) {
-      input.focus();
-      return;
-    }
-
-    try {
-      await onAddTodo(listId, description);
-      form.reset();
-    } catch (error) {
-      console.error("Failed to create todo", error);
-    }
-  };
-
-  return html`
-    <form class="todo-input" data-key="todo-input-${listId}" @submit=${submit}>
-      <input
-        type="text"
-        name="description"
-        class="todo-input-field"
-        placeholder="Add a task"
-        aria-label="New task"
-        autocomplete="off"
-      />
-      <button
-        type="submit"
-        class="todo-input-submit"
-        title="Add a task"
-        aria-label="Add a task"
-        tabindex="-1"
-      >
-        <app-icon name="plus" size="16"></app-icon>
-      </button>
-    </form>
-  `;
-}
-
 export function TodoList(
   el: HTMLElement,
   list: { id: string; items: Todo[] },
   options: TodoListOptions,
 ) {
+  el.dataset.component = "todo-list";
   render(
     html`
       <ul class="todo-items">
@@ -185,13 +121,12 @@ export function TodoList(
 }
 ```
 
-Notice how `TodoList` composes smaller template helpers (`TodoItem` and `TodoInput`)
-into a single template and renders it directly into `el`. It also owns its form and
-checkbox: it reads the input, resets the form on success and reverts the checkbox on
-failure, so callers receive plain data (`listId`, `description`, `completed`) instead of
-DOM events. It uses Lit's `repeat` directive
-with a key function (`(todo) => todo.id`) so Lit can efficiently add, remove, and reorder
-list items in the DOM without recreating existing nodes.
+`TodoList` composes the helper templates into a single template and renders it directly into
+`el`. The helpers own their DOM events: `TodoInput` reads the input, resets the form on success,
+and keeps the text on failure, while `TodoItem` reverts the checkbox if the toggle fails.
+Callers receive plain data (`listId`, `description`, `completed`) instead of DOM events.
+`TodoList` uses Lit's `repeat` directive with a key function (`(todo) => todo.id`) so Lit can
+efficiently add, remove, and reorder list items in the DOM without recreating existing nodes.
 
 ### Real-world example with cleanup: `SyncStatusIndicator`
 

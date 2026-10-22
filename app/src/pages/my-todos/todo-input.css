@@ -1,0 +1,52 @@
+@scope (.todo-input) {
+  :scope {
+    position: relative;
+    margin-top: auto;
+  }
+
+  .todo-input-field {
+    width: 100%;
+    padding: var(--spacing) calc(var(--spacing) * 7) var(--spacing) 0;
+    border: 0;
+    border-bottom: 1px solid var(--border-subtle);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.875rem;
+    outline: 0;
+
+    &:focus-visible {
+      border-bottom-color: var(--focus-ring-color);
+    }
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
+
+  .todo-input-submit {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--spacing) * 0.5);
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    translate: 0 -50%;
+
+    &:hover {
+      background-color: var(--control-hover-bg);
+      color: var(--status-danger);
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+}
