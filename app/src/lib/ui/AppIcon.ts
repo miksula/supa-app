@@ -13,7 +13,7 @@ import { appIcons, isAppIconName, resolveIcon, type AppIconName } from "./icons.
  *
  * Icons are decorative (`aria-hidden`). Put an accessible label on the surrounding control.
  */
-class AppIcon extends LitElement {
+export class AppIcon extends LitElement {
   static override properties = {
     name: { type: String },
     size: { type: Number },

@@ -1,7 +1,7 @@
 import { html, nothing, render } from "lit";
 import type { Dispose } from "@/types.ts";
 import "./todo-list-card.css";
-import "@/ui/AppIcon.ts";
+import { type AppIcon } from "@/ui/AppIcon.ts";
 import { TodoList, type TodoListOptions } from "../todo-list/TodoList.ts";
 import type { TodoListData } from "../TodoStore.ts";
 
@@ -34,12 +34,12 @@ export function TodoListCard(
     html`
       <div class="card-inner">
         <header class="card-header">
-          <app-icon name="circle" size="16"></app-icon>
+          <app-icon class="card-completed-icon" name="circle" size="16"></app-icon>
           <h2 class="card-title">
             <button type="button" class="card-title-button" title="Edit list name"></button>
-            <span class="card-count">2</span>
+            <span class="card-count"></span>
           </h2>
-          
+
           <input name="edit-title" type="text" class="card-title-input" aria-label="List name" />
           <button
             type="button"
@@ -58,17 +58,21 @@ export function TodoListCard(
 
   const titleButton = el.querySelector<HTMLButtonElement>(".card-title-button");
   const titleInput = el.querySelector<HTMLInputElement>(".card-title-input");
+  const cardCount = el.querySelector<HTMLElement>(".card-count");
   const deleteButton = el.querySelector<HTMLButtonElement>(".card-delete-button");
   const todoList = el.querySelector<HTMLElement>(".todo-list");
+  const completedIcon = el.querySelector<AppIcon>(".card-completed-icon");
 
-  if (!titleButton || !titleInput || !deleteButton || !todoList) {
+  if (!titleButton || !titleInput || !cardCount || !deleteButton || !todoList || !completedIcon) {
     throw new Error("Unable to mount todo list card: required element is missing");
   }
 
   const mountedTitleButton = titleButton;
   const mountedTitleInput = titleInput;
+  const mountedCardCount = cardCount;
   const mountedDeleteButton = deleteButton;
   const mountedTodoList = todoList;
+  const mountedCompletedIcon = completedIcon;
   const currentName = () => list.name ?? "";
   const focusTitleButton = () => mountedTitleButton.focus();
 
@@ -158,10 +162,19 @@ export function TodoListCard(
   mountedDeleteButton.addEventListener("blur", onDeleteBlur);
   mountedDeleteButton.addEventListener("click", onDelete);
 
+  const updateCompletedIcon = (allCompleted: boolean) => {
+    if (mountedCompletedIcon) {
+      mountedCompletedIcon.name = allCompleted ? "circleCheck" : "circle";
+    }
+  };
+
   function update(nextList: TodoListData) {
     if (disposed) return;
     list = nextList;
     mountedTitleButton.textContent = list.name || "...";
+    const completedCount = list.items.filter((todo) => todo.completed).length;
+    mountedCardCount.textContent = String(completedCount);
+    updateCompletedIcon(completedCount === list.items.length && list.items.length > 0);
     if (!editing) mountedTitleInput.value = currentName();
     TodoList(mountedTodoList, list, {
       onAddTodo: options.onAddTodo,
