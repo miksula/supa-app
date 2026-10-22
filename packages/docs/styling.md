@@ -25,7 +25,7 @@ The styling system rests on three pillars:
 | **Leaf Content Utilities** | Tailwind CSS v4 (`@import "tailwindcss"`)        | Applies concise, inline typography and icon adjustments on terminal leaf nodes (e.g., `truncate text-sm font-medium`). |
 
 Component stylesheets are co-located with their TypeScript files (for example,
-`app/src/lib/shell/sidebar.css` beside `Sidebar.ts`, or `app/src/pages/my-todos/todo-list-card.css`
+`app/src/lib/shell/sidebar.css` beside `Sidebar.ts`, or `app/src/pages/my-todos/todo-list-card/todo-list-card.css`
 beside `TodoListCard.ts`) and imported directly:
 
 ```ts
@@ -67,7 +67,7 @@ component belongs to one of three strict tiers of responsibility:
 - **Elements**: The outermost mount container (`.sidebar`, `.todo-list-card`, `.my-todos`, `.login`).
 - **Owned properties**: Outer boundaries, root layout (`display: flex; flex-direction: column;`),
   overall dimensions, and component-scoped variables (e.g., `--sidebar-width: 16rem`).
-- **Example** (from `app/src/pages/my-todos/todo-list-card.css`):
+- **Example** (from `app/src/pages/my-todos/todo-list-card/todo-list-card.css`):
 
 ```css
 @scope (.todo-list-card, [data-component="todo-list-card"]) {
@@ -374,7 +374,7 @@ In this project, components use **clean semantic state modifier classes** (`.-is
 }
 ```
 
-2. **Inline card editing toggle** (`app/src/pages/my-todos/todo-list-card.css`):
+2. **Inline card editing toggle** (`app/src/pages/my-todos/todo-list-card/todo-list-card.css`):
 
 ```css
 .card-title {

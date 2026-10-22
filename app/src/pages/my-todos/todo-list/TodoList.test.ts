@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, nothing } from "lit";
 import { TodoList, type TodoListOptions } from "./TodoList.ts";
-import type { Todo } from "./TodoStore.ts";
+import type { Todo } from "../TodoStore.ts";
 
 vi.mock("@/ui/AppIcon.ts", () => ({}));
 

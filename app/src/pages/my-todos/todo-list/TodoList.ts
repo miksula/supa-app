@@ -3,7 +3,7 @@ import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { TodoInput } from "./TodoInput.ts";
 import { TodoItem } from "./TodoItem.ts";
-import type { Todo } from "./TodoStore.ts";
+import type { Todo } from "../TodoStore.ts";
 
 export type TodoListOptions = {
   onAddTodo: (listId: string, description: string) => Promise<unknown>;

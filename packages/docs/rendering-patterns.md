@@ -82,7 +82,7 @@ host element completely in the caller's control.
 
 ### Real-world example: `TodoList`
 
-`TodoList` (`app/src/pages/my-todos/TodoList.ts`) renders the interactive list of todos
+`TodoList` (`app/src/pages/my-todos/todo-list/TodoList.ts`) renders the interactive list of todos
 and the input form inside each todo list card. Its row and form templates live in their own
 modules, `TodoItem.ts` and `TodoInput.ts`, and each has a stylesheet scoped to its own root:
 
@@ -92,7 +92,7 @@ import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { TodoInput } from "./TodoInput.ts";
 import { TodoItem } from "./TodoItem.ts";
-import type { Todo } from "./TodoStore.ts";
+import type { Todo } from "../TodoStore.ts";
 
 export type TodoListOptions = {
   onAddTodo: (listId: string, description: string) => Promise<unknown>;
@@ -222,7 +222,7 @@ export type Controller<Data> = {
 
 ### Real-world example: `TodoListCard`
 
-`TodoListCard` (`app/src/pages/my-todos/TodoListCard.ts`) manages inline renaming, delete
+`TodoListCard` (`app/src/pages/my-todos/todo-list-card/TodoListCard.ts`) manages inline renaming, delete
 confirmations, keyboard shortcuts, and focus preservation:
 
 ```ts
@@ -230,8 +230,8 @@ import { html, nothing, render } from "lit";
 import type { Dispose } from "@/types.ts";
 import "./todo-list-card.css";
 import "@/ui/AppIcon.ts";
-import { TodoList, type TodoListOptions } from "./TodoList.ts";
-import type { TodoListData } from "./TodoStore.ts";
+import { TodoList, type TodoListOptions } from "../todo-list/TodoList.ts";
+import type { TodoListData } from "../TodoStore.ts";
 
 export type TodoListCardOptions = TodoListOptions & {
   onRename: (listId: string, name: string) => Promise<void>;

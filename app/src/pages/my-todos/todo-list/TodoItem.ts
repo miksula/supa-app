@@ -1,7 +1,7 @@
 import "./todo-item.css";
 import { html } from "lit";
 import type { TodoListOptions } from "./TodoList.ts";
-import type { Todo } from "./TodoStore.ts";
+import type { Todo } from "../TodoStore.ts";
 
 export function TodoItem(todo: Todo, onToggleTodo: TodoListOptions["onToggleTodo"]) {
   const toggle = (event: Event) => {

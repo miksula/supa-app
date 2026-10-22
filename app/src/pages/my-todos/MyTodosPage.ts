@@ -7,7 +7,7 @@ import {
   TodoListCard,
   type TodoListCardController,
   type TodoListCardOptions,
-} from "./TodoListCard.ts";
+} from "./todo-list-card/TodoListCard.ts";
 import { mapTodoLists, type ListWithTodoRow, type TodoStore } from "./TodoStore.ts";
 
 export type MyTodosDependencies = {

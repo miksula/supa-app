@@ -43,7 +43,9 @@ authentication and remote sync while keeping the local database available.
   replacement, disposal and view transitions.
 - `src/pages/` contains route-level screens (`auth/`, `docs/`, `my-todos/`,
   `not-found/`). Feature-specific modules live next to their page, e.g.
-  `pages/my-todos/TodoStore.ts` reads and writes the local todo data.
+  `pages/my-todos/TodoStore.ts` reads and writes the local todo data. When a page
+  holds a second cohesive feature group, give it its own subfolder (for example
+  `pages/my-todos/todo-list/`) rather than adding more files to the page root.
 - `src/lib/` contains shared code, grouped by concern:
   - `auth/`: `AuthService.ts` wraps an injected Supabase client created in `main.ts`
     and fans out its auth state changes, `bootstrapAuth.ts` restores the session and

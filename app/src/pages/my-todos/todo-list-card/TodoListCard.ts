@@ -2,8 +2,8 @@ import { html, nothing, render } from "lit";
 import type { Dispose } from "@/types.ts";
 import "./todo-list-card.css";
 import "@/ui/AppIcon.ts";
-import { TodoList, type TodoListOptions } from "./TodoList.ts";
-import type { TodoListData } from "./TodoStore.ts";
+import { TodoList, type TodoListOptions } from "../todo-list/TodoList.ts";
+import type { TodoListData } from "../TodoStore.ts";
 
 export type TodoListCardOptions = TodoListOptions & {
   onRename: (listId: string, name: string) => Promise<unknown>;
