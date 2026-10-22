@@ -1,5 +1,4 @@
 import { html, nothing, render } from "lit";
-import "@/ui/app-link.css";
 import type { Dispose } from "@/types.ts";
 import { getDocContent } from "@packages/docs";
 import { DocViewer } from "./DocViewer.ts";
@@ -51,7 +50,7 @@ export function DocsPage(
                 <p class="text-sm">
                   <a
                     href="/docs/introduction"
-                    class="app-link"
+                    class="underline"
                     @click=${(e: Event) => {
                       e.preventDefault();
                       navigate("/docs/introduction");

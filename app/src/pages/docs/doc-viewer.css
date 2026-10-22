@@ -152,6 +152,48 @@
       padding: 0;
       border: none;
     }
+
+    .hljs-comment,
+    .hljs-quote {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .hljs-keyword,
+    .hljs-selector-tag,
+    .hljs-literal {
+      color: light-dark(var(--color-violet-600), var(--color-violet-400));
+    }
+
+    .hljs-string {
+      color: var(--status-success);
+    }
+
+    .hljs-number,
+    .hljs-symbol {
+      color: light-dark(var(--color-orange-600), var(--color-orange-400));
+    }
+
+    .hljs-title {
+      color: light-dark(var(--color-sky-700), var(--color-sky-400));
+    }
+
+    .hljs-type,
+    .hljs-built_in,
+    .hljs-class {
+      color: light-dark(var(--color-teal-700), var(--color-teal-400));
+    }
+
+    .hljs-attr,
+    .hljs-property,
+    .hljs-variable {
+      color: light-dark(var(--color-rose-600), var(--color-rose-400));
+    }
+
+    .hljs-tag,
+    .hljs-name {
+      color: light-dark(var(--color-sky-700), var(--color-sky-400));
+    }
   }
 
   table {

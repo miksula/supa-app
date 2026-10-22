@@ -1,3 +1,4 @@
+import "./todo-list.css";
 import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import "@/ui/AppIcon.ts";
@@ -81,6 +82,7 @@ export function TodoList(
   list: { id: string; items: Todo[] },
   options: TodoListOptions,
 ) {
+  el.dataset.component = "todo-list";
   render(
     html`
       <ul class="todo-items">

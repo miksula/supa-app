@@ -1,4 +1,4 @@
-@scope (.todo-list-card, [data-component="todo-list-card"]) {
+@scope (.todo-list-card) {
   :scope {
     display: flex;
     flex-direction: column;
@@ -79,8 +79,7 @@
     }
   }
 
-  .card-delete-button,
-  .todo-input-submit {
+  .card-delete-button {
     display: none;
     align-items: center;
     justify-content: center;
@@ -104,85 +103,5 @@
 
   :scope.-is-editing .card-delete-button {
     display: flex;
-  }
-
-  .todo-list {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: calc(var(--spacing) * 2);
-  }
-
-  .todo-items {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .todo-item-row {
-    display: flex;
-    align-items: center;
-    gap: calc(var(--spacing) * 2);
-    padding-block: var(--spacing);
-    border-bottom: 1px solid var(--border-subtle);
-    cursor: pointer;
-  }
-
-  .todo-item-checkbox {
-    flex-shrink: 0;
-    cursor: pointer;
-    accent-color: var(--accent-primary);
-
-    &:focus-visible {
-      outline: var(--focus-ring);
-      outline-offset: 2px;
-    }
-  }
-
-  .todo-item-label {
-    min-width: 0;
-    overflow-wrap: anywhere;
-    font-size: 0.875rem;
-
-    .todo-item.-is-done & {
-      color: var(--text-disabled);
-      text-decoration: line-through;
-    }
-  }
-
-  .todo-input {
-    position: relative;
-    margin-top: auto;
-  }
-
-  .todo-input-field {
-    width: 100%;
-    padding: var(--spacing) calc(var(--spacing) * 7) var(--spacing) 0;
-    border: 0;
-    border-bottom: 1px solid var(--border-subtle);
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    font-size: 0.875rem;
-    outline: 0;
-
-    &:focus-visible {
-      border-bottom-color: var(--focus-ring-color);
-    }
-
-    &::placeholder {
-      color: var(--text-muted);
-    }
-  }
-
-  .todo-input-submit {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    display: flex;
-    translate: 0 -50%;
   }
 }
