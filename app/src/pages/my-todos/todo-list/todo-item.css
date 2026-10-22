@@ -4,7 +4,6 @@
     align-items: center;
     gap: calc(var(--spacing) * 2);
     padding-block: var(--spacing);
-    border-bottom: 1px solid var(--border-subtle);
     cursor: pointer;
   }
 

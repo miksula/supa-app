@@ -16,7 +16,9 @@ export function TodoItem(todo: Todo, onToggleTodo: TodoListOptions["onToggleTodo
   return html`
     <li class="todo-item ${todo.completed ? "-is-done" : ""}" data-key="${todo.id}">
       <label class="todo-item-row">
+        <app-icon name="circle" size="16"></app-icon>
         <input
+          style="display: none;"
           type="checkbox"
           class="todo-item-checkbox"
           .checked=${Boolean(todo.completed)}

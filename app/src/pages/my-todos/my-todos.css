@@ -79,6 +79,7 @@
 
   /* Native scroll-snap carousel: CSS sizes and snaps the cards, Carousel.ts only drives the buttons. */
   .todo-list-track {
+    flex: 1 0 auto;
     display: flex;
     width: calc(100% + calc(var(--spacing) * 4));
     margin-inline: calc(var(--spacing) * -2);

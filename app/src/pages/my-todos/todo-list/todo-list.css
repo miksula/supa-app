@@ -1,9 +1,12 @@
 @scope (.todo-list, [data-component="todo-list"]) {
   :scope {
     display: flex;
-    flex: 1;
     flex-direction: column;
     gap: calc(var(--spacing) * 2);
+    padding: 1rem;
+    margin-inline: -.25rem;
+    background-color: var(--surface-translucent);
+    border-radius: var(--radius);
   }
 
   .todo-items {

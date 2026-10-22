@@ -46,6 +46,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  Circle,
   Command,
   Hexagon,
   ListPlus,
@@ -71,6 +72,7 @@ export type IconDefinition = IconNode | CustomIcon;
 export const appIcons = {
   addList: ListPlus,
   bookOpenText: BookOpenText,
+  circle: Circle,
   check: Check,
   chessRook: ChessRook,
   cog: Settings,

@@ -34,9 +34,12 @@ export function TodoListCard(
     html`
       <div class="card-inner">
         <header class="card-header">
+          <app-icon name="circle" size="16"></app-icon>
           <h2 class="card-title">
             <button type="button" class="card-title-button" title="Edit list name"></button>
+            <span class="card-count">2</span>
           </h2>
+          
           <input name="edit-title" type="text" class="card-title-input" aria-label="List name" />
           <button
             type="button"
