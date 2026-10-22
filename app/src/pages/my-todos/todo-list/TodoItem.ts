@@ -13,6 +13,12 @@ export function TodoItem(todo: Todo, onToggleTodo: TodoListOptions["onToggleTodo
     });
   };
 
+  const toggleOnEnter = (event: KeyboardEvent) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    (event.currentTarget as HTMLInputElement).click();
+  };
+
   const getCheckIcon = (completed: boolean) => {
     if (completed) {
       return html`<app-icon
@@ -33,6 +39,7 @@ export function TodoItem(todo: Todo, onToggleTodo: TodoListOptions["onToggleTodo
           type="checkbox"
           class="todo-item-checkbox"
           .checked=${Boolean(todo.completed)}
+          @keydown=${toggleOnEnter}
           @change=${toggle}
         />
         <span class="todo-item-label">${todo.description}</span>
