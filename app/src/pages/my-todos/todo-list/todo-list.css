@@ -5,9 +5,9 @@
     gap: calc(var(--spacing) * 2);
     padding: 1rem;
     margin-inline: -0.25rem;
-    background-color: var(--surface-todo-list);
+    background-color: var(--surface-card-piled);
     border-radius: var(--radius);
-    outline: 1px solid var(--border-todo-list);
+    outline: 1px solid var(--border-card-piled);
   }
 
   .todo-items {

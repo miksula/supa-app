@@ -51,7 +51,10 @@
   --surface-card: light-dark(var(--nl-card), var(--nd-950));
   --surface-raised: light-dark(var(--nl-raised), var(--nd-800));
   --surface-translucent: color-mix(in oklab, var(--surface-raised) 50%, transparent);
-  --surface-todo-list: light-dark(var(--surface-card), var(--surface-translucent));
+  --surface-card-piled: light-dark(
+    var(--nl-card),
+    color-mix(in oklab, var(--nd-800) 50%, transparent)
+  );
   --avatar-bg: light-dark(var(--nl-700), var(--nd-700));
 
   /* Text / Foreground */
@@ -63,7 +66,7 @@
   /* Borders & Focus */
   --border-strong: light-dark(var(--nl-300), var(--nd-700));
   --border-subtle: light-dark(var(--nl-200), var(--nd-700));
-  --border-todo-list: light-dark(var(--border-subtle), transparent);
+  --border-card-piled: light-dark(var(--nl-200), transparent);
   --focus-ring-color: light-dark(var(--color-blue-500), var(--color-blue-400));
   --focus-ring: 2px solid var(--focus-ring-color);
 
