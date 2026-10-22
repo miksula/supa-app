@@ -12,10 +12,7 @@
     /* 3. Alignment: Fixes the vertical offset when used inside text */
     vertical-align: middle;
 
-    /* 4. Color: Allow the icon to inherit text color automatically */
-    color: inherit;
-
-    /* 5. Optimization: Prevent the icon from shrinking in flex rows */
+    /* 4. Optimization: Prevent the icon from shrinking in flex rows */
     flex-shrink: 0;
   }
 

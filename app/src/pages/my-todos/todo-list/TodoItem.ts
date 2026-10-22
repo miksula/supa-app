@@ -13,10 +13,22 @@ export function TodoItem(todo: Todo, onToggleTodo: TodoListOptions["onToggleTodo
     });
   };
 
+  const getCheckIcon = (completed: boolean) => {
+    if (completed) {
+      return html`<app-icon
+        name="circleCheck"
+        size="16"
+        class="text-(--text-disabled)"
+      ></app-icon>`;
+    } else {
+      return html`<app-icon name="circle" size="16"></app-icon>`;
+    }
+  };
+
   return html`
     <li class="todo-item ${todo.completed ? "-is-done" : ""}" data-key="${todo.id}">
       <label class="todo-item-row">
-        <app-icon name="circle" size="16"></app-icon>
+        ${getCheckIcon(Boolean(todo.completed))}
         <input
           style="display: none;"
           type="checkbox"
