@@ -17,7 +17,7 @@
   "ignorePatterns": ["**/dist/**", ".agents/**"],
   "overrides": [
     {
-      "files": ["scripts/**"],
+      "files": ["scripts/**", "packages/styles-cli/**"],
       "rules": {
         "no-console": "off"
       }

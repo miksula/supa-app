@@ -1,0 +1,20 @@
+{
+  "name": "@packages/styles-cli",
+  "version": "0.1.0",
+  "private": true,
+  "bin": {
+    "styles": "./bin/styles.js"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tailwindcss/node": "^4.3.3",
+    "lightningcss": "^1.32.0",
+    "oxc-parser": "^0.154.0"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.5"
+  }
+}
