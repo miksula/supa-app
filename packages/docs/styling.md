@@ -248,13 +248,14 @@ Tokens in `app/src/css/vars.css` follow a category-first naming convention
 
 ### 1. Surface and background tokens (`--surface-*`)
 
-| Token                   | Light mode value                                              | Dark mode value | Purpose / Typical usage                                                               |
-| :---------------------- | :------------------------------------------------------------ | :-------------- | :------------------------------------------------------------------------------------ |
-| `--surface-page`        | `--nl-50`                                                     | `--nd-850`      | Global page viewport background (`body` and root layout containers).                  |
-| `--surface-card`        | `--nl-card` (`--nl-50`)                                       | `--nd-950`      | Primary content surface: main page views, card containers, and code blocks (`pre`).   |
-| `--surface-raised`      | `--nl-raised` (`--nl-50`)                                     | `--nd-800`      | Elevated surfaces: dropdown menus (account menu), blockquotes, and inline code pills. |
-| `--surface-translucent` | `color-mix(in oklab, var(--surface-raised) 50%, transparent)` | _(same)_        | Semi-transparent card and toolbar surfaces (`my-todos.css`, `todo-list-card.css`).    |
-| `--avatar-bg`           | `--nl-700`                                                    | `--nd-700`      | User avatar badge background in the sidebar account trigger.                          |
+| Token                   | Light mode value                                              | Dark mode value         | Purpose / Typical usage                                                                      |
+| :---------------------- | :------------------------------------------------------------ | :---------------------- | :------------------------------------------------------------------------------------------- |
+| `--surface-page`        | `--nl-50`                                                     | `--nd-850`              | Global page viewport background (`body` and root layout containers).                         |
+| `--surface-card`        | `--nl-card` (`--nl-50`)                                       | `--nd-950`              | Primary content surface: main page views, card containers, and code blocks (`pre`).          |
+| `--surface-raised`      | `--nl-raised` (`--nl-50`)                                     | `--nd-800`              | Elevated surfaces: dropdown menus (account menu), blockquotes, and inline code pills.        |
+| `--surface-translucent` | `color-mix(in oklab, var(--surface-raised) 50%, transparent)` | _(same)_                | Semi-transparent card and toolbar surfaces (`my-todos.css`, `todo-list-card.css`).           |
+| `--surface-todo-list`   | `--surface-card`                                              | `--surface-translucent` | Todo list container background (`todo-list.css`). Mixed pairing, so it is a dedicated token. |
+| `--avatar-bg`           | `--nl-700`                                                    | `--nd-700`              | User avatar badge background in the sidebar account trigger.                                 |
 
 ### 2. Text and foreground tokens (`--text-*`)
 
@@ -271,6 +272,7 @@ Tokens in `app/src/css/vars.css` follow a category-first naming convention
 | :------------------- | :---------------------------------- | :----------------- | :--------------------------------------------------------------------------------------------- |
 | `--border-strong`    | `--nl-300`                          | `--nd-700`         | Primary borders: container outlines, card borders, input focus states, and table borders.      |
 | `--border-subtle`    | `--nl-200`                          | `--nd-700`         | Subtle internal dividers: list item separators, header bottom borders, and menu section lines. |
+| `--border-todo-list` | `--border-subtle`                   | `transparent`      | Todo list container outline. Light mode uses the subtle border; dark mode has no outline.      |
 | `--focus-ring-color` | `--color-blue-500`                  | `--color-blue-400` | High-visibility focus ring color for keyboard navigation (`:focus-visible`).                   |
 | `--focus-ring`       | `2px solid var(--focus-ring-color)` | _(same)_           | Standard `:focus-visible` outline shorthand used across interactive controls.                  |
 
