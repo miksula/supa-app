@@ -73,32 +73,37 @@ data so it is not left available to another user.
 
 ## Troubleshooting
 
-> **Missing seed data after starting the stack?** If Supabase reports
-> `Starting database from backup...`, it is reusing a saved local database.
-> `stack:up` does not apply pending migrations or rerun the seed in this case.
-> To rebuild the local database with all migrations and seed data, run
-> `npx --no-install supabase db reset --local --workdir=stack`.
-> **This deletes existing local data, including auth users.** To preserve data,
-> apply pending migrations and import the seed separately instead of resetting.
-> View the local database in Studio at <http://127.0.0.1:54323>, not the hosted
-> Supabase dashboard.
+- **Missing seed data after starting the stack?**
 
-> **PowerSync errors after a database reset?** This local setup uses the same
-> Supabase database for app data and PowerSync's internal storage. A Supabase
-> database reset removes that storage; a still-running PowerSync service may
-> return HTTP 500 (`PSYNC_S2001: relation "sync_rules" does not exist`). After
-> the database reset completes, run
-> `npx --no-install powersync docker reset --directory=stack/powersync`
-> to recreate the PowerSync containers and rebuild their storage through startup
-> migrations, then reload the app. This command does not reset Supabase or delete
-> its seeded data.
+  > If Supabase reports
+  > `Starting database from backup...`, it is reusing a saved local database.
+  > `stack:up` does not apply pending migrations or rerun the seed in this case.
+  > To rebuild the local database with all migrations and seed data, run
+  > `npx --no-install supabase db reset --local --workdir=stack`.
+  > **This deletes existing local data, including auth users.** To preserve data,
+  > apply pending migrations and import the seed separately instead of resetting.
+  > View the local database in Studio at <http://127.0.0.1:54323>, not the hosted
+  > Supabase dashboard.
 
-> **`NoModificationAllowedError` / `unable to open database file` in the console?**
-> The browser's Origin Private File System (OPFS) still holds a lock on the local
-> database (`supa-app.db`). Reloading or closing tabs may not release it, because
-> a Chrome process that uses the same profile can keep the lock. Quit that Chrome
-> process completely (every window and background helper, not only the tabs), then
-> reload the app. If the error remains, clear the stored database with
-> [scripts/clear-opfs-db.js](scripts/clear-opfs-db.js) from the DevTools console on
-> `http://localhost:5173`, or use DevTools → Application → Storage → **Clear site
-> data**.
+- **PowerSync errors after a database reset?**
+
+  > This local setup uses the same
+  > Supabase database for app data and PowerSync's internal storage. A Supabase
+  > database reset removes that storage; a still-running PowerSync service may
+  > return HTTP 500 (`PSYNC_S2001: relation "sync_rules" does not exist`). After
+  > the database reset completes, run
+  > `npx --no-install powersync docker reset --directory=stack/powersync`
+  > to recreate the PowerSync containers and rebuild their storage through startup
+  > migrations, then reload the app. This command does not reset Supabase or delete
+  > its seeded data.
+
+- **`NoModificationAllowedError` / `unable to open database file` in the console?**
+
+  > The browser's Origin Private File System (OPFS) still holds a lock on the local
+  > database (`supa-app.db`). Reloading or closing tabs may not release it, because
+  > a Chrome process that uses the same profile can keep the lock. Quit that Chrome
+  > process completely (every window and background helper, not only the tabs), then
+  > reload the app. If the error remains, clear the stored database with
+  > [scripts/clear-opfs-db.js](scripts/clear-opfs-db.js) from the DevTools console on
+  > `http://localhost:5173`, or use DevTools → Application → Storage → **Clear site
+  > data**.
