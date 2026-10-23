@@ -6,7 +6,7 @@ export type CarouselButtons = {
 };
 
 export type CarouselController = {
-  /** Re-evaluates which buttons are enabled; call after items are added or removed. */
+  /** Re-evaluates which buttons are enabled on the next frame; call after items are added or removed. */
   refresh: () => void;
   /** Scrolls just enough to make the item fully visible. */
   reveal: (item: HTMLElement) => void;
@@ -58,7 +58,9 @@ export function Carousel(
   refresh();
 
   return {
-    refresh,
+    // Deferred so layout is read after the caller's DOM changes are applied,
+    // instead of forcing a synchronous reflow in the middle of a render.
+    refresh: refreshOnNextFrame,
     reveal: (item) => item.scrollIntoView({ block: "nearest", inline: "nearest" }),
     destroy: () => {
       cancelAnimationFrame(pendingFrame);
