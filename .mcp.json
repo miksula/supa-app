@@ -10,12 +10,9 @@
       "url": "http://127.0.0.1:54321/mcp",
       "tools": ["*"]
     },
-    "io.github.ChromeDevTools/chrome-devtools-mcp": {
-      "type": "stdio",
+    "chrome-devtools": {
       "command": "npx",
-      "args": ["--registry", "https://registry.npmjs.org", "chrome-devtools-mcp@1.10.1"],
-      "gallery": "https://api.mcp.github.com",
-      "version": "1.10.1"
+      "args": ["-y", "chrome-devtools-mcp@latest"]
     }
   }
 }

@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/geist": "^5.3.0",
     "@journeyapps/wa-sqlite": "^1.5.0",
     "@packages/docs": "^0.0.0",
     "@packages/router": "^0.0.0",

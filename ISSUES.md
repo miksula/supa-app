@@ -93,7 +93,7 @@ opened online stays open.
   - do **not** cache Supabase Auth (`/auth/v1/*`), the RPC endpoint or the PowerSync stream;
   - add an "update available, reload" prompt, because a cached shell otherwise stays stale.
 - Add a web app manifest so the app can be installed.
-- Self-host the font (for example `@fontsource-variable/geist`) and remove the Google Fonts links.
+- ~~Self-host the font (for example `@fontsource-variable/geist`) and remove the Google Fonts links.~~ ✅ Fixed: `@fontsource/geist` is imported for weights 400, 500, 600 and 700 in [index.css](./app/src/css/index.css), and the Google Fonts links are removed from [index.html](./app/src/index.html). The static package is used instead of the variable one so that only the weights the app uses are bundled.
 
 **Done when.** After `vite build && vite preview`: load the app once online, switch
 DevTools to _Offline_, then hard-reload `/`, `/my-todos` and `/docs/introduction`. All
