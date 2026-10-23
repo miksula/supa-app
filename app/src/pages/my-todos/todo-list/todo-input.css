@@ -41,7 +41,7 @@
 
     &:hover {
       background-color: var(--control-hover-bg);
-      color: var(--status-danger);
+      color: var(--text-primary);
     }
 
     &:focus-visible {

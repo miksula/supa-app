@@ -59,7 +59,7 @@
 
   /* Text / Foreground */
   --text-primary: light-dark(var(--nl-900), var(--nd-50));
-  --text-muted: light-dark(var(--nl-500), var(--nd-400));
+  --text-muted: light-dark(var(--nl-600), var(--nd-400));
   --text-disabled: light-dark(var(--nl-400), var(--nd-500));
   --text-on-accent: var(--white);
 

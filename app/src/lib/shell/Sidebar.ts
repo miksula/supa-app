@@ -73,7 +73,7 @@ export function Sidebar(
     html`
       <div class="sidebar" data-component="sidebar">
         <div class="sidebar-header">
-          <a href="/" class="sidebar-brand">
+          <a href="/" class="sidebar-brand" aria-label="Home">
             <div class="sidebar-brand-icon">
               <app-icon name="listTodo" size="16"></app-icon>
             </div>
@@ -120,7 +120,6 @@ export function Sidebar(
         <button
           type="button"
           class="account-trigger"
-          aria-label="Open user menu"
           aria-expanded="${isMenuOpen}"
           aria-controls="sidebar-account-menu"
           @click=${toggleAccountMenu}
