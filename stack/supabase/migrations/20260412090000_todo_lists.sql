@@ -13,7 +13,7 @@ create table if not exists public.todos (
   completed_at timestamp with time zone null,
   description text not null,
   completed boolean not null default false,
-  created_by uuid null,
+  created_by uuid null default auth.uid(),
   completed_by uuid null,
   list_id uuid not null,
   constraint todos_pkey primary key (id),
@@ -22,13 +22,58 @@ create table if not exists public.todos (
   constraint todos_list_id_fkey foreign key (list_id) references public.lists (id) on delete cascade
 ) tablespace pg_default;
 
-do $$
-begin
-  if not exists (
+-- Foreign-key columns used by RLS policies, sync queries and cascades.
+create index if not exists lists_owner_id_idx on public.lists (owner_id);
+create index if not exists todos_list_id_idx on public.todos (list_id);
+
+-- Row-level security: one ownership policy per table, plus restrictive
+-- policies that stop users from writing someone else's id into author fields.
+alter table public.lists enable row level security;
+alter table public.todos enable row level security;
+
+create policy "Users can manage their own lists"
+on public.lists
+for all
+to authenticated
+using ((select auth.uid()) = owner_id)
+with check ((select auth.uid()) = owner_id);
+
+create policy "Users can manage todos in their own lists"
+on public.todos
+for all
+to authenticated
+using (
+  exists (
     select 1
-    from pg_publication
-    where pubname = 'powersync'
-  ) then
-    create publication powersync for all tables;
-  end if;
-end $$;
+    from public.lists
+    where public.lists.id = public.todos.list_id
+      and public.lists.owner_id = (select auth.uid())
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.lists
+    where public.lists.id = public.todos.list_id
+      and public.lists.owner_id = (select auth.uid())
+  )
+);
+
+-- Author fields: new todos are created by the caller (defaulted when omitted);
+-- updates may only record the caller as author/completer.
+create policy "Todos are created by the current user"
+on public.todos
+as restrictive
+for insert
+to authenticated
+with check (created_by = (select auth.uid()));
+
+create policy "Todo authors can only be the current user"
+on public.todos
+as restrictive
+for update
+to authenticated
+with check (
+  (created_by is null or created_by = (select auth.uid()))
+  and (completed_by is null or completed_by = (select auth.uid()))
+);

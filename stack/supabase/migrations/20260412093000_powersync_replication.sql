@@ -16,3 +16,17 @@ end $$;
 -- `powersync` publication). Grant new synced tables explicitly.
 grant usage on schema public to powersync_role;
 grant select on public.lists, public.todos to powersync_role;
+
+-- Replicate only the synced tables. Add new synced tables here
+-- (`alter publication powersync add table public.<table>;`) and grant select
+-- to powersync_role.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication
+    where pubname = 'powersync'
+  ) then
+    create publication powersync for table public.lists, public.todos;
+  end if;
+end $$;

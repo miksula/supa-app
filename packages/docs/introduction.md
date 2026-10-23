@@ -871,8 +871,7 @@ There are two tables. `lists` has an `owner_id` that references
 created and who completed it.
 
 Tables in the `public` schema are reachable through Supabase's Data API, so
-both tables have RLS enabled. The current policies come from
-`20261020115826_consolidate_todo_rls.sql`:
+both tables have RLS enabled in `20260412090000_todo_lists.sql`:
 
 ```sql
 create policy "Users can manage todos in their own lists"
@@ -978,8 +977,8 @@ Points worth knowing:
 ### Replication: role and publication
 
 PowerSync reads changes from Postgres's write-ahead log through logical
-replication. It connects as a dedicated, least-privilege role
-(`20261020115822_powersync_role.sql`):
+replication. `20260412093000_powersync_replication.sql` creates a dedicated,
+least-privilege role and the explicit `powersync` publication:
 
 ```sql
 do $$
@@ -991,17 +990,22 @@ end $$;
 
 grant usage on schema public to powersync_role;
 grant select on public.lists, public.todos to powersync_role;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication
+    where pubname = 'powersync'
+  ) then
+    create publication powersync for table public.lists, public.todos;
+  end if;
+end $$;
 ```
 
 `bypassrls` lets PowerSync see every row it replicates. That is safe because
 per-user filtering happens in the sync config instead (see the next section).
-The publication (`20261020115827_explicit_powersync_publication.sql`) lists
-exactly which tables are replicated:
-
-```sql
-drop publication if exists powersync;
-create publication powersync for table public.lists, public.todos;
-```
+The publication lists exactly which tables are replicated.
 
 ### Who gets which rows: `sync-config.yaml`
 

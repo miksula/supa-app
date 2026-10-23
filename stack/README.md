@@ -61,7 +61,7 @@ rows are synchronized.
 ### PowerSync database role
 
 PowerSync replicates as `powersync_role`, created by the
-`*_powersync_role.sql` migration: `REPLICATION` for logical replication,
+`20260412093000_powersync_replication.sql` migration: `REPLICATION` for logical replication,
 `BYPASSRLS` so it can read every row it replicates, and `SELECT` on the synced
 tables only. The migration creates the role without `LOGIN`, so no password is
 stored in migrations:
@@ -140,9 +140,8 @@ with check ((select auth.uid()) = owner_id);
 ```
 
 Enabling RLS without policies denies access to `anon` and `authenticated`.
-`20261010212054_enable_todo_tables_rls.sql` enables RLS on `lists` and `todos`;
-`20261020115826_consolidate_todo_rls.sql` replaces the per-command policies with
-one ownership policy per table, plus restrictive policies that only allow the
+`20260412090000_todo_lists.sql` enables RLS on `lists` and `todos` with one
+ownership policy per table, plus restrictive policies that only allow the
 current user in `todos.created_by` / `completed_by`.
 
 ## Common commands
