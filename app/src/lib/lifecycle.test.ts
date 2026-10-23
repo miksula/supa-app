@@ -11,6 +11,7 @@ import { Sidebar } from "./shell/Sidebar.ts";
 import { ThemeSwitcher } from "./shell/ThemeSwitcher.ts";
 import { SyncStatusIndicator } from "./shell/SyncStatusIndicator.ts";
 import { getInitialOpenState, saveOpenState } from "./shell/sidebarState.ts";
+import { createLocalUserStore } from "./auth/localUserStore.ts";
 import { initializeTheme, resolveColorScheme } from "./theme/theme.ts";
 import type { SyncStatus, SyncStatusSource } from "./sync/syncStatus.ts";
 import type { Dispose, RouteSource } from "./types.ts";
@@ -363,6 +364,28 @@ describe("shell disposal", () => {
     });
     expect(getInitialOpenState()).toBe(true);
     expect(() => saveOpenState(false)).not.toThrow();
+  });
+
+  it("persists the local user id and tolerates unavailable storage", () => {
+    const store = createLocalUserStore();
+    expect(store.get()).toBeNull();
+    store.set("user-1");
+    expect(store.get()).toBe("user-1");
+    store.set(null);
+    expect(store.get()).toBeNull();
+
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("Blocked");
+    });
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("Blocked");
+    });
+    vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
+      throw new Error("Blocked");
+    });
+    expect(store.get()).toBeNull();
+    expect(() => store.set("user-1")).not.toThrow();
+    expect(() => store.set(null)).not.toThrow();
   });
 
   it("removes the theme media and sync status listeners on dispose", () => {

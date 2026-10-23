@@ -17,28 +17,27 @@ Legend:
 How this was verified: reading the source, plus the installed library code
 (`@supabase/auth-js` 2.117.2 `GoTrueClient.ts`, `@powersync/common` 2.3.1), the
 PowerSync docs and [webstatus.dev](https://webstatus.dev) for browser support.
-Nothing in this file has been fixed yet.
 
-_Last checked against the code base: 2026-10-20._
+_Last checked against the code base: 2026-10-23._
 
 ---
 
 ## Summary
 
-| #    | Severity | Effort | Area      | Title                                                        |
-| ---- | -------- | ------ | --------- | ------------------------------------------------------------ |
-| [1]  | High     | M      | PWA       | The app shell does not load offline                          |
-| [2]  | High     | S–M    | Auth      | Offline cold start with an expired token renders a blank app |
-| [3]  | High     | S      | Sync      | Sign-out can silently discard unsynced writes                |
-| [4]  | High     | M      | Sync      | Rejected uploads are dropped silently                        |
-| [5]  | Medium   | S      | Sync/Auth | The local database is not bound to a user                    |
-| [6]  | Medium   | M      | Deploy    | The backend is not deployable as-is                          |
-| [7]  | Medium   | S–M    | Router    | The router needs very new browsers and has no fallback       |
-| [8]  | Low      | S      | Data      | `deleteList` is not atomic                                   |
-| [9]  | Low      | S      | UX        | No first-sync state                                          |
-| [10] | Low      | S      | UX        | The sync indicator treats offline as an error                |
-| [11] | Low      | M      | DX        | Adding a synced table needs five coordinated edits           |
-| [12] | Low      | M      | Testing   | The offline round trip is not tested                         |
+| #    | Severity | Effort | Area      | Title                                                               |
+| ---- | -------- | ------ | --------- | ------------------------------------------------------------------- |
+| [1]  | High     | M      | PWA       | The app shell does not load offline                                 |
+| [2]  | ~~High~~ | S–M    | Auth      | ~~Offline cold start with an expired token renders a blank app~~ ✅ |
+| [3]  | High     | S      | Sync      | Sign-out can silently discard unsynced writes                       |
+| [4]  | High     | M      | Sync      | Rejected uploads are dropped silently                               |
+| [5]  | ~~Med~~  | S      | Sync/Auth | ~~The local database is not bound to a user~~ ✅                    |
+| [6]  | Medium   | M      | Deploy    | The backend is not deployable as-is                                 |
+| [7]  | Medium   | S–M    | Router    | The router needs very new browsers and has no fallback              |
+| [8]  | Low      | S      | Data      | `deleteList` is not atomic                                          |
+| [9]  | Low      | S      | UX        | No first-sync state                                                 |
+| [10] | Low      | S      | UX        | The sync indicator treats offline as an error                       |
+| [11] | Low      | M      | DX        | Adding a synced table needs five coordinated edits                  |
+| [12] | Low      | M      | Testing   | The offline round trip is not tested                                |
 
 Template cleanup items (not offline-specific) are listed in [Template cleanup](#template-cleanup).
 
@@ -104,70 +103,17 @@ three render, and My Todos shows the local data. This also depends on [#2][2].
 
 ## 2 — Offline cold start with an expired token renders a blank app
 
-**Severity:** High · **Effort:** S–M · **Area:** Auth
+**Status:** ✅ Fixed · **Severity:** High · **Effort:** S–M · **Area:** Auth
 
-**Where:** [AuthService.ts](./app/src/lib/auth/AuthService.ts#L39-L55), [bootstrapAuth.ts](./app/src/lib/auth/bootstrapAuth.ts#L37-L40), [authGuard.ts](./app/src/lib/auth/authGuard.ts#L13-L15)
+**Where:** [AuthService.ts](./app/src/lib/auth/AuthService.ts), [bootstrapAuth.ts](./app/src/lib/auth/bootstrapAuth.ts), [localUserStore.ts](./app/src/lib/auth/localUserStore.ts)
 
-**Problem.** Supabase access tokens expire after one hour by default. On boot,
-`supabase.auth.getSession()` tries to refresh an expired token. If the refresh fails
-on the network, auth-js keeps the stored session (refresh token included) but returns
-`{ session: null, error }`. `AuthService.init()` then throws and never sets `ready`:
-
-```ts
-const {
-  data: { session },
-  error,
-} = await this.client.auth.getSession();
-
-if (error) {
-  throw error;
-}
-
-this.currentSession = session;
-this.initialized = true;
-```
-
-`bootstrapAuth()` catches the error and navigates to `/auth`:
-
-```ts
-} catch (error) {
-  console.error("Failed to bootstrap authentication", error);
-  router.navigate("/auth");
-}
-```
-
-The route guard, however, stops rendering for _every_ route while auth is not ready:
-
-```ts
-if (!auth.ready) {
-  return true;
-}
-```
-
-**Impact.** The user sees an empty page: no data and no login form, even though all
-their data is on disk and the session can still be recovered. The same happens online
-when Supabase Auth is down or unreachable. This is the most common offline scenario: a
-user opens the app the next morning without a connection.
-
-**Repro (without fixing #1 first).** Log in and let the app sync. Wait more than an
-hour, or set a short `jwt_expiry` in [stack/supabase/config.toml](./stack/supabase/config.toml).
-In DevTools → Network request blocking, block `*/auth/v1/token*`, then reload.
-
-**Suggested fix.**
-
-- When the error is a network failure (`isAuthRetryableFetchError(error)` from
-  `@supabase/supabase-js`), treat the user as **"offline, last known user"**: mark auth
-  ready, render the local data and show an offline status. auth-js auto-refresh and
-  PowerSync's reconnect loop recover once the network is back. PowerSync's
-  `fetchCredentials` already throws while there is no session, and PowerSync retries.
-- For any other error, still set `ready = true` before navigating to `/auth`, so the
-  login form actually renders.
-- Store the last connected user id locally (also needed for [#5][5]).
-
-**Done when.** The repro above shows the user's lists with an "offline" status. Once
-the request block is removed, sync resumes without a new login. Unit tests in
-`AuthService.test.ts` and `bootstrapAuth.test.ts` cover both the retryable error and
-other errors.
+**Resolution.** `AuthService.init()` checks `isAuthRetryableFetchError(error)` when a
+stored local user id exists in `localUserStore`: it falls back to that user id, marks
+auth `ready = true`, and lets `bootstrapAuth` render the local database without clearing
+it. For non-retryable errors, `AuthService.init()` still marks `ready = true` before
+throwing so navigating to `/auth` renders the login form. In `VITE_OFFLINE_MODE=true`,
+`getUserId` falls back to `OFFLINE_USER_ID` so lists and todos can be created without a
+session.
 
 ---
 
@@ -271,33 +217,15 @@ the recording path.
 
 ## 5 — The local database is not bound to a user
 
-**Severity:** Medium (High for shared-device apps) · **Effort:** S · **Area:** Sync/Auth
+**Status:** ✅ Fixed · **Severity:** Medium (High for shared-device apps) · **Effort:** S · **Area:** Sync/Auth
 
-**Where:** [bootstrapAuth.ts](./app/src/lib/auth/bootstrapAuth.ts#L25-L32), [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts)
+**Where:** [localUserStore.ts](./app/src/lib/auth/localUserStore.ts), [bootstrapAuth.ts](./app/src/lib/auth/bootstrapAuth.ts), [syncLifecycle.ts](./app/src/lib/sync/syncLifecycle.ts)
 
-**Problem.** The local DB is only cleared when the app _observes_ a `SIGNED_OUT` event.
-auth-js recovers the stored session during client construction, before
-`bootstrapAuth` subscribes. If the refresh token is rejected at that point (revoked by
-a global sign-out on another device, or session time-box or inactivity limits), auth-js
-removes the session and emits `SIGNED_OUT` with no app subscriber attached. New
-subscribers only receive `INITIAL_SESSION`, which `syncLifecycle` ignores.
-
-Result: the previous user's synced rows **and their pending upload queue** stay in the
-local database while the login page is shown.
-
-**Impact.** If a different user then signs in on the same browser:
-
-- they briefly see the previous user's lists until the first sync removes them;
-- the previous user's queued writes are uploaded with the new user's JWT. RLS rejects
-  most of them, and the rejected ones are dropped by [#4][4].
-
-**Suggested fix.** Persist the id of the user the local DB belongs to (for example in
-`localStorage` when `connect()` succeeds). On bootstrap and on `SIGNED_IN`, if there is
-no session or the user id differs, call `disconnectAndClear()` before rendering or
-connecting, after handling pending uploads as in [#3][3].
-
-**Done when.** A unit test covers "boot with no session but a stored user id → reset",
-and "sign in as a different user → reset before connect".
+**Resolution.** `createLocalUserStore()` persists the user id that owns the local
+PowerSync database in `localStorage`. `createSyncLifecycle` records the user id when
+`connect()` succeeds, clears it and calls `reset()` on `SIGNED_OUT` or when booting with
+no session (unless offline fallback is active), and calls `reset()` before `connect()`
+when a different user signs in.
 
 ---
 
@@ -491,7 +419,8 @@ them.
 
 ## What already works (keep these)
 
-- **Sync:** Sync Streams (edition 3); `connect()` once per user; `disconnectAndClear()` on sign-out (but see [#3][3] and [#5][5]).
+- **Sync:** Sync Streams (edition 3); `connect()` once per user; local database bound to the active user via `localUserStore` with automatic `disconnectAndClear()` on sign-out, revoked session at boot, or user switch (see [#3][3] for pending uploads on sign-out).
+- **Offline cold start & offline mode:** `AuthService` falls back to the stored local user id when token refresh fails with a retryable network error, and `main.ts` provides `OFFLINE_USER_ID` in `VITE_OFFLINE_MODE`.
 - **Upload path:** one RPC per local transaction, applied atomically; fatal vs. transient error split; `transaction.complete()` always called.
 - **Database security:**
   - RLS `to authenticated` with ownership checks, `using` + `with check`, and restrictive author policies.
@@ -504,9 +433,8 @@ them.
 | Use case                                                     | Verdict | Fix first |
 | ------------------------------------------------------------ | ------- | --------- |
 | Reference for wiring Supabase Auth + Postgres with PowerSync | Good    | —         |
-| Internal tool on modern browsers                             | Good    | #2–#5     |
-| General offline-first PWA starter                            | Not yet | #1–#6     |
-| Consumer app that must run on older iPhones / Firefox ESR    | Not yet | #1–#7     |
+| Internal tool on modern browsers                             | Good    | #3–#4     |
+| General offline-first PWA starter                            | Not yet | #1, #3–#6 |
+| Consumer app that must run on older iPhones / Firefox ESR    | Not yet | #1, #3–#7 |
 
-Suggested order: **#3 → #2 → #5** (small, protect data), then **#4 → #1**, then
-**#6 → #7**, then the Low items and the cleanup list.
+Suggested order: **#3 → #4 → #1**, then **#6 → #7**, then the Low items and the cleanup list.

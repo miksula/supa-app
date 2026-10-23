@@ -4,7 +4,7 @@ import type { AuthService } from "./AuthService.ts";
 import type { RouteGuard } from "./authGuard.ts";
 
 type BootstrapAuthDependencies = {
-  authService: Pick<AuthService, "init" | "session" | "onAuthStateChange">;
+  authService: Pick<AuthService, "init" | "session" | "isAuthenticated" | "onAuthStateChange">;
   router: Pick<AppRouter, "path" | "check" | "navigate">;
   syncLifecycle: SyncLifecycle;
   guardRoute: RouteGuard;
@@ -29,7 +29,9 @@ export async function bootstrapAuth({
       guardRoute(router.path);
     });
 
-    await syncLifecycle.start(authService.session);
+    await syncLifecycle.start(authService.session, {
+      hasFallbackUser: authService.isAuthenticated,
+    });
 
     if (!guardRoute(router.path)) {
       router.check();

@@ -1,4 +1,10 @@
-import type { AuthChangeEvent, Session, SupabaseClient } from "@supabase/supabase-js";
+import {
+  isAuthRetryableFetchError,
+  type AuthChangeEvent,
+  type Session,
+  type SupabaseClient,
+} from "@supabase/supabase-js";
+import type { LocalUserStore } from "./localUserStore.ts";
 
 export type AuthStateListener = (
   event: AuthChangeEvent,
@@ -13,12 +19,19 @@ export type AuthStateListener = (
  */
 export class AuthService {
   private currentSession: Session | null = null;
+  private offlineUserId: string | null = null;
   private initialized = false;
   private readonly listeners = new Set<AuthStateListener>();
 
-  constructor(private readonly client: SupabaseClient) {
+  constructor(
+    private readonly client: SupabaseClient,
+    private readonly userStore?: Pick<LocalUserStore, "get">,
+  ) {
     client.auth.onAuthStateChange(async (event, session) => {
       this.currentSession = session;
+      if (session || event === "SIGNED_OUT") {
+        this.offlineUserId = null;
+      }
       await Promise.all([...this.listeners].map((listener) => listener(event, session)));
     });
   }
@@ -27,8 +40,13 @@ export class AuthService {
     return this.currentSession;
   }
 
+  /** Active user id from the live session, or the bound local DB owner during an offline cold start. */
+  get userId(): string | null {
+    return this.currentSession?.user.id ?? this.offlineUserId;
+  }
+
   get isAuthenticated() {
-    return this.currentSession !== null;
+    return this.userId !== null;
   }
 
   /** True once the stored session has been read. */
@@ -47,10 +65,19 @@ export class AuthService {
     } = await this.client.auth.getSession();
 
     if (error) {
+      const storedUserId = this.userStore?.get() ?? null;
+      if (isAuthRetryableFetchError(error) && storedUserId) {
+        this.currentSession = null;
+        this.offlineUserId = storedUserId;
+        this.initialized = true;
+        return;
+      }
+      this.initialized = true;
       throw error;
     }
 
     this.currentSession = session;
+    this.offlineUserId = null;
     this.initialized = true;
   }
 

@@ -10,6 +10,7 @@ import { config } from "./config.ts";
 import { AuthService } from "./auth/AuthService.ts";
 import { createAuthGuard } from "./auth/authGuard.ts";
 import { bootstrapAuth } from "./auth/bootstrapAuth.ts";
+import { createLocalUserStore, OFFLINE_USER_ID } from "./auth/localUserStore.ts";
 import { createPowerSync } from "./sync/client.ts";
 import { SupabasePowerSyncConnector } from "./sync/SupabasePowerSyncConnector.ts";
 import { createSyncLifecycle } from "./sync/syncLifecycle.ts";
@@ -33,13 +34,17 @@ export function startApp(el: HTMLElement) {
   const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
     auth: { persistSession: !offline, autoRefreshToken: !offline, detectSessionInUrl: !offline },
   });
-  const authService = new AuthService(supabase);
+  const userStore = createLocalUserStore();
+  const authService = new AuthService(supabase, userStore);
   const powersync = createPowerSync();
   const syncStatus = createSyncStatusSource(powersync);
   const todoStore = new TodoStore(powersync);
 
   // Offline mode has no backend: every route is open and sync never starts.
   const guardRoute = offline ? () => false : createAuthGuard(authService, router);
+  const getUserId = offline
+    ? () => authService.userId ?? userStore.get() ?? OFFLINE_USER_ID
+    : () => authService.userId;
 
   const dispose = AppRoot(el, {
     router,
@@ -59,7 +64,7 @@ export function startApp(el: HTMLElement) {
       todos: (target) =>
         MyTodosPage(target, {
           store: todoStore,
-          getUserId: () => authService.session?.user.id ?? null,
+          getUserId,
         }),
       docs: (target, docId) => DocsPage(target, { docId, navigate }),
       notFound: NotFoundPage,
@@ -74,6 +79,7 @@ export function startApp(el: HTMLElement) {
     const syncLifecycle = createSyncLifecycle({
       connect: () => powersync.connect(connector),
       reset: () => powersync.disconnectAndClear({ clearLocal: true }),
+      userStore,
     });
     void bootstrapAuth({ authService, router, syncLifecycle, guardRoute });
   }

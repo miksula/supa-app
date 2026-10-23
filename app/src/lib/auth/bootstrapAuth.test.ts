@@ -5,7 +5,8 @@ import { bootstrapAuth } from "./bootstrapAuth.ts";
 
 function setup() {
   const authService = {
-    session: { user: { id: "user-1" } } as Session,
+    session: { user: { id: "user-1" } } as Session | null,
+    isAuthenticated: true,
     init: vi.fn().mockResolvedValue(undefined),
     onAuthStateChange: vi.fn<AuthService["onAuthStateChange"]>(),
   };
@@ -27,7 +28,9 @@ describe("bootstrapAuth", () => {
     await run();
     expect(authService.init).toHaveBeenCalledOnce();
     expect(authService.onAuthStateChange).toHaveBeenCalledOnce();
-    expect(syncLifecycle.start).toHaveBeenCalledExactlyOnceWith(authService.session);
+    expect(syncLifecycle.start).toHaveBeenCalledExactlyOnceWith(authService.session, {
+      hasFallbackUser: true,
+    });
     expect(guardRoute).toHaveBeenCalledExactlyOnceWith(router.path);
     expect(router.check).toHaveBeenCalledOnce();
     expect(authService.init.mock.invocationCallOrder[0]).toBeLessThan(
@@ -36,6 +39,18 @@ describe("bootstrapAuth", () => {
     expect(syncLifecycle.start.mock.invocationCallOrder[0]).toBeLessThan(
       router.check.mock.invocationCallOrder[0],
     );
+  });
+
+  it("renders local data without connecting when offline with a fallback user", async () => {
+    const { run, authService, router, syncLifecycle, guardRoute } = setup();
+    authService.session = null;
+    authService.isAuthenticated = true;
+    await run();
+    expect(syncLifecycle.start).toHaveBeenCalledExactlyOnceWith(null, {
+      hasFallbackUser: true,
+    });
+    expect(guardRoute).toHaveBeenCalledExactlyOnceWith("/my-todos");
+    expect(router.check).toHaveBeenCalledOnce();
   });
 
   it("passes auth events to the sync lifecycle before re-checking the route", async () => {
