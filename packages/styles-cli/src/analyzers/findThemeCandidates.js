@@ -99,7 +99,7 @@ const isDerivedTokenExpression = (value) =>
  * Normalizes a CSS declaration value with lightningcss so equivalent representations
  * (`.875rem` vs `0.875rem`, whitespace, color-mix formatting) compare equal.
  */
-export function normalizeCssValue(property, rawValue) {
+function normalizeCssValue(property, rawValue) {
   const collapsed = rawValue.replace(/\s+/g, " ").trim();
   if (!collapsed) return collapsed;
   try {
@@ -123,7 +123,7 @@ export function normalizeCssValue(property, rawValue) {
  * Extracts CSS declarations with file and 1-based line numbers, omitting comments,
  * custom property definitions, and @keyframes blocks.
  */
-export function extractDeclarations(file, code) {
+function extractDeclarations(file, code) {
   const declarations = [];
   const stripped = code.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, " "));
   const pattern = /(?:^|[;{])\s*([a-z][a-z0-9-]*)\s*:\s*([^;{}]+?)\s*(?=;|\})/gi;
@@ -204,7 +204,7 @@ async function loadScaleCatalog(srcDir = SRC) {
  * Scores a candidate group according to cross-file dispersion, total count,
  * property theme weight, and whether it is a derived expression.
  */
-export function scoreCandidate({ distinctFiles, totalOccurrences, weight, derived }) {
+function scoreCandidate({ distinctFiles, totalOccurrences, weight, derived }) {
   return distinctFiles * 3 + totalOccurrences + weight + (derived ? 4 : 0);
 }
 

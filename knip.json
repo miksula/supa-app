@@ -6,8 +6,9 @@
       "entry": ["scripts/*.js"]
     },
     "app": {
-      "project": ["src/**/*.ts"],
-      "ignoreDependencies": ["@journeyapps/wa-sqlite", "tailwindcss"]
+      "entry": ["src/index.html", "src/css/index.css"],
+      "project": ["src/**/*.{ts,css}", "!src/css/theme.css"],
+      "ignoreDependencies": ["@journeyapps/wa-sqlite"]
     },
     "packages/*": {}
   }
