@@ -9,6 +9,7 @@
   "scripts": {
     "app:start": "npm run dev -w app",
     "app:start:offline": "npm run dev:offline -w app",
+    "app:build:offline": "npm run build:offline -w app",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:styles": "node scripts/checkStyles.js",

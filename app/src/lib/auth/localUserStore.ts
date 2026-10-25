@@ -1,6 +1,6 @@
 const LOCAL_USER_ID_KEY = "supa_local_user_id";
 
-/** Fallback user id when running in offline (`VITE_OFFLINE_MODE`) mode with no session. */
+/** Fixed user id used by Local-Only Mode (`VITE_OFFLINE_MODE=true`). */
 export const OFFLINE_USER_ID = "00000000-0000-4000-8000-000000000000";
 
 export type LocalUserStore = {

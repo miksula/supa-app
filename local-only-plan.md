@@ -166,10 +166,10 @@ In `main.ts`:
 
 ### Acceptance
 
-- [ ] `npm run app:start:offline` with no backend running: lists and todos can be created and survive a reload.
-- [ ] OPFS contains `supa-app-local.db` (DevTools → Application → Storage, or `navigator.storage.getDirectory()`). Synced Mode still uses only `supa-app.db`.
-- [ ] After writes in Local-Only Mode, `await powersync.getUploadQueueStats()` reports `count: 0` (check with a temporary log; don't commit it).
-- [ ] `npm run app:start` (Synced Mode) behaves exactly as before.
+- [x] `npm run app:start:offline` with no backend running: lists and todos can be created and survive a reload.
+- [x] OPFS contains `supa-app-local.db` (DevTools → Application → Storage, or `navigator.storage.getDirectory()`). Synced Mode still uses only `supa-app.db`.
+- [x] After writes in Local-Only Mode, `await powersync.getUploadQueueStats()` reports `count: 0` (check with a temporary log; don't commit it).
+- [x] `npm run app:start` (Synced Mode) behaves exactly as before.
 
 Data created by the old offline mode lives in `supa-app.db` and isn't carried over. It's development data, so no migration is needed.
 
@@ -490,12 +490,12 @@ export function startApp(el: HTMLElement) {
 
 ### Acceptance
 
-- [ ] With only `VITE_OFFLINE_MODE`, `VITE_LOCAL_AUTH_*` and the optional dev prefill set (no Supabase or PowerSync variables, no backend), `npm run app:start:offline` starts without errors and redirects `/my-todos` to `/auth`.
-- [ ] Wrong credentials show the sign-in error. Correct ones open My Todos, a reload keeps the session, and the sidebar shows the configured email and **Local only**.
-- [ ] Sign-out returns to `/auth`. Signing in again shows all previous lists and todos.
-- [ ] DevTools → Network shows no requests to Supabase or PowerSync.
-- [ ] `npm run app:build:offline` fails with the message above when a local credential is missing, and succeeds when both are set.
-- [ ] Synced Mode is unchanged: login, sync, and sign-out (which wipes local data) work as before.
+- [x] With only `VITE_OFFLINE_MODE`, `VITE_LOCAL_AUTH_*` and the optional dev prefill set (no Supabase or PowerSync variables, no backend), `npm run app:start:offline` starts without errors and redirects `/my-todos` to `/auth`.
+- [x] Wrong credentials show the sign-in error. Correct ones open My Todos, a reload keeps the session, and the sidebar shows the configured email and **Local only**.
+- [x] Sign-out returns to `/auth`. Signing in again shows all previous lists and todos.
+- [x] DevTools → Network shows no requests to Supabase or PowerSync.
+- [x] `npm run app:build:offline` fails with the message above when a local credential is missing, and succeeds when both are set.
+- [x] Synced Mode is unchanged: login, sync, and sign-out (which wipes local data) work as before.
 
 ---
 
@@ -656,13 +656,13 @@ export type TodoBackupPayload = {
 
 ### Acceptance
 
-- [ ] `/settings` opens from the sidebar in both modes.
-- [ ] Local-Only: export downloads `supa-todos-backup-YYYY-MM-DD.json` containing all lists and todos.
-- [ ] Importing that file into a fresh Local-Only instance (another port or browser profile) restores everything, and My Todos updates without a reload.
-- [ ] Importing the same file twice duplicates nothing.
-- [ ] An invalid or edited-to-be-invalid file shows an error and changes nothing.
-- [ ] Synced Mode: export works and there are no import controls.
-- [ ] A Synced Mode export imports into Local-Only Mode, with ownership rewritten to the local user.
+- [x] `/settings` opens from the sidebar in both modes.
+- [x] Local-Only: export downloads `supa-todos-backup-YYYY-MM-DD.json` containing all lists and todos.
+- [x] Importing that file into a fresh Local-Only instance (another port or browser profile) restores everything, and My Todos updates without a reload.
+- [x] Importing the same file twice duplicates nothing.
+- [x] An invalid or edited-to-be-invalid file shows an error and changes nothing.
+- [x] Synced Mode: export works and there are no import controls.
+- [x] A Synced Mode export imports into Local-Only Mode, with ownership rewritten to the local user.
 
 ---
 
@@ -746,12 +746,12 @@ VitePWA({
 
 ### Acceptance
 
-- [ ] `npm run app:build:offline && npm run preview -w app`: DevTools → Application → Manifest shows no errors, and the browser offers to install the app.
-- [ ] The service worker is active. Cache Storage contains the `wa-sqlite-*.wasm` build and no `*-async*` or `mc-*` builds.
-- [ ] With DevTools set to Offline, reloading `/my-todos`, `/settings` and `/docs/introduction` works, and the data is there.
-- [ ] The installed app opens in its own window and works offline.
-- [ ] Synced build (`npm run build -w app`, then preview): the app shell loads offline, and sync resumes when back online.
-- [ ] `npm run app:start` and `npm run app:start:offline` register no service worker.
+- [x] `npm run app:build:offline && npm run preview -w app`: DevTools → Application → Manifest shows no errors, and the browser offers to install the app.
+- [x] The service worker is active. Cache Storage contains the `wa-sqlite-*.wasm` build and no `*-async*` or `mc-*` builds.
+- [x] With DevTools set to Offline, reloading `/my-todos`, `/settings` and `/docs/introduction` works, and the data is there.
+- [x] The installed app opens in its own window and works offline.
+- [x] Synced build (`npm run build -w app`, then preview): the app shell loads offline, and sync resumes when back online.
+- [x] `npm run app:start` and `npm run app:start:offline` register no service worker.
 
 ---
 
@@ -898,20 +898,20 @@ When a schema change affects the backup (for example, a renamed column or a new 
 
 ### Acceptance
 
-- [ ] With the empty migration list, startup is unchanged and `PRAGMA user_version` stays `0`.
-- [ ] With a temporary test migration (not committed), `user_version` goes up once and stays there across reloads and with two tabs open.
-- [ ] A temporary failing migration shows the blocking message and leaves the data unchanged. The app starts normally once the migration is removed.
+- [x] With the empty migration list, startup is unchanged and `PRAGMA user_version` stays `0`.
+- [x] With a temporary test migration (not committed), `user_version` goes up once and stays there across reloads and with two tabs open.
+- [x] A temporary failing migration shows the blocking message and leaves the data unchanged. The app starts normally once the migration is removed.
 
 ---
 
 ## Documentation Updates
 
-| File                                                     | What to change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Phase      |
-| :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
+| File                                               | What to change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Phase      |
+| :------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
 | [app/.env.local.template](app/.env.local.template) | Rewrite the `VITE_OFFLINE_MODE` comment: Local-Only Mode, no backend, data stays on this device in `supa-app-local.db`, the login is cosmetic. Add `VITE_LOCAL_AUTH_EMAIL=dev@example.com` and `VITE_LOCAL_AUTH_PASSWORD=password123`, noting that they're compiled into the bundle (not secret) and required by `build:offline`.                                                                                                                                                                                                                                                                                                          | 2          |
 | [app/README.md](app/README.md)                     | Rewrite the `dev:offline` paragraph to describe Local-Only Mode (login, local database, no sync) instead of "disables authentication"; add `build:offline` and `preview`. `config.ts` bullet: the local login variables. `main.ts` bullet: the mode now selects the database, auth service, sync lifecycle and status source, and the guard applies in both modes. Mention the Settings page (Phase 3) and the installable app (Phase 4).                                                                                                                                                                                                  | 2, 3, 4    |
-| [README.md](../../README.md)                             | Replace the "work on the UI without a running backend" sentence with a short description of both modes, `npm run app:start:offline` and `npm run app:build:offline`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 2          |
-| [introduction.md](./introduction.md)                     | "Running it locally": `app:start:offline` now runs Local-Only Mode with a login, not an open UI mode. §2 composition root: update the `startApp` excerpt (`guardRoute`, the `if (offline)` block, `getUserId`), the paragraph after it, and the `config` excerpt. §4: the first render always goes through `bootstrapAuth`. §5 Authentication: add `LocalAuthService` and the cosmetic-login caveat. §6 "Creating the database": the two database files and `LocalOnlySchema`. §8 status source: the "Local only" source. "Adding a synced table": the local-only data-loss policy. "Gotchas": never open one database file in both modes. | 1, 2, 3, 5 |
+| [README.md](../../README.md)                       | Replace the "work on the UI without a running backend" sentence with a short description of both modes, `npm run app:start:offline` and `npm run app:build:offline`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 2          |
+| [introduction.md](./introduction.md)               | "Running it locally": `app:start:offline` now runs Local-Only Mode with a login, not an open UI mode. §2 composition root: update the `startApp` excerpt (`guardRoute`, the `if (offline)` block, `getUserId`), the paragraph after it, and the `config` excerpt. §4: the first render always goes through `bootstrapAuth`. §5 Authentication: add `LocalAuthService` and the cosmetic-login caveat. §6 "Creating the database": the two database files and `LocalOnlySchema`. §8 status source: the "Local only" source. "Adding a synced table": the local-only data-loss policy. "Gotchas": never open one database file in both modes. | 1, 2, 3, 5 |
 
 ---
 
@@ -925,6 +925,6 @@ When a schema change affects the backup (for example, a renamed column or a new 
 
 ## Final Check (All Phases)
 
-- [ ] `npm run check` passes.
-- [ ] Synced Mode on `:5173` and Local-Only Mode on `:5174` run side by side without affecting each other's data.
-- [ ] Synced export → Local-Only import → Local-Only export round-trips the same lists and todos (ownership fields aside).
+- [x] `npm run check` passes.
+- [x] Synced Mode on `:5173` and Local-Only Mode on `:5174` run side by side without affecting each other's data.
+- [x] Synced export → Local-Only import → Local-Only export round-trips the same lists and todos (ownership fields aside).

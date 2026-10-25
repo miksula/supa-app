@@ -13,7 +13,11 @@ import { SyncStatusIndicator } from "./shell/SyncStatusIndicator.ts";
 import { getInitialOpenState, saveOpenState } from "./shell/sidebarState.ts";
 import { createLocalUserStore } from "./auth/localUserStore.ts";
 import { initializeTheme, resolveColorScheme } from "./theme/theme.ts";
-import type { SyncStatus, SyncStatusSource } from "./sync/syncStatus.ts";
+import {
+  createLocalOnlyStatusSource,
+  type SyncStatus,
+  type SyncStatusSource,
+} from "./sync/syncStatus.ts";
 import type { Dispose, RouteSource } from "./types.ts";
 
 vi.mock("@packages/docs", () => ({ getDocContent: vi.fn() }));
@@ -84,7 +88,7 @@ describe("page disposal", () => {
       router,
       guardRoute: guard,
       layouts: { app: layout, login: layout },
-      pages: { todos: page, login: page, docs, notFound: page },
+      pages: { todos: page, login: page, docs, settings: page, notFound: page },
     });
     disposers.push(dispose);
     const routes = new Map(router.get.mock.calls.map(([path, handler]) => [path, handler]));
@@ -199,6 +203,7 @@ describe("page disposal", () => {
         login: mountPage("login"),
         todos: mountPage("todos"),
         docs: mountPage("docs"),
+        settings: mountPage("settings"),
         notFound: mountPage("notFound"),
       },
     });
@@ -347,6 +352,15 @@ describe("shell disposal", () => {
     expect(target.querySelector('[role="status"]')?.textContent).toContain("Synced");
     emit({ ...connectedStatus, uploading: true });
     expect(target.querySelector('[role="status"]')?.textContent).toContain("Syncing...");
+  });
+
+  it("renders Local only with -is-local for createLocalOnlyStatusSource()", () => {
+    const target = createTarget();
+    disposers.push(SyncStatusIndicator(target, createLocalOnlyStatusSource()));
+    const statusEl = target.querySelector('[role="status"]');
+    expect(statusEl?.textContent).toContain("Local only");
+    expect(statusEl?.classList.contains("-is-local")).toBe(true);
+    expect(statusEl?.classList.contains("-is-error")).toBe(false);
   });
 
   it("persists sidebar state without cookies and tolerates unavailable storage", () => {

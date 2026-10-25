@@ -1,5 +1,6 @@
 import type { PowerSyncDatabase } from "@powersync/web";
 import type { Database } from "@/sync/schema.ts";
+import { parseTodoBackup, type TodoBackupPayload } from "./todoBackup.ts";
 
 export type Todo = Database["todos"];
 type List = Database["lists"];
@@ -21,7 +22,7 @@ export type TodoListData = Pick<ListWithTodoRow, "id" | "created_at" | "name" | 
 export type NewTodo = {
   description: string;
   listId: string;
-  /** Signed-in user id; `null` in offline mode (the server defaults it to `auth.uid()`). */
+  /** Signed-in user id (`OFFLINE_USER_ID` in Local-Only Mode). */
   createdBy: string | null;
 };
 
@@ -65,7 +66,14 @@ export const mapTodoLists = (rows: ListWithTodoRow[]): TodoListData[] => {
 };
 
 export class TodoStore {
-  constructor(private readonly db: PowerSyncDatabase) {}
+  private readonly localOnly: boolean;
+
+  constructor(
+    private readonly db: PowerSyncDatabase,
+    options?: { localOnly?: boolean },
+  ) {
+    this.localOnly = options?.localOnly ?? false;
+  }
 
   watchUserLists(options?: { signal?: AbortSignal }) {
     return this.db.watch(
@@ -130,5 +138,73 @@ export class TodoStore {
         todoId,
       ],
     );
+  }
+
+  async exportData(): Promise<TodoBackupPayload> {
+    const lists = await this.db.getAll<TodoBackupPayload["lists"][number]>(
+      "SELECT id, name, owner_id, created_at FROM lists ORDER BY created_at ASC, id ASC",
+    );
+    const todos = await this.db.getAll<TodoBackupPayload["todos"][number]>(
+      "SELECT id, list_id, description, completed, created_at, completed_at, created_by, completed_by FROM todos ORDER BY created_at ASC, id ASC",
+    );
+    return { version: 1, exportedAt: new Date().toISOString(), lists, todos };
+  }
+
+  async importData(input: unknown, { userId }: { userId: string }) {
+    if (!this.localOnly) {
+      throw new Error("Import is only available in Local-Only Mode");
+    }
+    const backup = parseTodoBackup(input);
+
+    await this.db.writeTransaction(async (tx) => {
+      const ids = async (table: "lists" | "todos") =>
+        new Set((await tx.getAll<{ id: string }>(`SELECT id FROM ${table}`)).map((row) => row.id));
+      const existingLists = await ids("lists");
+      const existingTodos = await ids("todos");
+
+      for (const list of backup.lists) {
+        if (existingLists.has(list.id)) {
+          await tx.execute("UPDATE lists SET name = ?, owner_id = ?, created_at = ? WHERE id = ?", [
+            list.name,
+            userId,
+            list.created_at,
+            list.id,
+          ]);
+        } else {
+          await tx.execute(
+            "INSERT INTO lists (name, owner_id, created_at, id) VALUES (?, ?, ?, ?)",
+            [list.name, userId, list.created_at, list.id],
+          );
+        }
+      }
+
+      for (const todo of backup.todos) {
+        const values = [
+          todo.list_id,
+          todo.description,
+          todo.completed,
+          todo.created_at,
+          todo.completed_at,
+          userId,
+          todo.completed ? userId : null,
+          todo.id,
+        ];
+        if (existingTodos.has(todo.id)) {
+          await tx.execute(
+            `UPDATE todos SET list_id = ?, description = ?, completed = ?, created_at = ?,
+               completed_at = ?, created_by = ?, completed_by = ? WHERE id = ?`,
+            values,
+          );
+        } else {
+          await tx.execute(
+            `INSERT INTO todos (list_id, description, completed, created_at, completed_at,
+               created_by, completed_by, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            values,
+          );
+        }
+      }
+    });
+
+    return { lists: backup.lists.length, todos: backup.todos.length };
   }
 }
