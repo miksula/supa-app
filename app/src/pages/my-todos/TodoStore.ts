@@ -145,7 +145,7 @@ export class TodoStore {
       "SELECT id, name, owner_id, created_at FROM lists ORDER BY created_at ASC, id ASC",
     );
     const todos = await this.db.getAll<TodoBackupPayload["todos"][number]>(
-      "SELECT id, list_id, description, completed, created_at, completed_at, created_by, completed_by FROM todos ORDER BY created_at ASC, id ASC",
+      "SELECT id, list_id, description, COALESCE(completed, 0) AS completed, created_at, completed_at, created_by, completed_by FROM todos ORDER BY created_at ASC, id ASC",
     );
     return { version: 1, exportedAt: new Date().toISOString(), lists, todos };
   }
