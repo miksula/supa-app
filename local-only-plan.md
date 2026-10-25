@@ -11,7 +11,7 @@ This plan turns `VITE_OFFLINE_MODE=true` into a first-class, installable **Local
   4. [Installable app](#phase-4-installable-app-pwa)
   5. [Migrations and data-loss policy](#phase-5-migrations-and-data-loss-policy)
 - A phase is done when its tests exist and pass, `npm run check` is green, its acceptance checklist is ticked, and its rows in [Documentation Updates](#documentation-updates) are done.
-- Never hand-edit [app/src/lib/sync/schema.ts](../../app/src/lib/sync/schema.ts). `npm run schema:generate` overwrites it from `stack/powersync/sync-config.yaml`.
+- Never hand-edit [app/src/lib/sync/schema.ts](app/src/lib/sync/schema.ts). `npm run schema:generate` overwrites it from `stack/powersync/sync-config.yaml`.
 - Don't change `stack/` (Postgres schema, RLS, sync config). Synced Mode must behave exactly as before.
 
 ## Decisions
@@ -44,7 +44,7 @@ Phase 1 gives each mode its own database file, and the side-by-side workflow bel
 
 ### Side-by-Side Development
 
-About 95% of the code (UI, routing, `TodoStore`, styles, tests) is shared, so **don't split the modes into separate repositories**. Browsers scope `localStorage`, OPFS (SQLite files), IndexedDB and service workers by origin (`scheme + host + port`), so running the modes on different ports keeps their data apart. `VITE_DEV_PORT` is already supported in [app/vite.config.ts](../../app/vite.config.ts).
+About 95% of the code (UI, routing, `TodoStore`, styles, tests) is shared, so **don't split the modes into separate repositories**. Browsers scope `localStorage`, OPFS (SQLite files), IndexedDB and service workers by origin (`scheme + host + port`), so running the modes on different ports keeps their data apart. `VITE_DEV_PORT` is already supported in [app/vite.config.ts](app/vite.config.ts).
 
 **Option 1: one checkout, two ports (recommended).** UI and store edits hot-reload in both tabs:
 
@@ -87,7 +87,7 @@ External SQLite tools can read a downloaded `.db` file, but they can't write thr
 **Files**
 
 - New: `app/src/lib/sync/localSchema.ts`, `app/src/lib/sync/localSchema.test.ts`, `app/src/lib/sync/storagePersistence.ts`
-- Change: [client.ts](../../app/src/lib/sync/client.ts), [main.ts](../../app/src/lib/main.ts)
+- Change: [client.ts](app/src/lib/sync/client.ts), [main.ts](app/src/lib/main.ts)
 
 ### 1.1 Local-Only Schema
 
@@ -182,7 +182,7 @@ Data created by the old offline mode lives in `supa-app.db` and isn't carried ov
 **Files**
 
 - New: `app/src/lib/auth/LocalAuthService.ts`, `app/src/lib/auth/LocalAuthService.test.ts`
-- Change: [config.ts](../../app/src/lib/config.ts), [vite-env.d.ts](../../app/src/vite-env.d.ts), [AuthService.ts](../../app/src/lib/auth/AuthService.ts), [main.ts](../../app/src/lib/main.ts), [syncStatus.ts](../../app/src/lib/sync/syncStatus.ts), [SyncStatusIndicator.ts](../../app/src/lib/shell/SyncStatusIndicator.ts), [localUserStore.ts](../../app/src/lib/auth/localUserStore.ts) (doc comment), [TodoStore.ts](../../app/src/pages/my-todos/TodoStore.ts) (doc comment), [vite.config.ts](../../app/vite.config.ts), [app/package.json](../../app/package.json), [package.json](../../package.json), [bootstrapAuth.test.ts](../../app/src/lib/auth/bootstrapAuth.test.ts), [lifecycle.test.ts](../../app/src/lib/lifecycle.test.ts)
+- Change: [config.ts](app/src/lib/config.ts), [vite-env.d.ts](app/src/vite-env.d.ts), [AuthService.ts](app/src/lib/auth/AuthService.ts), [main.ts](app/src/lib/main.ts), [syncStatus.ts](app/src/lib/sync/syncStatus.ts), [SyncStatusIndicator.ts](app/src/lib/shell/SyncStatusIndicator.ts), [localUserStore.ts](app/src/lib/auth/localUserStore.ts) (doc comment), [TodoStore.ts](app/src/pages/my-todos/TodoStore.ts) (doc comment), [vite.config.ts](app/vite.config.ts), [app/package.json](app/package.json), [package.json](package.json), [bootstrapAuth.test.ts](app/src/lib/auth/bootstrapAuth.test.ts), [lifecycle.test.ts](app/src/lib/lifecycle.test.ts)
 
 ### 2.1 Login Credentials
 
@@ -454,9 +454,9 @@ export function startApp(el: HTMLElement) {
 
 ### 2.6 `build:offline` Script
 
-- [app/package.json](../../app/package.json): `"build:offline": "VITE_OFFLINE_MODE=true vite build"`.
+- [app/package.json](app/package.json): `"build:offline": "VITE_OFFLINE_MODE=true vite build"`.
 - Root [package.json](../../package.json): `"app:build:offline": "npm run build:offline -w app"`, next to `app:start:offline`.
-- [vite.config.ts](../../app/vite.config.ts): fail Local-Only builds that have no login credentials. `loadEnv` includes `VITE_*` variables from the shell, so it sees `VITE_OFFLINE_MODE=true` from the script:
+- [vite.config.ts](app/vite.config.ts): fail Local-Only builds that have no login credentials. `loadEnv` includes `VITE_*` variables from the shell, so it sees `VITE_OFFLINE_MODE=true` from the script:
   ```ts
   export default defineConfig(({ command, mode }) => {
     const env = loadEnv(mode, new URL(".", import.meta.url).pathname, "VITE_");
@@ -476,7 +476,7 @@ export function startApp(el: HTMLElement) {
 
 ### Tests
 
-- `LocalAuthService.test.ts` (mirror [AuthService.test.ts](../../app/src/lib/auth/AuthService.test.ts)):
+- `LocalAuthService.test.ts` (mirror [AuthService.test.ts](app/src/lib/auth/AuthService.test.ts)):
   - correct credentials sign in and emit `SIGNED_IN`;
   - a wrong email or password throws `"Invalid login credentials"` and emits nothing;
   - the email match is case-insensitive;
@@ -506,9 +506,9 @@ export function startApp(el: HTMLElement) {
 **Files**
 
 - New: `app/src/pages/my-todos/todoBackup.ts`, `app/src/pages/my-todos/todoBackup.test.ts`, `app/src/pages/settings/SettingsPage.ts`, `app/src/pages/settings/settings.css`, `app/src/pages/settings/backupFile.ts`, `app/src/pages/settings/SettingsPage.test.ts`
-- Change: [TodoStore.ts](../../app/src/pages/my-todos/TodoStore.ts), [AppRoot.ts](../../app/src/lib/AppRoot.ts), [main.ts](../../app/src/lib/main.ts)
+- Change: [TodoStore.ts](app/src/pages/my-todos/TodoStore.ts), [AppRoot.ts](app/src/lib/AppRoot.ts), [main.ts](app/src/lib/main.ts)
 
-[navConfig.ts](../../app/src/lib/nav/navConfig.ts) already links **Settings** to `/settings`, but `AppRoot` has no route for it, so today it shows Not Found.
+[navConfig.ts](app/src/lib/nav/navConfig.ts) already links **Settings** to `/settings`, but `AppRoot` has no route for it, so today it shows Not Found.
 
 ### 3.1 Backup Format and Validation (`todoBackup.ts`)
 
@@ -672,7 +672,7 @@ export type TodoBackupPayload = {
 
 **Files**
 
-- Change: [app/package.json](../../app/package.json) (devDependency), [vite.config.ts](../../app/vite.config.ts), [index.html](../../app/src/index.html)
+- Change: [app/package.json](app/package.json) (devDependency), [vite.config.ts](app/vite.config.ts), [index.html](app/src/index.html)
 - New: PNG icons in `app/public/`
 
 ### 4.1 Dependency
@@ -762,7 +762,7 @@ VitePWA({
 **Files**
 
 - New: `app/src/lib/sync/localMigrations.ts`, `app/src/lib/sync/localMigrations.test.ts`
-- Change: [main.ts](../../app/src/lib/main.ts)
+- Change: [main.ts](app/src/lib/main.ts)
 
 ### 5.1 Structural Changes (Automatic)
 
@@ -908,8 +908,8 @@ When a schema change affects the backup (for example, a renamed column or a new 
 
 | File                                                     | What to change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Phase      |
 | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
-| [app/.env.local.template](../../app/.env.local.template) | Rewrite the `VITE_OFFLINE_MODE` comment: Local-Only Mode, no backend, data stays on this device in `supa-app-local.db`, the login is cosmetic. Add `VITE_LOCAL_AUTH_EMAIL=dev@example.com` and `VITE_LOCAL_AUTH_PASSWORD=password123`, noting that they're compiled into the bundle (not secret) and required by `build:offline`.                                                                                                                                                                                                                                                                                                          | 2          |
-| [app/README.md](../../app/README.md)                     | Rewrite the `dev:offline` paragraph to describe Local-Only Mode (login, local database, no sync) instead of "disables authentication"; add `build:offline` and `preview`. `config.ts` bullet: the local login variables. `main.ts` bullet: the mode now selects the database, auth service, sync lifecycle and status source, and the guard applies in both modes. Mention the Settings page (Phase 3) and the installable app (Phase 4).                                                                                                                                                                                                  | 2, 3, 4    |
+| [app/.env.local.template](app/.env.local.template) | Rewrite the `VITE_OFFLINE_MODE` comment: Local-Only Mode, no backend, data stays on this device in `supa-app-local.db`, the login is cosmetic. Add `VITE_LOCAL_AUTH_EMAIL=dev@example.com` and `VITE_LOCAL_AUTH_PASSWORD=password123`, noting that they're compiled into the bundle (not secret) and required by `build:offline`.                                                                                                                                                                                                                                                                                                          | 2          |
+| [app/README.md](app/README.md)                     | Rewrite the `dev:offline` paragraph to describe Local-Only Mode (login, local database, no sync) instead of "disables authentication"; add `build:offline` and `preview`. `config.ts` bullet: the local login variables. `main.ts` bullet: the mode now selects the database, auth service, sync lifecycle and status source, and the guard applies in both modes. Mention the Settings page (Phase 3) and the installable app (Phase 4).                                                                                                                                                                                                  | 2, 3, 4    |
 | [README.md](../../README.md)                             | Replace the "work on the UI without a running backend" sentence with a short description of both modes, `npm run app:start:offline` and `npm run app:build:offline`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 2          |
 | [introduction.md](./introduction.md)                     | "Running it locally": `app:start:offline` now runs Local-Only Mode with a login, not an open UI mode. §2 composition root: update the `startApp` excerpt (`guardRoute`, the `if (offline)` block, `getUserId`), the paragraph after it, and the `config` excerpt. §4: the first render always goes through `bootstrapAuth`. §5 Authentication: add `LocalAuthService` and the cosmetic-login caveat. §6 "Creating the database": the two database files and `LocalOnlySchema`. §8 status source: the "Local only" source. "Adding a synced table": the local-only data-loss policy. "Gotchas": never open one database file in both modes. | 1, 2, 3, 5 |
 
