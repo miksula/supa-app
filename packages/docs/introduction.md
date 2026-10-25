@@ -142,9 +142,12 @@ The seed data creates the user `dev@example.com` with the password
 `password123`, plus a few sample lists. Local Supabase Studio runs at
 <http://127.0.0.1:54323>.
 
-If you only want to work on the UI, run `npm run app:start:offline`. It sets
-`VITE_OFFLINE_MODE=true`, which disables authentication and sync while keeping
-the local database available, so no Docker stack is needed.
+To run in **Local-Only Mode** without a backend or Docker stack, run
+`npm run app:start:offline` (or build a production bundle with
+`npm run app:build:offline`). It sets `VITE_OFFLINE_MODE=true`, stores data in
+a separate local SQLite file (`supa-app-local.db`), and signs in against the
+cosmetic credentials in `VITE_LOCAL_AUTH_EMAIL` / `VITE_LOCAL_AUTH_PASSWORD`
+(compiled into the bundle — not a security boundary).
 
 ## Code walkthrough
 
@@ -177,28 +180,49 @@ what it needs as arguments. This is dependency injection without a framework,
 and it is the most important convention in the code base.
 
 `startApp` in `app/src/lib/main.ts` is the **composition root**. It is the only
-place that creates concrete services (router, Supabase client, `AuthService`,
+place that creates concrete services (router, Supabase client, auth service,
 PowerSync, the sync-status source and the data stores) and wires them into
 layouts and pages:
 
 ```ts
 export function startApp(el: HTMLElement) {
   const offline = config.isOfflineMode;
-
   const router = new Router();
   const navigate = (path: string) => {
     router.navigate(path);
   };
-  const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
-    auth: { persistSession: !offline, autoRefreshToken: !offline, detectSessionInUrl: !offline },
-  });
-  const authService = new AuthService(supabase);
-  const powersync = createPowerSync();
-  const syncStatus = createSyncStatusSource(powersync);
-  const todoStore = new TodoStore(powersync);
 
-  // Offline mode has no backend: every route is open and sync never starts.
-  const guardRoute = offline ? () => false : createAuthGuard(authService, router);
+  const powersync = createPowerSync({ localOnly: offline });
+  const todoStore = new TodoStore(powersync, { localOnly: offline });
+
+  let authService: AppAuthService;
+  let syncLifecycle: SyncLifecycle;
+  let syncStatus: SyncStatusSource;
+
+  if (offline) {
+    authService = new LocalAuthService({
+      email: config.localAuthEmail,
+      password: config.localAuthPassword,
+    });
+    // Sign-out must never reset the database in Local-Only Mode.
+    syncLifecycle = { start: async () => {}, handleAuthEvent: async () => {} };
+    syncStatus = createLocalOnlyStatusSource();
+    void requestPersistentStorage();
+  } else {
+    const supabase = createClient(config.supabaseUrl, config.supabaseKey);
+    const userStore = createLocalUserStore();
+    const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
+    authService = new AuthService(supabase, userStore);
+    syncLifecycle = createSyncLifecycle({
+      connect: () => powersync.connect(connector),
+      reset: () => powersync.disconnectAndClear({ clearLocal: true }),
+      userStore,
+    });
+    syncStatus = createSyncStatusSource(powersync);
+  }
+
+  const guardRoute = createAuthGuard(authService, router);
+  const getUserId = () => authService.userId;
 
   const dispose = AppRoot(el, {
     router,
@@ -218,9 +242,11 @@ export function startApp(el: HTMLElement) {
       todos: (target) =>
         MyTodosPage(target, {
           store: todoStore,
-          getUserId: () => authService.session?.user.id ?? null,
+          getUserId,
         }),
       docs: (target, docId) => DocsPage(target, { docId, navigate }),
+      settings: (target) =>
+        SettingsPage(target, { backup: todoStore, getUserId, canImport: offline }),
       notFound: NotFoundPage,
     },
   });
@@ -232,22 +258,28 @@ Look at what each page receives. `LoginPage` gets a `login` callback, not the
 Supabase client. `MyTodosPage` gets the store and a `getUserId` function, not
 the whole auth service. The Supabase client never leaves `main.ts`.
 
-Offline mode is decided once, here. The guard above lets every route through,
-and the end of `startApp` either renders the current route straight away or,
-online, creates the connector and sync lifecycle and starts the auth bootstrap:
+The mode (`offline`) is decided once, here. It chooses the database file and
+schema, the auth service (`LocalAuthService` vs. `AuthService`), the sync
+lifecycle and the sync status source. The route guard and `bootstrapAuth` run in
+both modes (after running local data migrations in Local-Only Mode):
 
 ```ts
-// Routes are registered above; now render the current one.
-if (offline) {
-  router.check();
-} else {
-  const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
-  const syncLifecycle = createSyncLifecycle({
-    connect: () => powersync.connect(connector),
-    reset: () => powersync.disconnectAndClear({ clearLocal: true }),
-  });
-  void bootstrapAuth({ authService, router, syncLifecycle, guardRoute });
-}
+const start = async () => {
+  if (offline) await runLocalMigrations(powersync);
+  await bootstrapAuth({ authService, router, syncLifecycle, guardRoute });
+};
+
+void start().catch((error) => {
+  console.error("Failed to upgrade the local database", error);
+  render(
+    html`
+      <p role="alert">
+        The local database couldn't be upgraded. Your data hasn't changed. Reload to try again.
+      </p>
+    `,
+    el,
+  );
+});
 
 return dispose;
 ```
@@ -276,6 +308,8 @@ export const config = {
   powersyncUrl: import.meta.env.VITE_POWERSYNC_URL,
   isOfflineMode: import.meta.env.VITE_OFFLINE_MODE === "true",
   isDevelopment: import.meta.env.DEV,
+  localAuthEmail: import.meta.env.VITE_LOCAL_AUTH_EMAIL ?? "",
+  localAuthPassword: import.meta.env.VITE_LOCAL_AUTH_PASSWORD ?? "",
   devEmail: import.meta.env.DEV ? (import.meta.env.VITE_DEV_EMAIL ?? "") : "",
   devPassword: import.meta.env.DEV ? (import.meta.env.VITE_DEV_PASSWORD ?? "") : "",
 };
@@ -380,9 +414,8 @@ route("/*", () => showPage("app", pages.notFound));
 ```
 
 `AppRoot` only registers routes; it does not render anything by itself. Once
-it returns, `main.ts` triggers the first render: directly with `router.check()`
-in offline mode, or through `bootstrapAuth` online (see section 2).
-Its returned `Dispose` disposes the layout manager.
+it returns, `main.ts` triggers the first render through `bootstrapAuth` in both
+modes (see section 2). Its returned `Dispose` disposes the layout manager.
 
 The layout manager in `app/src/lib/layoutManager.ts` is where the mount
 contract is enforced. It disposes the current page, replaces the layout only
@@ -448,6 +481,16 @@ emits `SIGNED_IN` or `SIGNED_OUT`, and that single subscription updates it. The
 sidebar registers a listener with `authService.onAuthStateChange` to show the
 signed-in user's account menu. `ready` is a read-only getter that becomes
 `true` once `init()` has read the stored session.
+
+**`LocalAuthService`** (`app/src/lib/auth/LocalAuthService.ts`) implements the
+same `AppAuthService` surface for Local-Only Mode (`VITE_OFFLINE_MODE=true`). It
+accepts a single email/password pair (`VITE_LOCAL_AUTH_EMAIL` and
+`VITE_LOCAL_AUTH_PASSWORD`), persists the signed-in email in `localStorage`, and
+emits a Supabase-shaped `Session` whose user ID is `OFFLINE_USER_ID`. **This
+login is cosmetic:** the credentials are compiled into the JavaScript bundle so
+anyone can read them, and they do not encrypt or protect the OPFS database on
+the device. On `logout()` it clears the stored session without touching the
+local database.
 
 **`createAuthGuard`** (`app/src/lib/auth/authGuard.ts`) is a pure function
 that decides whether the current path must redirect. It returns a
@@ -553,16 +596,20 @@ SQLite has fewer data types than Postgres, so values are mapped:
 #### Creating the database
 
 `createPowerSync()` in `app/src/lib/sync/client.ts` opens the database file in
-the browser:
+the browser. Synced Mode uses `supa-app.db` with `AppSchema`; Local-Only Mode
+uses `supa-app-local.db` with `LocalOnlySchema` (derived from `AppSchema` in
+`app/src/lib/sync/localSchema.ts` with every table marked `localOnly: true` so
+writes go to `ps_data_local__*` and never enter the upload queue):
 
 ```ts
-export function createPowerSync() {
+export function createPowerSync(options?: { localOnly?: boolean }) {
+  const localOnly = options?.localOnly ?? false;
   return new PowerSyncDatabase({
     database: {
-      dbFilename: "supa-app.db",
+      dbFilename: localOnly ? "supa-app-local.db" : "supa-app.db",
       vfs: WASQLiteVFS.OPFSCoopSyncVFS,
     },
-    schema: AppSchema,
+    schema: localOnly ? LocalOnlySchema : AppSchema,
   });
 }
 ```
@@ -837,7 +884,9 @@ export type SyncStatusSource = {
 };
 ```
 
-`main.ts` creates it once with `createSyncStatusSource(powersync)` and passes it
+`main.ts` creates it once with `createSyncStatusSource(powersync)` (or
+`createLocalOnlyStatusSource()` in Local-Only Mode, which always reports
+`localOnly: true` so the indicator renders **Local only**) and passes it
 as the `syncStatus` dependency to `SidebarLayout`, which hands it to `Sidebar`,
 which passes it to `SyncStatusIndicator(el, syncStatus)`. The indicator
 renders the current value, subscribes to changes, and unsubscribes when it is
@@ -1160,8 +1209,21 @@ The full checklist is in `stack/README.md`. In short:
    `npx --no-install powersync docker reset --directory=stack/powersync` so it
    loads the new sync config.
 
+In Local-Only Mode, `LocalOnlySchema` picks up new tables and columns
+automatically when `schema.ts` is regenerated. Data backfills or column renames
+belong in `LOCAL_MIGRATIONS` in `app/src/lib/sync/localMigrations.ts` (tracked
+with `PRAGMA user_version`). **Removing or renaming a table permanently deletes
+its `ps_data_local__<table>` rows when the database opens:** ship a release that
+adds the new table and copies rows in a migration first, and only remove the old
+table in a later release.
+
 ## Gotchas
 
+- **Never open one database file in both modes.** Synced tables use
+  `ps_data__<table>` and local-only tables use `ps_data_local__<table>`;
+  switching a table from local-only to synced permanently deletes its local-only
+  rows. Keep `supa-app.db` and `supa-app-local.db` separate, and run Synced and
+  Local-Only dev servers on different ports (`VITE_DEV_PORT`).
 - **Seed data is missing after `npm run stack:up`.** If Supabase prints
   `Starting database from backup...`, it reused an old local database. Run
   `npx --no-install supabase db reset --local --workdir=stack`. This deletes

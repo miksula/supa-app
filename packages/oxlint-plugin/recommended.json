@@ -9,13 +9,15 @@
           {
             "group": [
               "**/AuthService.ts",
+              "**/LocalAuthService.ts",
               "**/bootstrapAuth.ts",
               "**/authGuard.ts",
               "**/localUserStore.ts",
               "**/SupabasePowerSyncConnector.ts",
               "**/syncLifecycle.ts",
               "**/syncStatus.ts",
-              "**/sync/client.ts"
+              "**/sync/client.ts",
+              "**/sync/localMigrations.ts"
             ],
             "allowTypeImports": true,
             "message": "Infrastructure is created only in app/src/lib/main.ts. Take what you need as a dependency (type-only imports are fine)."
@@ -52,13 +54,15 @@
               {
                 "group": [
                   "**/AuthService.ts",
+                  "**/LocalAuthService.ts",
                   "**/bootstrapAuth.ts",
                   "**/authGuard.ts",
                   "**/localUserStore.ts",
                   "**/SupabasePowerSyncConnector.ts",
                   "**/syncLifecycle.ts",
                   "**/syncStatus.ts",
-                  "**/sync/client.ts"
+                  "**/sync/client.ts",
+                  "**/sync/localMigrations.ts"
                 ],
                 "allowTypeImports": true,
                 "message": "Infrastructure is created only in app/src/lib/main.ts. Take what you need as a dependency (type-only imports are fine)."
@@ -69,7 +73,7 @@
       }
     },
     {
-      "files": ["app/src/lib/main.ts", "**/*.test.ts"],
+      "files": ["app/src/lib/main.ts", "app/src/lib/auth/LocalAuthService.ts", "**/*.test.ts"],
       "rules": {
         "no-restricted-imports": "off"
       }

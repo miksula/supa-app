@@ -9,6 +9,7 @@ type AppPages = {
   login: Mount;
   todos: Mount;
   docs: Mount<string>;
+  settings: Mount;
   notFound: Mount;
 };
 
@@ -56,6 +57,9 @@ export function AppRoot(
   route("/docs/:id", function (context) {
     const id = context.param("id") as string;
     showPage((target) => pages.docs(target, id));
+  });
+  route("/settings", function () {
+    showPage(pages.settings);
   });
   route("/auth", function () {
     showPage(pages.login, { layout: "login", transition: true });

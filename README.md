@@ -34,9 +34,13 @@ Then start the app:
 npm run app:start
 ```
 
-To work on the UI without a running backend, use
-`npm run dev:offline --workspace=app`. See [app/README.md](app/README.md) and
-[stack/README.md](stack/README.md) for more details.
+The app also has a **Local-Only Mode** that runs without Supabase or PowerSync:
+data stays in the browser's OPFS database (`supa-app-local.db`), the login
+screen uses a cosmetic build-time email and password pair, and the Settings page
+can export and import JSON backups. Start it with `npm run app:start:offline`,
+or build an installable Local-Only bundle with `npm run app:build:offline`. See
+[app/README.md](app/README.md) and [stack/README.md](stack/README.md) for more
+details.
 
 Before pushing, run `npm run check`. It runs the same steps as CI
 (`.github/workflows/ci.yml`): oxlint, the style convention checker

@@ -5,6 +5,8 @@ export const config = {
   powersyncUrl: import.meta.env.VITE_POWERSYNC_URL,
   isOfflineMode: import.meta.env.VITE_OFFLINE_MODE === "true",
   isDevelopment: import.meta.env.DEV,
+  localAuthEmail: import.meta.env.VITE_LOCAL_AUTH_EMAIL ?? "",
+  localAuthPassword: import.meta.env.VITE_LOCAL_AUTH_PASSWORD ?? "",
   devEmail: import.meta.env.DEV ? (import.meta.env.VITE_DEV_EMAIL ?? "") : "",
   devPassword: import.meta.env.DEV ? (import.meta.env.VITE_DEV_PASSWORD ?? "") : "",
 };

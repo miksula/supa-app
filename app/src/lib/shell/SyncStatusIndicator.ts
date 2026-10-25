@@ -4,6 +4,7 @@ import type { Dispose } from "@/types.ts";
 import "./sync-status-indicator.css";
 
 function getSyncLabel(status: SyncStatus) {
+  if (status.localOnly) return "Local only";
   if (status.error) return "Sync error";
   if (status.connecting) return "Connecting...";
   if (!status.connected) return "Offline";
@@ -14,7 +15,11 @@ export function SyncStatusIndicator(el: HTMLElement, syncStatus: SyncStatusSourc
   let disposed = false;
   const renderComponent = (status: SyncStatus) => {
     if (disposed) return;
-    const statusClass = status.error || !status.connected ? "-is-error" : "-is-connected";
+    const statusClass = status.localOnly
+      ? "-is-local"
+      : status.error || !status.connected
+        ? "-is-error"
+        : "-is-connected";
     render(
       html`
         <div class="sync-status ${statusClass}" role="status" aria-label="Sync status">

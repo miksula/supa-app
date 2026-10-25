@@ -11,6 +11,19 @@ export type AuthStateListener = (
   session: Session | null,
 ) => void | Promise<void>;
 
+/** The auth surface the rest of the app uses; implemented by AuthService and LocalAuthService. */
+export type AppAuthService = Pick<
+  AuthService,
+  | "session"
+  | "userId"
+  | "isAuthenticated"
+  | "ready"
+  | "init"
+  | "login"
+  | "logout"
+  | "onAuthStateChange"
+>;
+
 /**
  * Wraps Supabase auth and caches the current session so it can be read
  * synchronously (route guard, sidebar). Supabase emits an event for every

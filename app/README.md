@@ -20,47 +20,66 @@ from the repository root:
 npm run app:start
 ```
 
-Vite serves the app locally and opens it in a browser. To work on the UI without
-a running stack, use `npm run dev:offline --workspace=app`; this disables
-authentication and remote sync while keeping the local database available.
+Vite serves the app locally and opens it in a browser.
+
+To run **Local-Only Mode** (no Supabase or PowerSync backend needed), use
+`npm run dev:offline --workspace=app` (or `npm run app:start:offline` from the
+root). Data is stored in a separate local SQLite database (`supa-app-local.db`),
+the sync status shows **Local only**, and the login screen checks the cosmetic
+credentials in `VITE_LOCAL_AUTH_EMAIL` and `VITE_LOCAL_AUTH_PASSWORD` (compiled
+into the bundle — not a security boundary). To build a production Local-Only
+bundle and preview it locally, run `npm run build:offline --workspace=app` (or
+`npm run app:build:offline`) and `npm run preview --workspace=app`. Both Synced
+and Local-Only builds include a PWA manifest and service worker so the app can
+be installed and opened offline.
 
 ## Basic architecture
 
 - `src/index.html` is the browser entry point. It loads styles and calls
   `startApp` in [src/lib/main.ts](src/lib/main.ts).
 - [src/lib/config.ts](src/lib/config.ts) contains all app environment reads,
-  including offline mode and development-only login prefill.
+  including offline mode, Local-Only login credentials
+  (`VITE_LOCAL_AUTH_EMAIL` / `VITE_LOCAL_AUTH_PASSWORD`), and development-only
+  login prefill.
 - [src/lib/main.ts](src/lib/main.ts) is the single composition root. `startApp()`
-  creates an explicit `Router` instance, the Supabase client, `AuthService`, the
-  local database, the sync-status source, the data stores, the route guard, layouts
-  and pages, and passes them to `AppRoot`. Offline mode is decided here once: the
-  guard lets every route through and sync never starts. Online, it creates the
-  connector and sync lifecycle and calls `bootstrapAuth()` after the routes are
-  registered.
+  creates an explicit `Router` instance, the local database (`supa-app-local.db`
+  with `LocalOnlySchema` in Local-Only Mode, `supa-app.db` with `AppSchema` in
+  Synced Mode), `TodoStore`, the mode-specific auth service (`LocalAuthService`
+  or `AuthService`), the sync lifecycle and `SyncStatusSource`, the route guard,
+  layouts and pages, and passes them to `AppRoot`. The route guard applies in
+  both modes, and `bootstrapAuth()` renders the initial route (after running
+  local migrations in Local-Only Mode).
 - [src/lib/AppRoot.ts](src/lib/AppRoot.ts) registers the application routes and
   applies the route guard to each of them.
   [src/lib/layoutManager.ts](src/lib/layoutManager.ts) owns page/layout
   replacement, disposal and view transitions.
 - `src/pages/` contains route-level screens (`auth/`, `docs/`, `my-todos/`,
-  `not-found/`). Feature-specific modules live next to their page, e.g.
-  `pages/my-todos/TodoStore.ts` reads and writes the local todo data. When a page
+  `settings/`, `not-found/`). Feature-specific modules live next to their page, e.g.
+  `pages/my-todos/TodoStore.ts` reads and writes the local todo data and
+  `pages/settings/SettingsPage.ts` exports JSON backups in both modes and
+  imports them in Local-Only Mode. When a page
   holds a second cohesive feature group, give it its own subfolder (for example
   `pages/my-todos/todo-list/`) rather than adding more files to the page root.
 - `src/lib/` contains shared code, grouped by concern:
   - `auth/`: `AuthService.ts` wraps an injected Supabase client created in `main.ts`
-    and fans out its auth state changes, `bootstrapAuth.ts` restores the session and
-    starts sync with injected dependencies, and `authGuard.ts` creates the route guard.
-    There are no auth service singletons.
+    and fans out its auth state changes, `LocalAuthService.ts` provides the
+    cosmetic Local-Only login backed by `localStorage`, `bootstrapAuth.ts`
+    restores the session and starts sync with injected dependencies, and
+    `authGuard.ts` creates the route guard. There are no auth service singletons.
   - `sync/`: `client.ts` provides a factory for the PowerSync database,
     `schema.ts` is the client schema (generated with
-    `npm run schema:generate`), `SupabasePowerSyncConnector.ts` supplies
+    `npm run schema:generate`), `localSchema.ts` derives `LocalOnlySchema` from
+    `AppSchema`, `localMigrations.ts` runs `PRAGMA user_version` data migrations
+    in Local-Only Mode, `storagePersistence.ts` requests persistent browser
+    storage, `SupabasePowerSyncConnector.ts` supplies
     credentials and uploads every transaction through the `process_powersync_crud`
     RPC using an injected Supabase client. The RPC runs with the caller's RLS
     permissions. Successful uploads and fatal data/permission failures complete
     the queued transaction; transient failures leave it pending for retry.
     `syncLifecycle.ts` connects
     PowerSync for a signed-in user and clears local data on sign-out, and
-    `syncStatus.ts` exposes a read-only `SyncStatusSource` for the UI.
+    `syncStatus.ts` exposes a read-only `SyncStatusSource` for the UI (including
+    `createLocalOnlyStatusSource()`).
   - `shell/`: layouts and app chrome (`SidebarLayout`, `Sidebar`,
     `PageHeader`, `LoginLayout`). `Sidebar`'s account menu footer mounts
     `ThemeSwitcher` and `SyncStatusIndicator` (which receives the `syncStatus`

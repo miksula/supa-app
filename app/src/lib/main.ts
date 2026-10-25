@@ -5,16 +5,24 @@
  */
 import { Router } from "@packages/router";
 import { createClient } from "@supabase/supabase-js";
+import { html, render } from "lit";
 import { AppRoot } from "./AppRoot.ts";
 import { config } from "./config.ts";
-import { AuthService } from "./auth/AuthService.ts";
+import { AuthService, type AppAuthService } from "./auth/AuthService.ts";
+import { LocalAuthService } from "./auth/LocalAuthService.ts";
 import { createAuthGuard } from "./auth/authGuard.ts";
 import { bootstrapAuth } from "./auth/bootstrapAuth.ts";
-import { createLocalUserStore, OFFLINE_USER_ID } from "./auth/localUserStore.ts";
+import { createLocalUserStore } from "./auth/localUserStore.ts";
 import { createPowerSync } from "./sync/client.ts";
+import { runLocalMigrations } from "./sync/localMigrations.ts";
+import { requestPersistentStorage } from "./sync/storagePersistence.ts";
 import { SupabasePowerSyncConnector } from "./sync/SupabasePowerSyncConnector.ts";
-import { createSyncLifecycle } from "./sync/syncLifecycle.ts";
-import { createSyncStatusSource } from "./sync/syncStatus.ts";
+import { createSyncLifecycle, type SyncLifecycle } from "./sync/syncLifecycle.ts";
+import {
+  createLocalOnlyStatusSource,
+  createSyncStatusSource,
+  type SyncStatusSource,
+} from "./sync/syncStatus.ts";
 import { NAV_ITEMS } from "./nav/navConfig.ts";
 import { SidebarLayout } from "./shell/SidebarLayout.ts";
 import { LoginLayout } from "./shell/LoginLayout.ts";
@@ -22,29 +30,47 @@ import { LoginPage } from "../pages/auth/LoginPage.ts";
 import { MyTodosPage } from "../pages/my-todos/MyTodosPage.ts";
 import { TodoStore } from "../pages/my-todos/TodoStore.ts";
 import { DocsPage } from "../pages/docs/DocsPage.ts";
+import { SettingsPage } from "../pages/settings/SettingsPage.ts";
 import { NotFoundPage } from "../pages/not-found/NotFoundPage.ts";
 
 export function startApp(el: HTMLElement) {
   const offline = config.isOfflineMode;
-
   const router = new Router();
   const navigate = (path: string) => {
     router.navigate(path);
   };
-  const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
-    auth: { persistSession: !offline, autoRefreshToken: !offline, detectSessionInUrl: !offline },
-  });
-  const userStore = createLocalUserStore();
-  const authService = new AuthService(supabase, userStore);
-  const powersync = createPowerSync();
-  const syncStatus = createSyncStatusSource(powersync);
-  const todoStore = new TodoStore(powersync);
 
-  // Offline mode has no backend: every route is open and sync never starts.
-  const guardRoute = offline ? () => false : createAuthGuard(authService, router);
-  const getUserId = offline
-    ? () => authService.userId ?? userStore.get() ?? OFFLINE_USER_ID
-    : () => authService.userId;
+  const powersync = createPowerSync({ localOnly: offline });
+  const todoStore = new TodoStore(powersync, { localOnly: offline });
+
+  let authService: AppAuthService;
+  let syncLifecycle: SyncLifecycle;
+  let syncStatus: SyncStatusSource;
+
+  if (offline) {
+    authService = new LocalAuthService({
+      email: config.localAuthEmail,
+      password: config.localAuthPassword,
+    });
+    // Sign-out must never reset the database in Local-Only Mode.
+    syncLifecycle = { start: async () => {}, handleAuthEvent: async () => {} };
+    syncStatus = createLocalOnlyStatusSource();
+    void requestPersistentStorage();
+  } else {
+    const supabase = createClient(config.supabaseUrl, config.supabaseKey);
+    const userStore = createLocalUserStore();
+    const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
+    authService = new AuthService(supabase, userStore);
+    syncLifecycle = createSyncLifecycle({
+      connect: () => powersync.connect(connector),
+      reset: () => powersync.disconnectAndClear({ clearLocal: true }),
+      userStore,
+    });
+    syncStatus = createSyncStatusSource(powersync);
+  }
+
+  const guardRoute = createAuthGuard(authService, router);
+  const getUserId = () => authService.userId;
 
   const dispose = AppRoot(el, {
     router,
@@ -67,22 +93,28 @@ export function startApp(el: HTMLElement) {
           getUserId,
         }),
       docs: (target, docId) => DocsPage(target, { docId, navigate }),
+      settings: (target) =>
+        SettingsPage(target, { backup: todoStore, getUserId, canImport: offline }),
       notFound: NotFoundPage,
     },
   });
 
-  // Routes are registered above; now render the current one.
-  if (offline) {
-    router.check();
-  } else {
-    const connector = new SupabasePowerSyncConnector(supabase, config.powersyncUrl);
-    const syncLifecycle = createSyncLifecycle({
-      connect: () => powersync.connect(connector),
-      reset: () => powersync.disconnectAndClear({ clearLocal: true }),
-      userStore,
-    });
-    void bootstrapAuth({ authService, router, syncLifecycle, guardRoute });
-  }
+  const start = async () => {
+    if (offline) await runLocalMigrations(powersync);
+    await bootstrapAuth({ authService, router, syncLifecycle, guardRoute });
+  };
+
+  void start().catch((error) => {
+    console.error("Failed to upgrade the local database", error);
+    render(
+      html`
+        <p role="alert">
+          The local database couldn't be upgraded. Your data hasn't changed. Reload to try again.
+        </p>
+      `,
+      el,
+    );
+  });
 
   return dispose;
 }

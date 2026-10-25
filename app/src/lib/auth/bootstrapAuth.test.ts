@@ -82,4 +82,39 @@ describe("bootstrapAuth", () => {
     expect(router.navigate).toHaveBeenCalledExactlyOnceWith("/auth");
     expect(syncLifecycle.start).not.toHaveBeenCalled();
   });
+
+  it("works with a no-op sync lifecycle in Local-Only Mode", async () => {
+    const { authService, router, guardRoute } = setup();
+    const noopLifecycle = { start: async () => {}, handleAuthEvent: async () => {} };
+    let registeredListener!: Parameters<AuthService["onAuthStateChange"]>[0];
+    authService.onAuthStateChange.mockImplementation((listener) => {
+      registeredListener = listener;
+      return () => {};
+    });
+
+    await bootstrapAuth({ authService, router, syncLifecycle: noopLifecycle, guardRoute });
+    expect(guardRoute).toHaveBeenCalledExactlyOnceWith("/my-todos");
+    expect(router.check).toHaveBeenCalledOnce();
+
+    guardRoute.mockClear();
+    router.check.mockClear();
+    authService.isAuthenticated = false;
+    authService.session = null;
+    guardRoute.mockImplementation((path) => {
+      if (path !== "/auth") {
+        router.navigate("/auth");
+        return true;
+      }
+      return false;
+    });
+
+    await bootstrapAuth({ authService, router, syncLifecycle: noopLifecycle, guardRoute });
+    expect(router.navigate).toHaveBeenCalledExactlyOnceWith("/auth");
+    expect(router.check).not.toHaveBeenCalled();
+
+    guardRoute.mockClear();
+    router.path = "/my-todos";
+    await registeredListener("SIGNED_OUT", null);
+    expect(guardRoute).toHaveBeenCalledExactlyOnceWith("/my-todos");
+  });
 });
