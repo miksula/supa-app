@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_OFFLINE_MODE: string;
   readonly VITE_DEV_EMAIL?: string;
   readonly VITE_DEV_PASSWORD?: string;
+  readonly VITE_DEV_PORT?: string;
 }
 
 interface ImportMeta {
